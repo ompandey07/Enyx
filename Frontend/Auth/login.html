@@ -1,0 +1,873 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ExpTrack</title>
+    <meta name="description" content="Login to your ExpTrack account">
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{% static 'MainLogo.png' %}" type="image/x-icon">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/agustina" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --font-heading: 'Poppins', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-agustina: 'Agustina', cursive;
+            
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --bg-dark: #0f172a;
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --text-white: #ffffff;
+            
+            --border-light: #e2e8f0;
+            --border-medium: #cbd5e1;
+            
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-light: #a78bfa;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+            
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+            --shadow-2xl: 0 25px 50px -12px rgba(0,0,0,0.25);
+            
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 20px;
+            --radius-2xl: 28px;
+            --radius-full: 9999px;
+            
+            --transition-fast: 150ms ease;
+            --transition-base: 200ms ease;
+            --transition-slow: 300ms ease;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+
+        * {
+            scrollbar-width: none;
+        }
+
+        .agustina-font {
+            font-family: 'Agustina', cursive !important;
+        }
+
+        /* ============================================
+           Main Container
+           ============================================ */
+        .auth-container {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-2xl);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 600px;
+        }
+
+        /* ============================================
+           Left Side - Image Section (Full Width & Height)
+           ============================================ */
+        .auth-image-section {
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 40px;
+            overflow: hidden;
+        }
+
+        .auth-image-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .auth-image-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 40%, rgba(15, 23, 42, 0.2) 100%);
+            z-index: 1;
+        }
+
+        .auth-image-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .auth-brand-text {
+            font-family: 'Agustina', cursive !important;
+            font-size: 48px;
+            color: var(--text-white);
+        }
+
+        /* ============================================
+           Right Side - Form Section
+           ============================================ */
+        .auth-form-section {
+            padding: 50px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-form-header {
+            margin-bottom: 32px;
+        }
+
+        .auth-form-title {
+            font-family: 'Agustina', cursive !important;
+            font-size: 36px;
+            color: var(--text-primary);
+        }
+
+        /* ============================================
+           Form Styles
+           ============================================ */
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-label i {
+            width: 16px;
+            height: 16px;
+            color: var(--accent-primary);
+        }
+
+        .form-input-wrapper {
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            padding-left: 46px;
+            font-size: 14px;
+            font-family: var(--font-body);
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            outline: none;
+            transition: all var(--transition-base);
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-primary);
+            background: var(--bg-primary);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            transition: color var(--transition-base);
+        }
+
+        .form-input:focus + .form-input-icon,
+        .form-input:not(:placeholder-shown) + .form-input-icon {
+            color: var(--accent-primary);
+        }
+
+        .form-input-icon i {
+            width: 18px;
+            height: 18px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color var(--transition-base);
+        }
+
+        .password-toggle:hover {
+            color: var(--accent-primary);
+        }
+
+        .password-toggle i {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* ============================================
+           Remember Me Toggle
+           ============================================ */
+        .form-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: -8px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .remember-me-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Custom Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--border-medium);
+            border-radius: var(--radius-full);
+            transition: all var(--transition-base);
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: all var(--transition-base);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: var(--accent-gradient);
+        }
+
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(20px);
+        }
+
+        .forgot-password {
+            font-size: 13px;
+            color: var(--accent-primary);
+            font-weight: 600;
+            text-decoration: none;
+            transition: color var(--transition-base);
+        }
+
+        .forgot-password:hover {
+            color: var(--accent-secondary);
+        }
+
+        /* ============================================
+           Submit Button
+           ============================================ */
+        .submit-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: var(--accent-gradient);
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: var(--font-body);
+            border: none;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all var(--transition-base);
+            margin-top: 8px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .submit-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .submit-btn i {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-text-loading {
+            display: none;
+        }
+
+        .submit-btn.loading .btn-text-default {
+            display: none;
+        }
+
+        .submit-btn.loading .btn-text-loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ============================================
+           Footer Link
+           ============================================ */
+        .auth-footer {
+            text-align: center;
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .auth-footer-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .auth-footer-link {
+            color: var(--accent-primary);
+            font-weight: 600;
+            text-decoration: none;
+            transition: color var(--transition-base);
+        }
+
+        .auth-footer-link:hover {
+            color: var(--accent-secondary);
+        }
+
+        /* ============================================
+           Toast Notification
+           ============================================ */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            padding: 16px 20px;
+            box-shadow: var(--shadow-xl);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 320px;
+            max-width: 420px;
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            animation: shrink 5s linear forwards;
+        }
+
+        .toast.success::after {
+            background: var(--success);
+        }
+
+        .toast.error::after {
+            background: var(--error);
+        }
+
+        @keyframes shrink {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast.success .toast-icon {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .toast.error .toast-icon {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+
+        .toast-icon i {
+            width: 16px;
+            height: 16px;
+        }
+
+        .toast-message {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color var(--transition-base);
+        }
+
+        .toast-close:hover {
+            color: var(--text-primary);
+        }
+
+        .toast-close i {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* ============================================
+           Responsive
+           ============================================ */
+        @media (max-width: 900px) {
+            .auth-container {
+                max-width: 500px;
+                grid-template-columns: 1fr;
+            }
+
+            .auth-image-section {
+                display: none;
+            }
+
+            .auth-form-section {
+                padding: 40px 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+            }
+
+            .auth-container {
+                border-radius: var(--radius-xl);
+            }
+
+            .auth-form-section {
+                padding: 32px 24px;
+            }
+
+            .auth-form-title {
+                font-size: 28px;
+            }
+
+            .form-input {
+                padding: 12px 14px;
+                padding-left: 42px;
+            }
+
+            .submit-btn {
+                padding: 14px 20px;
+            }
+
+            .toast {
+                min-width: auto;
+                max-width: calc(100vw - 48px);
+                right: 16px;
+                left: 16px;
+            }
+
+            .toast-container {
+                right: 0;
+                left: 0;
+                padding: 0 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    {% if toast_message %}
+    <div class="toast-container">
+        <div class="toast {{ toast_type }}" id="toast">
+            <div class="toast-icon">
+                {% if toast_type == 'success' %}
+                <i data-lucide="check"></i>
+                {% else %}
+                <i data-lucide="alert-circle"></i>
+                {% endif %}
+            </div>
+            <span class="toast-message">{{ toast_message }}</span>
+            <button class="toast-close" onclick="closeToast()">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main Container -->
+    <div class="auth-container">
+        <!-- Left Side - Full Image -->
+        <div class="auth-image-section">
+            <img src="{% static 'Base/Login.jpg' %}" alt="ExpTrack Logo" class="auth-image-bg">
+            <div class="auth-image-overlay"></div>
+            <div class="auth-image-content">
+                <h1 class="auth-brand-text agustina-font">ExpTrack</h1>
+            </div>
+        </div>
+
+        <!-- Right Side - Form -->
+        <div class="auth-form-section">
+            <div class="auth-form-header">
+                <h2 class="auth-form-title agustina-font">Welcome Back</h2>
+            </div>
+
+            <form class="auth-form" method="POST" action="{% url 'accounts:login' %}" id="loginForm">
+                {% csrf_token %}
+                
+                <!-- Email Field -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i data-lucide="mail"></i>
+                        Email Address
+                    </label>
+                    <div class="form-input-wrapper">
+                        <input 
+                            type="email" 
+                            name="email" 
+                            class="form-input" 
+                            placeholder="Enter your email"
+                            required
+                            autocomplete="email"
+                        >
+                        <span class="form-input-icon">
+                            <i data-lucide="mail"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i data-lucide="lock"></i>
+                        Password
+                    </label>
+                    <div class="form-input-wrapper">
+                        <input 
+                            type="password" 
+                            name="password" 
+                            class="form-input" 
+                            placeholder="Enter your password"
+                            required
+                            autocomplete="current-password"
+                            id="passwordInput"
+                        >
+                        <span class="form-input-icon">
+                            <i data-lucide="lock"></i>
+                        </span>
+                        <button type="button" class="password-toggle" onclick="togglePassword()">
+                            <i data-lucide="eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Options Row -->
+                <div class="form-options">
+                    <label class="remember-me">
+                        <div class="toggle-switch">
+                            <input type="checkbox" name="remember_me" id="rememberMe">
+                            <span class="toggle-slider"></span>
+                        </div>
+                        <span class="remember-me-text">Remember me</span>
+                    </label>
+                    <a href="#" class="forgot-password">Forgot password?</a>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <span class="btn-text-default">
+                        <i data-lucide="log-in"></i>
+                        Sign In
+                    </span>
+                    <span class="btn-text-loading">
+                        <div class="spinner"></div>
+                        Signing in...
+                    </span>
+                </button>
+            </form>
+
+            <!-- Footer -->
+            <div class="auth-footer">
+                <p class="auth-footer-text">
+                    Don't have an account? 
+                    <a href="{% url 'accounts:register' %}" class="auth-footer-link">Create one</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+        <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Toggle Password Visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('passwordInput');
+            const eyeIcon = document.getElementById('eyeIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        }
+
+        // Toast Functions
+        function showToast(message, type) {
+            // Remove existing toast
+            const existingContainer = document.querySelector('.toast-container');
+            if (existingContainer) {
+                existingContainer.remove();
+            }
+
+            // Create toast container
+            const container = document.createElement('div');
+            container.className = 'toast-container';
+            
+            const iconName = type === 'success' ? 'check' : 'alert-circle';
+            
+            container.innerHTML = `
+                <div class="toast ${type}" id="toast">
+                    <div class="toast-icon">
+                        <i data-lucide="${iconName}"></i>
+                    </div>
+                    <span class="toast-message">${message}</span>
+                    <button class="toast-close" onclick="closeToast()">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(container);
+            lucide.createIcons();
+            
+            // Auto close after 5 seconds
+            setTimeout(() => {
+                closeToast();
+            }, 5000);
+        }
+
+        function closeToast() {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.style.animation = 'slideOut 0.3s ease-out forwards';
+                setTimeout(() => {
+                    const container = toast.parentElement;
+                    if (container) container.remove();
+                }, 300);
+            }
+        }
+
+        // Form Submit with AJAX
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Redirect on success
+                    window.location.href = data.redirect;
+                } else {
+                    // Show error toast without refreshing
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                    showToast(data.message, data.type);
+                }
+            } catch (error) {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                showToast('An error occurred. Please try again.', 'error');
+            }
+        });
+
+        // Auto close existing toast after 5 seconds
+        const existingToast = document.getElementById('toast');
+        if (existingToast) {
+            setTimeout(() => {
+                closeToast();
+            }, 5000);
+        }
+
+        // Add slideOut animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

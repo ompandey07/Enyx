@@ -1,0 +1,627 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Primary Meta Tags -->
+    <title>ExpTrack - Advanced Expense Tracker & Goal Achiever</title>
+    <meta name="description" content="ExpTrack helps you track your expenses, manage budgets, and achieve your financial goals with smart planning tools.">
+    <meta name="keywords" content="expense tracker, budget planner, goal tracker, financial planning, money management">
+    <meta name="author" content="ExpTrack">
+    <meta name="theme-color" content="#6366f1">
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{% static 'MainLogo.png' %}" type="image/x-icon">
+    <link rel="icon" type="image/png" href="{% static 'MainLogo.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'MainLogo.png' %}">
+    
+    <!-- Preconnect for Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://unpkg.com">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&family=Kaushan+Script&display=swap" rel="stylesheet">
+    
+    <!-- Agustina Font -->
+    <link href="https://fonts.cdnfonts.com/css/agustina" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="{% static 'Assests/Base/styles.css' %}">
+</head>
+<body class="loading">
+    <!-- Floating Animated Dots -->
+    <div class="floating-dots-container">
+        <div class="floating-dot dot-1"></div>
+        <div class="floating-dot dot-2"></div>
+        <div class="floating-dot dot-3"></div>
+        <div class="floating-dot dot-4"></div>
+        <div class="floating-dot dot-5"></div>
+        <div class="floating-dot dot-6"></div>
+        <div class="floating-dot dot-7"></div>
+        <div class="floating-dot dot-8"></div>
+        <div class="floating-dot dot-9"></div>
+        <div class="floating-dot dot-10"></div>
+        <div class="floating-dot dot-11"></div>
+        <div class="floating-dot dot-12"></div>
+    </div>
+
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="preloader-content">
+            <span class="preloader-name">ExpTrack</span>
+        </div>
+    </div>
+
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                <span class="nav-logo-text agustina-font">ExpTrack</span>
+            </a>
+            
+            <!-- Desktop Navigation -->
+            <div class="nav-links" id="navLinks">
+                <!-- Close Button for Mobile -->
+                <button class="nav-close-btn" id="navCloseBtn" aria-label="Close menu">
+                    <i class="ri-close-line"></i>
+                </button>
+                
+                <!-- Mobile Brand -->
+                <div class="nav-mobile-brand">
+                    <span class="agustina-font">ExpTrack</span>
+                </div>
+                
+                <a href="#about" class="nav-link">
+                    <i data-lucide="info"></i>
+                    About
+                </a>
+                <a href="#features" class="nav-link">
+                    <i data-lucide="sparkles"></i>
+                    Features
+                </a>
+                <a href="#how-it-works" class="nav-link">
+                    <i data-lucide="settings"></i>
+                    How It Works
+                </a>
+                <a href="#motivation" class="nav-link">
+                    <i data-lucide="zap"></i>
+                    Motivation
+                </a>
+                <a href="accounts/register" class="nav-cta">
+                    <i data-lucide="rocket"></i>
+                    Get Started
+                </a>
+            </div>
+
+            <!-- Hamburger Button -->
+            <button class="nav-mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg">
+            <div class="hero-bg-left"></div>
+            <div class="hero-bg-right"></div>
+        </div>
+        <div class="hero-grid"></div>
+        
+        <div class="hero-container">
+            <!-- Left Side: Logo at Top, then Title, then Slogan -->
+            <div class="hero-content">
+                <!-- Logo - Bigger Size, No Float Animation, Paint Effect -->
+                <div class="hero-logo-container">
+                    <img src="{% static 'MainLogo.png' %}" alt="ExpTrack Logo" class="hero-logo">
+                    
+                    <!-- Paint Drip Effect -->
+                    <div class="paint-drips">
+                        <div class="paint-drip"></div>
+                        <div class="paint-drip"></div>
+                        <div class="paint-drip"></div>
+                        <div class="paint-drip"></div>
+                        <div class="paint-drip"></div>
+                        <div class="paint-drip"></div>
+                        <div class="paint-drip"></div>
+                    </div>
+
+                    <!-- Paint Splatter Dots -->
+                    <div class="paint-splatter paint-splatter-1"></div>
+                    <div class="paint-splatter paint-splatter-2"></div>
+                    <div class="paint-splatter paint-splatter-3"></div>
+                    <div class="paint-splatter paint-splatter-4"></div>
+                    <div class="paint-splatter paint-splatter-5"></div>
+                </div>
+
+                <!-- Title below Logo -->
+                <h1 class="hero-title kaushan-font">ExpTrack</h1>
+
+                <!-- Slogan below Title -->
+                <p class="hero-slogan">"Master your money, achieve your dreams."</p>
+            </div>
+            
+            <!-- Right Side: 3D Dashboard -->
+            <div class="dashboard-wrapper">
+                <div class="dashboard-widget">
+                    <div class="dashboard-edge-left"></div>
+                    <div class="dashboard-edge-bottom"></div>
+                    <div class="dashboard-grid"></div>
+                    <div class="dashboard-connections">
+                        <div class="connection-dot"></div>
+                        <div class="connection-dot"></div>
+                        <div class="connection-dot"></div>
+                        <div class="connection-dot"></div>
+                        <div class="connection-dot"></div>
+                    </div>
+
+                    <!-- Real-time Transaction Notifications -->
+                    <div class="dashboard-transactions">
+                        <div class="transaction-notification">
+                            <div class="transaction-icon income">
+                                <i class="ri-arrow-down-line"></i>
+                            </div>
+                            <span class="transaction-text">Salary</span>
+                            <span class="transaction-amount income">+$3,500</span>
+                        </div>
+                        <div class="transaction-notification">
+                            <div class="transaction-icon expense">
+                                <i class="ri-arrow-up-line"></i>
+                            </div>
+                            <span class="transaction-text">Shopping</span>
+                            <span class="transaction-amount expense">-$89</span>
+                        </div>
+                        <div class="transaction-notification">
+                            <div class="transaction-icon income">
+                                <i class="ri-arrow-down-line"></i>
+                            </div>
+                            <span class="transaction-text">Freelance</span>
+                            <span class="transaction-amount income">+$450</span>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-header">
+                        <span class="dashboard-title">Dashboard</span>
+                        <div class="dashboard-live">
+                            <span class="dashboard-live-dot"></span>
+                            Live
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-stats">
+                        <div class="stat-box">
+                            <div class="stat-value green">$2,450</div>
+                            <div class="stat-label">Balance</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value purple">$890</div>
+                            <div class="stat-label">Saved</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value orange">$1,200</div>
+                            <div class="stat-label">Spent</div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-chart">
+                        <svg class="chart-line" viewBox="0 0 400 80" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="chartGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#6366f1"/>
+                                    <stop offset="50%" style="stop-color:#8b5cf6"/>
+                                    <stop offset="100%" style="stop-color:#a855f7"/>
+                                </linearGradient>
+                                <linearGradient id="chartAreaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.2"/>
+                                    <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0"/>
+                                </linearGradient>
+                            </defs>
+                            <path class="chart-area" d="M0,80 L0,56 Q50,40 100,50 T200,30 T300,45 T400,16 L400,80 Z"/>
+                            <path class="chart-path" d="M0,56 Q50,40 100,50 T200,30 T300,45 T400,16"/>
+                        </svg>
+                        <div class="chart-dots">
+                            <div class="chart-dot"></div>
+                            <div class="chart-dot"></div>
+                            <div class="chart-dot"></div>
+                            <div class="chart-dot"></div>
+                            <div class="chart-dot"></div>
+                            <div class="chart-dot"></div>
+                            <div class="chart-dot"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-progress">
+                        <div class="progress-item">
+                            <div class="progress-icon green">
+                                <i class="ri-wallet-3-line"></i>
+                            </div>
+                            <div class="progress-content">
+                                <div class="progress-header">
+                                    <span class="progress-label">Monthly Budget</span>
+                                    <span class="progress-value">65%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill green" style="--progress: 65%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-icon purple">
+                                <i class="ri-funds-line"></i>
+                            </div>
+                            <div class="progress-content">
+                                <div class="progress-header">
+                                    <span class="progress-label">Savings Goal</span>
+                                    <span class="progress-value">42%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill purple" style="--progress: 42%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-icon orange">
+                                <i class="ri-shield-check-line"></i>
+                            </div>
+                            <div class="progress-content">
+                                <div class="progress-header">
+                                    <span class="progress-label">Emergency Fund</span>
+                                    <span class="progress-value">78%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill orange" style="--progress: 78%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="section section-alt" id="about">
+        <div class="container">
+            <div class="content-grid">
+                <div class="content-image">
+                    <img src="{% static 'Base/Your Personal Finance Companion_.png' %}" alt="About ExpTrack" class="fade-in-image">
+                </div>
+                
+                <div class="content-text">
+                    <div class="content-label">
+                        <i data-lucide="info"></i>
+                        About ExpTrack
+                    </div>
+                    <h2 class="content-title">Your Personal Finance Companion</h2>
+                    <p class="content-description">
+                        ExpTrack was built with one mission: to help you take control of your money 
+                        and turn your financial dreams into reality. Whether you're saving for a vacation, 
+                        paying off debt, or building an emergency fund, ExpTrack provides the tools 
+                        you need to succeed.
+                    </p>
+                    <div class="content-list">
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Easy-to-use interface designed for everyone</span>
+                        </div>
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Real-time expense tracking and categorization</span>
+                        </div>
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Smart insights to optimize your spending</span>
+                        </div>
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Secure and private - your data stays yours</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="section" id="features">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-label">
+                    <i data-lucide="sparkles"></i>
+                    Features
+                </div>
+                <h2 class="section-title">Everything You Need to Succeed</h2>
+                <p class="section-subtitle">
+                    Powerful features designed to make financial management simple, 
+                    intuitive, and even enjoyable.
+                </p>
+            </div>
+            
+            <div class="features-container">
+                <div class="feature-tag color-1">
+                    <i data-lucide="wallet"></i>
+                    <span>EXPENSE TRACKING</span>
+                </div>
+                <div class="feature-tag color-2">
+                    <i data-lucide="target"></i>
+                    <span>GOAL SETTING</span>
+                </div>
+                <div class="feature-tag color-3">
+                    <i data-lucide="pie-chart"></i>
+                    <span>BUDGET PLANNING</span>
+                </div>
+                <div class="feature-tag color-4">
+                    <i data-lucide="bar-chart-3"></i>
+                    <span>VISUAL REPORTS</span>
+                </div>
+                <div class="feature-tag color-5">
+                    <i data-lucide="bell"></i>
+                    <span>SMART REMINDERS</span>
+                </div>
+                <div class="feature-tag color-6">
+                    <i data-lucide="shield-check"></i>
+                    <span>SECURE & PRIVATE</span>
+                </div>
+                <div class="feature-tag color-7">
+                    <i data-lucide="trending-up"></i>
+                    <span>ANALYTICS</span>
+                </div>
+                <div class="feature-tag color-8">
+                    <i data-lucide="credit-card"></i>
+                    <span>MULTI-ACCOUNT</span>
+                </div>
+                <div class="feature-tag color-1">
+                    <i data-lucide="repeat"></i>
+                    <span>RECURRING BILLS</span>
+                </div>
+                <div class="feature-tag color-2">
+                    <i data-lucide="download"></i>
+                    <span>EXPORT DATA</span>
+                </div>
+                <div class="feature-tag color-3">
+                    <i data-lucide="smartphone"></i>
+                    <span>MOBILE FRIENDLY</span>
+                </div>
+                <div class="feature-tag color-4">
+                    <i data-lucide="cloud"></i>
+                    <span>CLOUD SYNC</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="section section-alt" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-label">
+                    <i data-lucide="settings"></i>
+                    How It Works
+                </div>
+                <h2 class="section-title">Simple Steps to Financial Freedom</h2>
+                <p class="section-subtitle">
+                    Getting started with ExpTrack is easy. Follow these simple steps 
+                    and watch your financial health transform.
+                </p>
+            </div>
+            
+            <!-- Step 1 -->
+            <div class="content-grid" style="margin-bottom: 80px;">
+                <div class="content-image">
+                    <img src="{% static 'Base/Set Your Financial Goals_.png' %}" alt="Set Your Goals" class="fade-in-image">
+                </div>
+                
+                <div class="content-text">
+                    <div class="content-label">
+                        <i data-lucide="flag"></i>
+                        Step 1
+                    </div>
+                    <h2 class="content-title">Set Your Financial Goals</h2>
+                    <p class="content-description">
+                        Start by defining what you want to achieve. Whether it's saving for 
+                        a dream vacation, building an emergency fund, or paying off debt, 
+                        ExpTrack helps you set clear, achievable targets.
+                    </p>
+                    <div class="content-list">
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Define short-term and long-term goals</span>
+                        </div>
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Set target amounts and deadlines</span>
+                        </div>
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Break big goals into manageable milestones</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="content-grid reverse" style="margin-bottom: 80px;">
+                <div class="content-image">
+                    <img src="{% static 'Base/Track Every Expense.png' %}" alt="Track Your Expenses" class="fade-in-image">
+                </div>
+                
+                <div class="content-text">
+                    <div class="content-label">
+                        <i data-lucide="list-checks"></i>
+                        Step 2
+                    </div>
+                    <h2 class="content-title">Track Every Expense</h2>
+                    <p class="content-description">
+                        Log your daily expenses with just a few taps. ExpTrack automatically 
+                        categorizes your spending and shows you exactly where your money goes.
+                    </p>
+                    <div class="content-list">
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Quick expense logging with smart categories</span>
+                        </div>
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Attach receipts and notes to transactions</span>
+                        </div>
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>View spending patterns at a glance</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="content-grid">
+                <div class="content-image">
+                    <img src="{% static 'Base/Achieve Your Goals.png' %}" alt="Achieve Your Goals" class="fade-in-image">
+                </div>
+                
+                <div class="content-text">
+                    <div class="content-label">
+                        <i data-lucide="trophy"></i>
+                        Step 3
+                    </div>
+                    <h2 class="content-title">Achieve Your Goals</h2>
+                    <p class="content-description">
+                        Watch your progress grow as you stick to your budget and save 
+                        consistently. Celebrate milestones and stay motivated on your 
+                        journey to financial success.
+                    </p>
+                    <div class="content-list">
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Visual progress tracking for each goal</span>
+                        </div>
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Celebrate achievements with rewards</span>
+                        </div>
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Get insights to reach goals faster</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Motivation Section -->
+    <section class="section" id="motivation">
+        <div class="container">
+            <div class="content-grid reverse">
+                <div class="content-image">
+                    <img src="{% static 'Base/Your Financial Journey Starts Today.png' %}" alt="Stay Motivated" class="fade-in-image">
+                </div>
+                
+                <div class="content-text">
+                    <div class="content-label">
+                        <i data-lucide="zap"></i>
+                        Stay Motivated
+                    </div>
+                    <h2 class="content-title">Your Financial Journey Starts Today</h2>
+                    <p class="content-description">
+                        Every great achievement begins with a single step. ExpTrack is designed 
+                        to keep you motivated throughout your financial journey. With progress 
+                        tracking, milestone celebrations, and helpful insights, you'll stay 
+                        focused on what matters most.
+                    </p>
+                    <div class="content-list">
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Daily motivation and tips</span>
+                        </div>
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Achievement badges to celebrate wins</span>
+                        </div>
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Community of like-minded savers</span>
+                        </div>
+                        <div class="content-list-item">
+                            <i data-lucide="check-circle"></i>
+                            <span>Weekly and monthly progress reports</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Motivation Quote -->
+            <div class="motivation-quote">
+                <div class="motivation-quote-icon">
+                    <i class="ri-double-quotes-l"></i>
+                </div>
+                <p class="motivation-quote-text">
+                    "A budget is telling your money where to go instead of wondering where it went."
+                </p>
+                <span class="motivation-quote-author">— Dave Ramsey</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2 class="cta-title">Ready to Transform Your Finances?</h2>
+            <p class="cta-description">
+                Join thousands of users who have taken control of their money 
+                and are achieving their financial goals with ExpTrack.
+            </p>
+            <div class="cta-buttons">
+                <a href="accounts/register" class="cta-btn cta-btn-primary">
+                    <i data-lucide="rocket"></i>
+                    Get Started Free
+                </a>
+                <a href="#" class="cta-btn cta-btn-secondary">
+                    <i data-lucide="mail"></i>
+                    Contact Us
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <a href="#" class="footer-brand">
+                <span class="footer-brand-text agustina-font">ExpTrack</span>
+            </a>
+            
+            <div class="footer-social">
+                <a href="#" class="footer-social-link" aria-label="Facebook">
+                    <i class="ri-facebook-fill"></i>
+                </a>
+                <a href="#" class="footer-social-link" aria-label="Instagram">
+                    <i class="ri-instagram-line"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer-copyright" id="footerCopyright"></div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="{% static 'Assests/Base/app.js' %}"></script>
+</body>
+</html>

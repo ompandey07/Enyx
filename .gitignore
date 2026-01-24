@@ -1,0 +1,83 @@
+# =========================
+# DJANGO
+# =========================
+*.log
+*.pot
+*.pyc
+*.pyo
+__pycache__/
+*.sqlite3
+db.sqlite3
+
+# Django secret & env files
+.env
+.env.*
+.envrc
+local_settings.py
+
+# Media & collected static files
+media/
+staticfiles/
+
+# =========================
+# PYTHON
+# =========================
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.pyre/
+.coverage
+htmlcov/
+
+# =========================
+# VIRTUAL ENVIRONMENTS
+# =========================
+venv/
+env/
+ENV/
+.venv/
+virtualenv/
+pip-wheel-metadata/
+
+# =========================
+# MIGRATIONS
+# (remove this if working in a team)
+# =========================
+**/migrations/**
+!**/migrations/__init__.py
+
+# =========================
+# IDE / EDITORS
+# =========================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# =========================
+# OS FILES
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# NODE / FRONTEND (if used)
+# =========================
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# =========================
+# BUILD / DIST
+# =========================
+build/
+dist/
+*.egg-info/
+
+# =========================
+# TEMP FILES
+# =========================
+*.swp
+*.swo
+*.tmp
