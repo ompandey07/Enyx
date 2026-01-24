@@ -1,8 +1,16 @@
-docker stop exptrac_app
-docker rm exptrac_app
+# Stop & remove old container (ignore errors)
+docker stop exptrac_app || true
+docker rm exptrac_app || true
+
+# Build fresh image
 docker build -t exptrac .
-docker run -d --name exptrac_app -p 7000:7000 exptrac
 
+# Run container (Postgres on localhost – Linux)
+docker run -d \
+  --name exptrac_app \
+  --network host \
+  exptrac
 
+# Django migrations
 docker exec -it exptrac_app python manage.py makemigrations
 docker exec -it exptrac_app python manage.py migrate
