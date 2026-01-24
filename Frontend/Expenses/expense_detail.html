@@ -1,0 +1,2136 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>{{ expense_block.title }} - ExpTrack</title>
+    <meta name="description" content="ExpTrack - Expense Details">
+    <meta name="theme-color" content="#6366f1">
+    
+    <link rel="shortcut icon" href="{% static 'MainLogo.png' %}" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&family=Kaushan+Script&display=swap" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/agustina" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        :root {
+            --font-heading: 'Poppins', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-script: 'Kaushan Script', cursive;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border-light: #e2e8f0;
+            --border-medium: #cbd5e1;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --error: #ef4444;
+            --error-light: #fee2e2;
+            --info: #3b82f6;
+            --info-light: #dbeafe;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 20px;
+            --radius-2xl: 28px;
+            --radius-full: 9999px;
+            --transition-base: 200ms ease;
+            --transition-slow: 300ms ease;
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+            --sidebar-width: 260px;
+            --topnav-height: 70px;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-tertiary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: var(--radius-full); }
+
+        a { text-decoration: none; color: inherit; }
+        button { border: none; background: none; cursor: pointer; font-family: inherit; }
+
+        /* Top Navigation */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--topnav-height);
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            z-index: 1000;
+        }
+
+        .top-nav-left { display: flex; align-items: center; gap: 24px; }
+
+        .mobile-menu-btn {
+            display: none;
+            width: 42px;
+            height: 42px;
+            border-radius: var(--radius-md);
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all var(--transition-base);
+        }
+
+        .mobile-menu-btn:hover { background: var(--bg-tertiary); color: var(--accent-primary); }
+
+        .top-nav-brand { display: flex; align-items: center; }
+
+        .brand-text {
+            font-family: 'Agustina', cursive;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .brand-text-accent {
+            font-family: 'Agustina', cursive;
+            font-size: 26px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .top-nav-right { display: flex; align-items: center; gap: 16px; position: relative; }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            transition: all var(--transition-base);
+        }
+
+        .back-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .add-expense-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--accent-gradient);
+            border-radius: var(--radius-lg);
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all var(--transition-base);
+        }
+
+        .add-expense-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .add-expense-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+
+        .user-profile:hover { border-color: var(--accent-primary); box-shadow: var(--shadow-md); }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .avatar-image { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-letter { color: white; font-size: 16px; font-weight: 700; }
+
+        .dropdown-arrow {
+            font-size: 18px;
+            color: var(--text-muted);
+            transition: transform var(--transition-base);
+        }
+
+        .user-profile.active .dropdown-arrow { transform: rotate(180deg); }
+
+        .user-dropdown {
+            position: absolute;
+            top: calc(100% + 12px);
+            right: 0;
+            width: 280px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all var(--transition-base);
+            z-index: 1001;
+        }
+
+        .user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+
+        .dropdown-header { display: flex; align-items: center; gap: 14px; padding: 20px; }
+
+        .dropdown-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .dropdown-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .dropdown-avatar span { color: white; font-size: 18px; font-weight: 700; }
+
+        .dropdown-user-info { display: flex; flex-direction: column; }
+        .dropdown-name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+        .dropdown-email { font-size: 13px; color: var(--text-muted); }
+
+        .dropdown-divider { height: 1px; background: var(--border-light); margin: 0 16px; }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all var(--transition-base);
+        }
+
+        .dropdown-item:hover { background: var(--bg-secondary); color: var(--accent-primary); }
+        .dropdown-item i { font-size: 18px; }
+        .dropdown-item-danger { color: var(--error); }
+        .dropdown-item-danger:hover { background: var(--error-light); color: var(--error); }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: var(--topnav-height);
+            left: 0;
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--topnav-height));
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+            z-index: 900;
+            transition: transform var(--transition-slow);
+        }
+
+        .sidebar-header {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .sidebar-close {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+        }
+
+        .sidebar-close:hover { background: var(--bg-tertiary); color: var(--error); }
+
+        .sidebar-nav { flex: 1; display: flex; flex-direction: column; padding: 24px 16px; overflow-y: auto; }
+
+        .sidebar-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0 12px;
+            margin-bottom: 12px;
+        }
+
+        .sidebar-menu { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: var(--radius-lg);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all var(--transition-base);
+            position: relative;
+        }
+
+        .sidebar-link:hover { background: var(--bg-secondary); color: var(--accent-primary); }
+
+        .sidebar-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .sidebar-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 24px;
+            background: var(--accent-gradient);
+            border-radius: var(--radius-full);
+        }
+
+        .sidebar-link i { font-size: 20px; }
+
+        .sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-light); }
+        .sidebar-logout { color: var(--error); }
+        .sidebar-logout:hover { background: var(--error-light); color: var(--error); }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--topnav-height);
+            min-height: calc(100vh - var(--topnav-height));
+            padding: 32px;
+        }
+
+        /* Closed Notice */
+        .closed-notice {
+            background: var(--warning-light);
+            border: 1px solid var(--warning);
+            border-radius: var(--radius-lg);
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .closed-notice i { font-size: 24px; color: var(--warning); }
+        .closed-notice-text { font-size: 14px; color: var(--warning); font-weight: 500; }
+
+        /* Block Header Card */
+        .block-header-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-2xl);
+            padding: 28px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .block-header-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent-gradient);
+        }
+
+        .block-header-card.closed::before { background: var(--text-muted); }
+
+        .block-header-content {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .block-header-left { flex: 1; min-width: 280px; }
+
+        .block-header-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .block-header-title {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .edit-title-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            transition: all var(--transition-base);
+        }
+
+        .edit-title-btn:hover { background: var(--bg-tertiary); color: var(--accent-primary); }
+
+        .block-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; }
+
+        .block-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .block-meta-item i { color: var(--accent-primary); font-size: 16px; }
+
+        .type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .type-badge.weekly { background: var(--info-light); color: var(--info); }
+        .type-badge.monthly { background: rgba(139, 92, 246, 0.1); color: var(--accent-secondary); }
+
+        .block-badges { display: flex; flex-wrap: wrap; gap: 10px; }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .status-badge.active { background: var(--success-light); color: var(--success); }
+        .status-badge.active .status-dot { background: var(--success); }
+        .status-badge.closed { background: var(--bg-tertiary); color: var(--text-muted); }
+        .status-badge.closed .status-dot { background: var(--text-muted); }
+
+        .days-remaining-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--warning-light);
+            color: var(--warning);
+            border-radius: var(--radius-full);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .block-header-right { text-align: right; }
+
+        .block-total-value {
+            font-family: var(--font-heading);
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .block-total-label { font-size: 13px; color: var(--text-muted); }
+
+        .block-item-count {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        /* Today's Section */
+        .today-section {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .today-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .today-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .today-title i { font-size: 24px; }
+
+        .today-date {
+            font-size: 14px;
+            color: var(--accent-primary);
+            font-weight: 500;
+        }
+
+        .start-expense-msg {
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .start-expense-msg i {
+            font-size: 48px;
+            color: var(--accent-primary);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .start-expense-msg-title {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .start-expense-msg-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .today-expenses-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .today-expense-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light);
+        }
+
+        .today-expense-info { display: flex; align-items: center; gap: 14px; }
+
+        .today-expense-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            background: rgba(99, 102, 241, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-primary);
+        }
+
+        .today-expense-name { font-weight: 600; font-size: 14px; }
+        .today-expense-time { font-size: 12px; color: var(--text-muted); }
+
+        .today-expense-amount {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        /* Not Today Message */
+        .not-today-section {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            padding: 40px 24px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .not-today-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 16px;
+            background: var(--bg-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .not-today-icon i { font-size: 36px; color: var(--text-muted); }
+
+        .not-today-title {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .not-today-text { font-size: 14px; color: var(--text-secondary); }
+
+        /* Day Tabs */
+        .day-tabs-wrapper { margin-bottom: 24px; }
+
+        .day-tabs-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .day-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .day-tab {
+            padding: 10px 18px;
+            border-radius: var(--radius-lg);
+            font-size: 13px;
+            font-weight: 600;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .day-tab:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+
+        .day-tab.active {
+            background: var(--accent-gradient);
+            color: white;
+            border-color: transparent;
+        }
+
+        .day-tab .day-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            border-radius: 11px;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .day-tab.active .day-count { background: rgba(255,255,255,0.25); }
+
+        .day-tab.today { position: relative; }
+        .day-tab.today::after {
+            content: '';
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 10px;
+            height: 10px;
+            background: var(--success);
+            border-radius: 50%;
+            border: 2px solid var(--bg-primary);
+        }
+
+        /* Table Section */
+        .table-section {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-2xl);
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 28px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .table-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .table-title i { color: var(--accent-primary); font-size: 22px; }
+
+        .table-count {
+            padding: 4px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .table-container { overflow-x: auto; }
+
+        .data-table { width: 100%; border-collapse: collapse; }
+
+        .data-table th,
+        .data-table td {
+            padding: 14px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .data-table th {
+            background: var(--bg-secondary);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td { font-size: 14px; }
+        .data-table tbody tr { transition: background var(--transition-base); }
+        .data-table tbody tr:hover { background: var(--bg-secondary); }
+
+        .sn-cell { width: 60px; text-align: center; font-weight: 600; color: var(--text-muted); }
+        .expense-name-cell { font-weight: 600; }
+
+        .expense-notes {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        .amount-cell {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .day-badge {
+            display: inline-flex;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-size: 11px;
+            font-weight: 600;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            text-transform: capitalize;
+        }
+
+        .date-cell { font-size: 13px; color: var(--text-secondary); }
+
+        .method-badge {
+            display: inline-flex;
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .method-badge.banking { background: var(--info-light); color: var(--info); }
+        .method-badge.esewa { background: #dcfce7; color: #16a34a; }
+        .method-badge.khalti { background: #f3e8ff; color: #9333ea; }
+        .method-badge.others { background: var(--bg-tertiary); color: var(--text-secondary); }
+
+        .action-cell { width: 80px; }
+
+        .action-btn-edit {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: var(--radius-md);
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-primary);
+            transition: all var(--transition-base);
+        }
+
+        .action-btn-edit:hover:not(:disabled) { background: var(--accent-primary); color: white; }
+        .action-btn-edit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Pagination */
+        .pagination-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 28px;
+            border-top: 1px solid var(--border-light);
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .pagination-info { font-size: 13px; color: var(--text-muted); }
+        .pagination { display: flex; align-items: center; gap: 8px; }
+
+        .pagination-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 12px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            transition: all var(--transition-base);
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--bg-tertiary);
+            color: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .pagination-btn.active { background: var(--accent-gradient); color: white; border-color: transparent; }
+        .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Empty State */
+        .empty-state { padding: 60px 20px; text-align: center; }
+
+        .empty-state-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-state-icon i { font-size: 36px; color: var(--accent-primary); }
+
+        .empty-state-title {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            max-width: 360px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .empty-state-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--accent-gradient);
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: var(--radius-lg);
+            transition: all var(--transition-base);
+        }
+
+        .empty-state-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .empty-state-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Slide Panel */
+        .slide-panel-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            visibility: hidden;
+            z-index: 1100;
+            transition: all var(--transition-base);
+        }
+
+        .slide-panel-overlay.show { opacity: 1; visibility: visible; }
+
+        .slide-panel {
+            position: fixed;
+            top: 0;
+            right: -450px;
+            width: 450px;
+            max-width: 100%;
+            height: 100vh;
+            background: var(--bg-primary);
+            box-shadow: -10px 0 40px rgba(0,0,0,0.15);
+            z-index: 1101;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-panel.show { right: 0; }
+
+        .slide-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .slide-panel-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .slide-panel-title-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            background: rgba(99, 102, 241, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-primary);
+        }
+
+        .slide-panel-close {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all var(--transition-base);
+        }
+
+        .slide-panel-close:hover { background: var(--error-light); color: var(--error); }
+
+        .slide-panel-body { flex: 1; padding: 24px; overflow-y: auto; }
+        .slide-panel-form { display: flex; flex-direction: column; gap: 20px; }
+
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-label i { color: var(--accent-primary); font-size: 16px; }
+        .form-label .required { color: var(--error); }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 14px;
+            font-family: var(--font-body);
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            outline: none;
+            transition: all var(--transition-base);
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: var(--accent-primary);
+            background: var(--bg-primary);
+        }
+
+        .form-input:read-only {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+
+        .form-input::placeholder { color: var(--text-muted); }
+        .form-textarea { resize: vertical; min-height: 80px; }
+
+        .form-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 44px;
+        }
+
+        .form-hint { font-size: 12px; color: var(--text-muted); }
+
+        .slide-panel-footer {
+            padding: 24px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all var(--transition-base);
+        }
+
+        .btn i { font-size: 18px; }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-secondary:hover { background: var(--bg-tertiary); }
+
+        .btn-primary { background: var(--accent-gradient); color: white; }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .btn-text-loading { display: none; }
+        .btn.loading .btn-text-default { display: none; }
+        .btn.loading .btn-text-loading { display: flex; align-items: center; gap: 8px; }
+
+        /* Edit Title Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            visibility: hidden;
+            z-index: 1200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: all var(--transition-base);
+        }
+
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+
+        .modal {
+            background: var(--bg-primary);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            width: 100%;
+            max-width: 420px;
+            transform: scale(0.9) translateY(20px);
+            transition: all var(--transition-slow);
+        }
+
+        .modal-overlay.show .modal { transform: scale(1) translateY(0); }
+
+        .modal-header {
+            padding: 24px 24px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+        }
+
+        .modal-close:hover { background: var(--error-light); color: var(--error); }
+
+        .modal-body { padding: 24px; }
+
+        .modal-footer {
+            padding: 0 24px 24px;
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toast {
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            padding: 16px 20px;
+            box-shadow: var(--shadow-xl);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 320px;
+            max-width: 420px;
+            animation: slideIn 0.4s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        .toast::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            animation: shrink 5s linear forwards;
+        }
+
+        .toast.success::after { background: var(--success); }
+        .toast.error::after { background: var(--error); }
+
+        @keyframes shrink { from { width: 100%; } to { width: 0%; } }
+
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast.success .toast-icon { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .toast.error .toast-icon { background: rgba(239, 68, 68, 0.1); color: var(--error); }
+
+        .toast-icon i { font-size: 14px; }
+        .toast-message { flex: 1; font-size: 14px; font-weight: 500; line-height: 1.4; }
+
+        .toast-close {
+            color: var(--text-muted);
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toast-close:hover { color: var(--text-primary); }
+
+        /* Mobile Overlay */
+        .mobile-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            visibility: hidden;
+            z-index: 850;
+            transition: all var(--transition-base);
+        }
+
+        .mobile-overlay.show { opacity: 1; visibility: visible; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .top-nav { padding: 0 20px; }
+            .mobile-menu-btn { display: flex; }
+            .sidebar { transform: translateX(-100%); top: 0; height: 100vh; }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-header { display: flex; }
+            .main-content { margin-left: 0; padding: 24px 20px; }
+            .add-expense-btn span, .back-btn span { display: none; }
+            .add-expense-btn, .back-btn { padding: 10px; }
+            .block-header-content { flex-direction: column; }
+            .block-header-right { text-align: left; }
+            .slide-panel { width: 100%; right: -100%; }
+            .day-tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
+            .day-tabs::-webkit-scrollbar { display: none; }
+            .toast { min-width: auto; max-width: calc(100vw - 48px); }
+            .toast-container { right: 16px; left: 16px; }
+        }
+    </style>
+</head>
+<body>
+    {% csrf_token %}
+
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    <div class="slide-panel-overlay" id="slidePanelOverlay"></div>
+
+    <!-- Slide Panel (Add/Edit Expense) -->
+    <div class="slide-panel" id="slidePanel">
+        <div class="slide-panel-header">
+            <div class="slide-panel-title">
+                <div class="slide-panel-title-icon">
+                    <i class="ri-add-line" id="slidePanelIcon"></i>
+                </div>
+                <span id="slidePanelTitleText">Add Expense</span>
+            </div>
+            <button class="slide-panel-close" id="slidePanelClose" type="button">
+                <i class="ri-close-line" style="font-size:22px;"></i>
+            </button>
+        </div>
+        <div class="slide-panel-body">
+            <form class="slide-panel-form" id="expenseForm">
+                <input type="hidden" name="expense_id" id="expenseId" value="">
+                
+                <!-- Day & Date (Read Only) -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ri-calendar-line"></i>
+                        Day & Date
+                    </label>
+                    <input type="text" class="form-input" id="expenseDayDisplay" readonly value="{{ today_day_name|title }} - {{ today_date|date:'M d, Y' }}">
+                    <span class="form-hint">Automatically set based on when expense was created</span>
+                </div>
+
+                <!-- Expense Name -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ri-price-tag-3-line"></i>
+                        Expense Name <span class="required">*</span>
+                    </label>
+                    <input type="text" class="form-input" name="expense_name" id="expenseName" placeholder="e.g., Lunch, Transport, Coffee" maxlength="100" required>
+                </div>
+
+                <!-- Amount -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ri-money-dollar-circle-line"></i>
+                        Amount (Rs.) <span class="required">*</span>
+                    </label>
+                    <input type="number" step="0.01" min="0.01" class="form-input" name="amount" id="expenseAmount" placeholder="0.00" required>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ri-bank-card-line"></i>
+                        Paid From <span class="required">*</span>
+                    </label>
+                    <select class="form-select" name="payment_method" id="paymentMethod" required>
+                        {% for value, label in payment_methods %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <span class="form-hint">Amount will be deducted from your selected balance</span>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ri-file-text-line"></i>
+                        Notes (Optional)
+                    </label>
+                    <textarea class="form-textarea" name="notes" id="expenseNotes" placeholder="Add any additional notes..." maxlength="500"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="slide-panel-footer">
+            <button type="button" class="btn btn-secondary" id="cancelBtn">
+                <i class="ri-close-line"></i>
+                Cancel
+            </button>
+            <button type="button" class="btn btn-primary" id="saveBtn">
+                <span class="btn-text-default">
+                    <i class="ri-save-line"></i>
+                    <span id="saveBtnText">Save Expense</span>
+                </span>
+                <span class="btn-text-loading">
+                    <div class="spinner"></div>
+                    Saving...
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Edit Title Modal -->
+    <div class="modal-overlay" id="editTitleModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Block Title</h3>
+                <button class="modal-close" id="editTitleModalClose" type="button">
+                    <i class="ri-close-line" style="font-size:20px;"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Block Title</label>
+                    <input type="text" class="form-input" id="editBlockTitle" placeholder="Enter block title" maxlength="100">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelEditTitleBtn">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveEditTitleBtn">
+                    <span class="btn-text-default">
+                        <i class="ri-save-line"></i>
+                        Save
+                    </span>
+                    <span class="btn-text-loading">
+                        <div class="spinner"></div>
+                        Saving...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Top Navigation -->
+    <header class="top-nav">
+        <div class="top-nav-left">
+            <button class="mobile-menu-btn" id="mobileMenuBtn" type="button">
+                <i class="ri-menu-line" style="font-size:22px;"></i>
+            </button>
+            <a href="{% url 'dashboard_view' %}" class="top-nav-brand">
+                <span class="brand-text">Exp</span>
+                <span class="brand-text-accent">Track</span>
+            </a>
+        </div>
+        
+        <div class="top-nav-right">
+            <a href="{% url 'expenses_view' %}" class="back-btn">
+                <i class="ri-arrow-left-line"></i>
+                <span>Back to List</span>
+            </a>
+
+            <button class="add-expense-btn" id="addExpenseBtn" type="button" {% if expense_block.status == 'closed' or not is_today_in_block %}disabled{% endif %}>
+                <i class="ri-add-line"></i>
+                <span>Add Expense</span>
+            </button>
+
+            <div class="user-profile" id="userProfile">
+                <div class="user-avatar">
+                    {% if profile and profile.profile_image %}
+                        <img src="{{ profile.profile_image.url }}" alt="{{ full_name }}" class="avatar-image">
+                    {% else %}
+                        <span class="avatar-letter">{{ first_letter }}</span>
+                    {% endif %}
+                </div>
+                <i class="ri-arrow-down-s-line dropdown-arrow"></i>
+            </div>
+            
+            <div class="user-dropdown" id="userDropdown">
+                <div class="dropdown-header">
+                    <div class="dropdown-avatar">
+                        {% if profile and profile.profile_image %}
+                            <img src="{{ profile.profile_image.url }}" alt="{{ full_name }}">
+                        {% else %}
+                            <span>{{ first_letter }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="dropdown-user-info">
+                        <span class="dropdown-name">{{ full_name }}</span>
+                        <span class="dropdown-email">{{ user.email }}</span>
+                    </div>
+                </div>
+                <div class="dropdown-divider"></div>
+                <a href="#" class="dropdown-item">
+                    <i class="ri-user-line"></i>
+                    <span>Profile</span>
+                </a>
+                <div class="dropdown-divider"></div>
+                <a href="{% url 'accounts:logout' %}" class="dropdown-item dropdown-item-danger">
+                    <i class="ri-logout-box-line"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="{% url 'dashboard_view' %}" class="top-nav-brand">
+                <span class="brand-text">Exp</span>
+                <span class="brand-text-accent">Track</span>
+            </a>
+            <button class="sidebar-close" id="sidebarClose" type="button">
+                <i class="ri-close-line" style="font-size:22px;"></i>
+            </button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <span class="sidebar-label">Menu</span>
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="{% url 'dashboard_view' %}" class="sidebar-link">
+                        <i class="ri-dashboard-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'balance_view' %}" class="sidebar-link">
+                        <i class="ri-wallet-3-line"></i>
+                        <span>Balance</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'expenses_view' %}" class="sidebar-link active">
+                        <i class="ri-exchange-dollar-line"></i>
+                        <span>Expenses</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link">
+                        <i class="ri-settings-3-line"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <a href="{% url 'accounts:logout' %}" class="sidebar-link sidebar-logout">
+                    <i class="ri-logout-box-line"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        
+        <!-- Closed Notice -->
+        {% if expense_block.status == 'closed' %}
+        <div class="closed-notice">
+            <i class="ri-lock-line"></i>
+            <span class="closed-notice-text">This expense block is closed. You can view expenses but cannot add or edit them.</span>
+        </div>
+        {% endif %}
+
+        <!-- Block Header Card -->
+        <div class="block-header-card {% if expense_block.status == 'closed' %}closed{% endif %}">
+            <div class="block-header-content">
+                <div class="block-header-left">
+                    <div class="block-header-title-wrapper">
+                        <h1 class="block-header-title" id="blockTitleDisplay">{{ expense_block.title }}</h1>
+                        {% if expense_block.status == 'active' %}
+                        <button class="edit-title-btn" id="editTitleBtn" type="button" title="Edit title">
+                            <i class="ri-pencil-line"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="block-meta">
+                        <div class="block-meta-item">
+                            <span class="type-badge {{ expense_block.expense_type }}">
+                                <i class="ri-calendar-line"></i>
+                                {{ expense_block.get_expense_type_display }}
+                            </span>
+                        </div>
+                        <div class="block-meta-item">
+                            <i class="ri-play-circle-line"></i>
+                            <span>Started: {{ expense_block.starting_day|title }}</span>
+                        </div>
+                        <div class="block-meta-item">
+                            <i class="ri-calendar-event-line"></i>
+                            <span>{{ expense_block.start_date|date:"M d" }} - {{ expense_block.end_date|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="block-badges">
+                        <span class="status-badge {{ expense_block.status }}">
+                            <span class="status-dot"></span>
+                            {{ expense_block.get_status_display }}
+                        </span>
+                        {% if expense_block.status == 'active' and expense_block.days_remaining > 0 %}
+                        <span class="days-remaining-badge">
+                            <i class="ri-time-line"></i>
+                            {{ expense_block.days_remaining }} day{% if expense_block.days_remaining != 1 %}s{% endif %} remaining
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="block-header-right">
+                    <div class="block-total-value" id="blockTotalDisplay">Rs. {{ expense_block.total_expense }}</div>
+                    <div class="block-total-label">Total Expenses</div>
+                    <div class="block-item-count" id="blockItemCountDisplay">{{ expense_block.item_count }} expense{% if expense_block.item_count != 1 %}s{% endif %}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Section or Not Today Message -->
+        {% if is_today_in_block and expense_block.status == 'active' %}
+        <div class="today-section">
+            <div class="today-header">
+                <div class="today-title">
+                    <i class="ri-sun-line"></i>
+                    <span>Today - {{ today_day_name|title }}</span>
+                </div>
+                <div class="today-date">{{ today_date|date:"F d, Y" }}</div>
+            </div>
+
+            {% if has_today_expenses %}
+            <div class="today-expenses-list">
+                {% for expense in today_expenses %}
+                <div class="today-expense-item">
+                    <div class="today-expense-info">
+                        <div class="today-expense-icon">
+                            <i class="ri-shopping-bag-line"></i>
+                        </div>
+                        <div>
+                            <div class="today-expense-name">{{ expense.expense_name }}</div>
+                            <div class="today-expense-time">{{ expense.created_at|time:"g:i A" }} • {{ expense.get_payment_method_display }}</div>
+                        </div>
+                    </div>
+                    <div class="today-expense-amount">Rs. {{ expense.amount }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="start-expense-msg">
+                <i class="ri-add-circle-line"></i>
+                <div class="start-expense-msg-title">Start Tracking Today's Expenses</div>
+                <div class="start-expense-msg-text">Click "Add Expense" to record your first expense for today</div>
+            </div>
+            {% endif %}
+        </div>
+        {% elif not is_today_in_block and expense_block.status == 'active' %}
+        <div class="not-today-section">
+            <div class="not-today-icon">
+                <i class="ri-calendar-close-line"></i>
+            </div>
+            <div class="not-today-title">Today is Outside This Block's Date Range</div>
+            <div class="not-today-text">This block covers {{ expense_block.start_date|date:"M d" }} - {{ expense_block.end_date|date:"M d, Y" }}. You can only add expenses on days within this range.</div>
+        </div>
+        {% endif %}
+
+        <!-- Day Tabs -->
+        <div class="day-tabs-wrapper">
+            <div class="day-tabs-label">Filter by Day</div>
+            <div class="day-tabs" id="dayTabs">
+                <button class="day-tab active" data-day="all">
+                    All
+                    <span class="day-count" id="allCount">{{ expense_block.item_count }}</span>
+                </button>
+                {% for day, data in expenses_by_day.items %}
+                <button class="day-tab {% if day == today_day_name and is_today_in_block %}today{% endif %}" data-day="{{ day }}">
+                    {{ data.display }}
+                    <span class="day-count">{{ data.items|length }}</span>
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Expenses Table -->
+        <div class="table-section">
+            <div class="table-header">
+                <h2 class="table-title">
+                    <i class="ri-file-list-3-line"></i>
+                    Expense Items
+                </h2>
+                <span class="table-count" id="tableCountDisplay">{{ expense_items.paginator.count }} Item{% if expense_items.paginator.count != 1 %}s{% endif %}</span>
+            </div>
+
+            {% if expense_items %}
+            <div class="table-container">
+                <table class="data-table" id="expensesTable">
+                    <thead>
+                        <tr>
+                            <th class="sn-cell">SN</th>
+                            <th>Expense</th>
+                            <th>Amount</th>
+                            <th>Day</th>
+                            <th>Date</th>
+                            <th>Paid From</th>
+                            <th class="action-cell">Edit</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expensesTableBody">
+                        {% for expense in expense_items %}
+                        <tr data-day="{{ expense.expense_day }}" data-id="{{ expense.id }}">
+                            <td class="sn-cell">{{ forloop.counter|add:expense_items.start_index|add:-1 }}</td>
+                            <td class="expense-name-cell">
+                                {{ expense.expense_name }}
+                                {% if expense.notes %}
+                                <div class="expense-notes">{{ expense.notes|truncatechars:40 }}</div>
+                                {% endif %}
+                            </td>
+                            <td class="amount-cell">Rs. {{ expense.amount }}</td>
+                            <td>
+                                <span class="day-badge">{{ expense.expense_day|capfirst }}</span>
+                            </td>
+                            <td class="date-cell">{{ expense.expense_date|date:"M d, Y" }}</td>
+                            <td>
+                                <span class="method-badge {{ expense.payment_method }}">{{ expense.get_payment_method_display }}</span>
+                            </td>
+                            <td class="action-cell">
+                                <button class="action-btn-edit edit-expense-btn" data-id="{{ expense.id }}" type="button" {% if expense_block.status == 'closed' %}disabled{% endif %}>
+                                    <i class="ri-pencil-line"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if expense_items.has_other_pages %}
+            <div class="pagination-wrapper">
+                <div class="pagination-info">
+                    Showing {{ expense_items.start_index }} - {{ expense_items.end_index }} of {{ expense_items.paginator.count }}
+                </div>
+                <div class="pagination">
+                    {% if expense_items.has_previous %}
+                    <a href="?page=1" class="pagination-btn">
+                        <i class="ri-arrow-left-double-line"></i>
+                    </a>
+                    <a href="?page={{ expense_items.previous_page_number }}" class="pagination-btn">
+                        <i class="ri-arrow-left-s-line"></i>
+                    </a>
+                    {% endif %}
+                    
+                    {% for num in expense_items.paginator.page_range %}
+                        {% if expense_items.number == num %}
+                        <span class="pagination-btn active">{{ num }}</span>
+                        {% elif num > expense_items.number|add:'-3' and num < expense_items.number|add:'3' %}
+                        <a href="?page={{ num }}" class="pagination-btn">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if expense_items.has_next %}
+                    <a href="?page={{ expense_items.next_page_number }}" class="pagination-btn">
+                        <i class="ri-arrow-right-s-line"></i>
+                    </a>
+                    <a href="?page={{ expense_items.paginator.num_pages }}" class="pagination-btn">
+                        <i class="ri-arrow-right-double-line"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="ri-receipt-line"></i>
+                </div>
+                <h3 class="empty-state-title">No Expenses Yet</h3>
+                <p class="empty-state-text">
+                    {% if expense_block.status == 'closed' %}
+                    No expenses were recorded in this block.
+                    {% else %}
+                    Start adding your expenses to track your spending for this {{ expense_block.get_expense_type_display|lower }} block.
+                    {% endif %}
+                </p>
+                {% if expense_block.status == 'active' and is_today_in_block %}
+                <button class="empty-state-btn" id="emptyStateAddBtn" type="button">
+                    <i class="ri-add-line"></i>
+                    Add Your First Expense
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <script>
+        // Get CSRF Token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrfToken = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        const blockId = {{ expense_block.id }};
+        const isBlockClosed = '{{ expense_block.status }}' === 'closed';
+        const isTodayInBlock = {{ is_today_in_block|yesno:"true,false" }};
+
+        // DOM Elements
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarClose = document.getElementById('sidebarClose');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        const userProfile = document.getElementById('userProfile');
+        const userDropdown = document.getElementById('userDropdown');
+        
+        const slidePanel = document.getElementById('slidePanel');
+        const slidePanelOverlay = document.getElementById('slidePanelOverlay');
+        const slidePanelClose = document.getElementById('slidePanelClose');
+        const slidePanelTitleText = document.getElementById('slidePanelTitleText');
+        const slidePanelIcon = document.getElementById('slidePanelIcon');
+        
+        const addExpenseBtn = document.getElementById('addExpenseBtn');
+        const emptyStateAddBtn = document.getElementById('emptyStateAddBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const saveBtnText = document.getElementById('saveBtnText');
+        
+        const expenseForm = document.getElementById('expenseForm');
+        const expenseId = document.getElementById('expenseId');
+        const expenseDayDisplay = document.getElementById('expenseDayDisplay');
+        const expenseName = document.getElementById('expenseName');
+        const expenseAmount = document.getElementById('expenseAmount');
+        const paymentMethod = document.getElementById('paymentMethod');
+        const expenseNotes = document.getElementById('expenseNotes');
+        
+        const editTitleBtn = document.getElementById('editTitleBtn');
+        const editTitleModal = document.getElementById('editTitleModal');
+        const editTitleModalClose = document.getElementById('editTitleModalClose');
+        const editBlockTitle = document.getElementById('editBlockTitle');
+        const cancelEditTitleBtn = document.getElementById('cancelEditTitleBtn');
+        const saveEditTitleBtn = document.getElementById('saveEditTitleBtn');
+        const blockTitleDisplay = document.getElementById('blockTitleDisplay');
+        
+        const dayTabs = document.getElementById('dayTabs');
+        const expensesTableBody = document.getElementById('expensesTableBody');
+        
+        const toastContainer = document.getElementById('toastContainer');
+
+        // Mobile Sidebar
+        function openSidebar() {
+            sidebar.classList.add('open');
+            mobileOverlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            mobileOverlay.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openSidebar);
+        if (sidebarClose) sidebarClose.addEventListener('click', closeSidebar);
+        if (mobileOverlay) mobileOverlay.addEventListener('click', closeSidebar);
+
+        // User Dropdown
+        if (userProfile) {
+            userProfile.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userProfile.classList.toggle('active');
+                userDropdown.classList.toggle('show');
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            if (userProfile && userDropdown) {
+                if (!userProfile.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userProfile.classList.remove('active');
+                    userDropdown.classList.remove('show');
+                }
+            }
+        });
+
+        // Slide Panel Functions
+        let isEditMode = false;
+
+        function openSlidePanel(editMode = false, expenseData = null) {
+            isEditMode = editMode;
+            slidePanel.classList.add('show');
+            slidePanelOverlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+
+            if (editMode && expenseData) {
+                slidePanelTitleText.textContent = 'Edit Expense';
+                slidePanelIcon.className = 'ri-pencil-line';
+                saveBtnText.textContent = 'Update Expense';
+                
+                expenseId.value = expenseData.id;
+                expenseDayDisplay.value = expenseData.expense_day_display + ' - ' + expenseData.expense_date_display;
+                expenseName.value = expenseData.expense_name;
+                expenseAmount.value = expenseData.amount;
+                paymentMethod.value = expenseData.payment_method;
+                expenseNotes.value = expenseData.notes || '';
+            } else {
+                slidePanelTitleText.textContent = 'Add Expense';
+                slidePanelIcon.className = 'ri-add-line';
+                saveBtnText.textContent = 'Save Expense';
+                
+                expenseId.value = '';
+                expenseDayDisplay.value = '{{ today_day_name|title }} - {{ today_date|date:"M d, Y" }}';
+                expenseName.value = '';
+                expenseAmount.value = '';
+                paymentMethod.value = 'others';
+                expenseNotes.value = '';
+            }
+
+            setTimeout(() => expenseName.focus(), 300);
+        }
+
+        function closeSlidePanel() {
+            slidePanel.classList.remove('show');
+            slidePanelOverlay.classList.remove('show');
+            document.body.style.overflow = '';
+            expenseForm.reset();
+            isEditMode = false;
+        }
+
+        if (addExpenseBtn) addExpenseBtn.addEventListener('click', () => openSlidePanel(false));
+        if (emptyStateAddBtn) emptyStateAddBtn.addEventListener('click', () => openSlidePanel(false));
+        if (slidePanelClose) slidePanelClose.addEventListener('click', closeSlidePanel);
+        if (slidePanelOverlay) slidePanelOverlay.addEventListener('click', closeSlidePanel);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeSlidePanel);
+
+        // Edit Expense Button Click
+        document.querySelectorAll('.edit-expense-btn').forEach(btn => {
+            btn.addEventListener('click', async function(e) {
+                e.stopPropagation();
+                const itemId = this.dataset.id;
+                
+                try {
+                    const response = await fetch(`/main/expenses/item/${itemId}/get/`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': csrfToken
+                        }
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        openSlidePanel(true, data.expense);
+                    } else {
+                        showToast(data.message || 'Failed to load expense', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('An error occurred', 'error');
+                }
+            });
+        });
+
+        // Save Expense
+        if (saveBtn) {
+            saveBtn.addEventListener('click', async function() {
+                const name = expenseName.value.trim();
+                const amount = expenseAmount.value.trim();
+                const method = paymentMethod.value;
+                const notes = expenseNotes.value.trim();
+
+                // Validation
+                if (!name) {
+                    showToast('Please enter expense name', 'error');
+                    expenseName.focus();
+                    return;
+                }
+                if (name.length < 2) {
+                    showToast('Expense name must be at least 2 characters', 'error');
+                    expenseName.focus();
+                    return;
+                }
+                if (!amount || parseFloat(amount) <= 0) {
+                    showToast('Please enter a valid amount', 'error');
+                    expenseAmount.focus();
+                    return;
+                }
+
+                saveBtn.classList.add('loading');
+                saveBtn.disabled = true;
+
+                const formData = new FormData();
+                formData.append('expense_name', name);
+                formData.append('amount', amount);
+                formData.append('payment_method', method);
+                formData.append('notes', notes);
+
+                try {
+                    let url = isEditMode 
+                        ? `/main/expenses/item/${expenseId.value}/update/`
+                        : `/main/expenses/${blockId}/add/`;
+                    
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': csrfToken
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        closeSlidePanel();
+                        
+                        // Update totals
+                        if (data.block_total) {
+                            document.getElementById('blockTotalDisplay').textContent = 'Rs. ' + data.block_total;
+                        }
+                        if (data.item_count !== undefined) {
+                            document.getElementById('blockItemCountDisplay').textContent = data.item_count + ' expense' + (data.item_count !== 1 ? 's' : '');
+                            document.getElementById('allCount').textContent = data.item_count;
+                        }
+                        
+                        // Reload page to show updated data
+                        setTimeout(() => location.reload(), 800);
+                    } else {
+                        showToast(data.message, 'error');
+                        if (data.redirect_balance) {
+                            setTimeout(() => {
+                                window.location.href = '{% url "balance_view" %}';
+                            }, 2000);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('An error occurred. Please try again.', 'error');
+                } finally {
+                    saveBtn.classList.remove('loading');
+                    saveBtn.disabled = false;
+                }
+            });
+        }
+
+        // Edit Title Modal
+        if (editTitleBtn) {
+            editTitleBtn.addEventListener('click', function() {
+                editBlockTitle.value = blockTitleDisplay.textContent.trim();
+                editTitleModal.classList.add('show');
+                editBlockTitle.focus();
+            });
+        }
+
+        function closeEditTitleModal() {
+            editTitleModal.classList.remove('show');
+        }
+
+        if (editTitleModalClose) editTitleModalClose.addEventListener('click', closeEditTitleModal);
+        if (cancelEditTitleBtn) cancelEditTitleBtn.addEventListener('click', closeEditTitleModal);
+
+        editTitleModal?.addEventListener('click', function(e) {
+            if (e.target === editTitleModal) closeEditTitleModal();
+        });
+
+        if (saveEditTitleBtn) {
+            saveEditTitleBtn.addEventListener('click', async function() {
+                const newTitle = editBlockTitle.value.trim();
+                
+                if (!newTitle) {
+                    showToast('Please enter a title', 'error');
+                    return;
+                }
+
+                saveEditTitleBtn.classList.add('loading');
+                saveEditTitleBtn.disabled = true;
+
+                const formData = new FormData();
+                formData.append('title', newTitle);
+
+                try {
+                    const response = await fetch(`/main/expenses/${blockId}/update/`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': csrfToken
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        blockTitleDisplay.textContent = data.title;
+                        document.title = data.title + ' - ExpTrack';
+                        showToast('Title updated successfully', 'success');
+                        closeEditTitleModal();
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('An error occurred', 'error');
+                } finally {
+                    saveEditTitleBtn.classList.remove('loading');
+                    saveEditTitleBtn.disabled = false;
+                }
+            });
+        }
+
+        // Day Tab Filtering
+        if (dayTabs) {
+            dayTabs.addEventListener('click', function(e) {
+                const tab = e.target.closest('.day-tab');
+                if (!tab) return;
+
+                // Update active tab
+                document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const selectedDay = tab.dataset.day;
+                const rows = expensesTableBody?.querySelectorAll('tr');
+
+                if (rows) {
+                    rows.forEach(row => {
+                        if (selectedDay === 'all' || row.dataset.day === selectedDay) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                }
+            });
+        }
+
+        // Toast Functions
+        function showToast(message, type) {
+            if (toastContainer) toastContainer.innerHTML = '';
+            
+            const iconName = type === 'success' ? 'ri-check-line' : 'ri-error-warning-line';
+            const toast = document.createElement('div');
+            const toastId = 'toast-' + Date.now();
+            toast.className = 'toast ' + type;
+            toast.id = toastId;
+            toast.innerHTML = `
+                <div class="toast-icon"><i class="${iconName}"></i></div>
+                <span class="toast-message">${message}</span>
+                <button class="toast-close" type="button" onclick="closeToast('${toastId}')">
+                    <i class="ri-close-line"></i>
+                </button>
+            `;
+            toastContainer.appendChild(toast);
+            setTimeout(() => closeToast(toastId), 5000);
+        }
+
+        function closeToast(toastId) {
+            const toast = document.getElementById(toastId);
+            if (toast) {
+                toast.style.animation = 'slideOut 0.3s ease-out forwards';
+                setTimeout(() => { if (toast.parentNode) toast.remove(); }, 300);
+            }
+        }
+
+        window.closeToast = closeToast;
+
+        // Keyboard Events
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (slidePanel?.classList.contains('show')) closeSlidePanel();
+                if (editTitleModal?.classList.contains('show')) closeEditTitleModal();
+                if (userProfile?.classList.contains('active')) {
+                    userProfile.classList.remove('active');
+                    userDropdown.classList.remove('show');
+                }
+                closeSidebar();
+            }
+        });
+    </script>
+</body>
+</html>

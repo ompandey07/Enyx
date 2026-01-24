@@ -1,56 +1,951 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.http import JsonResponse
-from datetime import datetime, timedelta
-from decimal import Decimal
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Sum
+from datetime import date, timedelta, datetime
+from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation
+from .models import UserBalance , ExpenseBlock, ExpenseItem
+from django.db import models
+
+# ============================================
+# Helper function
+# ============================================
+def is_ajax(request):
+    return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
 
+# ============================================
+# Dashboard View
+# ============================================
 @login_required(login_url='/401/')
 def dashboard_view(request):
     user = request.user
     profile = None
-    
-    # Get user profile if exists
+
     if hasattr(user, 'profile'):
         profile = user.profile
-    
-    # Get first letter of first name for avatar fallback
+
     first_letter = user.first_name[0].upper() if user.first_name else user.email[0].upper()
-    
-    # Get full name
+
     full_name = f"{user.first_name} {user.last_name}".strip()
     if not full_name:
         full_name = user.email.split('@')[0]
+
+    # Get total available balance from UserBalance model
+    total_balance = UserBalance.objects.filter(
+        user=user, 
+        status='active'
+    ).aggregate(total=models.Sum('available_balance'))['total'] or Decimal('0.00')
+
+    # Get today's date info
+    today = date.today()
+    today_day_name = get_day_name(today)
     
-    # Sample data - replace with actual model queries
-    available_balance = 2000
-    todays_expenses = 150
+    # Get current active expense block
+    active_block = ExpenseBlock.objects.filter(
+        user=user,
+        status='active',
+        start_date__lte=today,
+        end_date__gte=today
+    ).first()
     
-    # Weekly expenses (Sunday to Saturday)
-    weekly_expenses = [
-        {'day': 'Sunday', 'short': 'Sun', 'amount': 120},
-        {'day': 'Monday', 'short': 'Mon', 'amount': 85},
-        {'day': 'Tuesday', 'short': 'Tue', 'amount': 200},
-        {'day': 'Wednesday', 'short': 'Wed', 'amount': 45},
-        {'day': 'Thursday', 'short': 'Thu', 'amount': 150},
-        {'day': 'Friday', 'short': 'Fri', 'amount': 300},
-        {'day': 'Saturday', 'short': 'Sat', 'amount': 75},
-    ]
+    # Get today's expenses
+    todays_expenses = Decimal('0.00')
+    weekly_expenses_data = {
+        'sunday': Decimal('0.00'),
+        'monday': Decimal('0.00'),
+        'tuesday': Decimal('0.00'),
+        'wednesday': Decimal('0.00'),
+        'thursday': Decimal('0.00'),
+        'friday': Decimal('0.00'),
+        'saturday': Decimal('0.00'),
+    }
     
-    # Calculate max for progress bars
-    max_expense = max(exp['amount'] for exp in weekly_expenses) if weekly_expenses else 1
-    for exp in weekly_expenses:
-        exp['percentage'] = (exp['amount'] / max_expense) * 100
+    total_weekly_expense = Decimal('0.00')
+    
+    if active_block:
+        # Get today's expenses from active block
+        todays_expenses = ExpenseItem.objects.filter(
+            expense_block=active_block,
+            expense_date=today
+        ).aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
+        
+        # Get weekly expenses grouped by day
+        weekly_items = ExpenseItem.objects.filter(
+            expense_block=active_block
+        ).values('expense_day').annotate(
+            total=models.Sum('amount')
+        )
+        
+        for item in weekly_items:
+            day = item['expense_day']
+            if day in weekly_expenses_data:
+                weekly_expenses_data[day] = item['total']
+        
+        total_weekly_expense = active_block.total_expense
+    
+    # Prepare weekly expenses for template (ordered Sunday to Saturday)
+    day_order = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+    day_labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    day_full_labels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    
+    weekly_amounts = []
+    
+    for i, day in enumerate(day_order):
+        amount = weekly_expenses_data[day]
+        weekly_amounts.append(float(amount))
+    
+    # Get balance breakdown by income method for chart
+    balance_breakdown = UserBalance.objects.filter(
+        user=user,
+        status='active'
+    ).values('income_method').annotate(
+        total=models.Sum('available_balance')
+    )
+    
+    balance_labels = []
+    balance_values = []
+    
+    for item in balance_breakdown:
+        method = item['income_method']
+        balance_labels.append(method.capitalize())
+        balance_values.append(float(item['total']))
+
+    context = {
+        'user': user,
+        'profile': profile,
+        'first_letter': first_letter,
+        'full_name': full_name,
+        'available_balance': float(total_balance),
+        'todays_expenses': float(todays_expenses),
+        'total_weekly_expense': float(total_weekly_expense),
+        'weekly_amounts': weekly_amounts,
+        'day_labels': day_labels,
+        'day_full_labels': day_full_labels,
+        'today_day_name': today_day_name.capitalize(),
+        'today_date': today,
+        'balance_labels': balance_labels,
+        'balance_values': balance_values,
+        'has_balance': len(balance_labels) > 0,
+        'has_expenses': total_weekly_expense > 0,
+    }
+
+    return render(request, 'Main/dashboard.html', context)
+
+#?======================================================================================================================
+#!=========================================== END OF DASHBOARD VIEWS ===========================================
+#?======================================================================================================================
+
+# ============================================
+# Balance View
+# ============================================
+@login_required(login_url='/401/')
+def balance_view(request):
+    user = request.user
+    profile = None
+
+    if hasattr(user, 'profile'):
+        profile = user.profile
+
+    first_letter = user.first_name[0].upper() if user.first_name else user.email[0].upper()
+
+    full_name = f"{user.first_name} {user.last_name}".strip()
+    if not full_name:
+        full_name = user.email.split('@')[0]
+
+    # Get all balances for the user
+    balances = UserBalance.objects.filter(user=user)
+
+    context = {
+        'user': user,
+        'profile': profile,
+        'first_letter': first_letter,
+        'full_name': full_name,
+        'balances': balances,
+        'income_sources': UserBalance.INCOME_SOURCE_CHOICES,
+        'income_methods': UserBalance.INCOME_METHOD_CHOICES,
+        'status_choices': UserBalance.STATUS_CHOICES,
+    }
+
+    return render(request, 'Balance/balance.html', context)
+
+
+# ============================================
+# Add Balance View
+# ============================================
+@login_required(login_url='/401/')
+def add_balance(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method', 'type': 'error'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request', 'type': 'error'})
+    
+    try:
+        income_source = request.POST.get('income_source', 'salary').strip()
+        account_name = request.POST.get('account_name', '').strip()
+        income_method = request.POST.get('income_method', 'banking').strip()
+        account_number = request.POST.get('account_number', '').strip()
+        available_balance = request.POST.get('available_balance', '0').strip()
+        status = request.POST.get('status', 'active').strip()
+
+        # Validation
+        if not account_name:
+            return JsonResponse({'success': False, 'message': 'Account name is required', 'type': 'error'})
+        
+        if len(account_name) < 2:
+            return JsonResponse({'success': False, 'message': 'Account name must be at least 2 characters', 'type': 'error'})
+        
+        if len(account_name) > 100:
+            return JsonResponse({'success': False, 'message': 'Account name must be less than 100 characters', 'type': 'error'})
+        
+        if not account_number:
+            return JsonResponse({'success': False, 'message': 'Account/Mobile number is required', 'type': 'error'})
+        
+        if len(account_number) < 5:
+            return JsonResponse({'success': False, 'message': 'Account/Mobile number must be at least 5 characters', 'type': 'error'})
+        
+        if len(account_number) > 50:
+            return JsonResponse({'success': False, 'message': 'Account/Mobile number must be less than 50 characters', 'type': 'error'})
+
+        # Validate income source
+        valid_sources = [choice[0] for choice in UserBalance.INCOME_SOURCE_CHOICES]
+        if income_source not in valid_sources:
+            return JsonResponse({'success': False, 'message': 'Invalid income source selected', 'type': 'error'})
+
+        # Validate income method
+        valid_methods = [choice[0] for choice in UserBalance.INCOME_METHOD_CHOICES]
+        if income_method not in valid_methods:
+            return JsonResponse({'success': False, 'message': 'Invalid income method selected', 'type': 'error'})
+
+        # Validate status
+        valid_statuses = [choice[0] for choice in UserBalance.STATUS_CHOICES]
+        if status not in valid_statuses:
+            return JsonResponse({'success': False, 'message': 'Invalid status selected', 'type': 'error'})
+
+        # Validate balance
+        try:
+            balance_decimal = Decimal(available_balance)
+            if balance_decimal < 0:
+                return JsonResponse({'success': False, 'message': 'Balance cannot be negative', 'type': 'error'})
+        except (InvalidOperation, ValueError):
+            return JsonResponse({'success': False, 'message': 'Invalid balance amount', 'type': 'error'})
+
+        # Check for duplicate account
+        if UserBalance.objects.filter(
+            user=request.user,
+            account_name__iexact=account_name,
+            account_number=account_number
+        ).exists():
+            return JsonResponse({'success': False, 'message': 'An account with this name and number already exists', 'type': 'error'})
+
+        # Create balance
+        balance = UserBalance.objects.create(
+            user=request.user,
+            income_source=income_source,
+            account_name=account_name,
+            income_method=income_method,
+            account_number=account_number,
+            available_balance=balance_decimal,
+            status=status
+        )
+
+        return JsonResponse({
+            'success': True, 
+            'message': 'Account added successfully', 
+            'type': 'success',
+            'balance': {
+                'id': balance.id,
+                'account_name': balance.account_name,
+                'available_balance': str(balance.available_balance),
+                'income_source': balance.get_income_source_display(),
+                'income_method': balance.get_income_method_display(),
+                'status': balance.status,
+            }
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.', 'type': 'error'})
+
+
+# ============================================
+# Edit Balance View
+# ============================================
+@login_required(login_url='/401/')
+def edit_balance(request, balance_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method', 'type': 'error'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request', 'type': 'error'})
+    
+    try:
+        balance = get_object_or_404(UserBalance, id=balance_id, user=request.user)
+
+        income_source = request.POST.get('income_source', 'salary').strip()
+        account_name = request.POST.get('account_name', '').strip()
+        income_method = request.POST.get('income_method', 'banking').strip()
+        account_number = request.POST.get('account_number', '').strip()
+        available_balance = request.POST.get('available_balance', '0').strip()
+        status = request.POST.get('status', 'active').strip()
+
+        # Validation
+        if not account_name:
+            return JsonResponse({'success': False, 'message': 'Account name is required', 'type': 'error'})
+        
+        if len(account_name) < 2:
+            return JsonResponse({'success': False, 'message': 'Account name must be at least 2 characters', 'type': 'error'})
+        
+        if len(account_name) > 100:
+            return JsonResponse({'success': False, 'message': 'Account name must be less than 100 characters', 'type': 'error'})
+        
+        if not account_number:
+            return JsonResponse({'success': False, 'message': 'Account/Mobile number is required', 'type': 'error'})
+        
+        if len(account_number) < 5:
+            return JsonResponse({'success': False, 'message': 'Account/Mobile number must be at least 5 characters', 'type': 'error'})
+        
+        if len(account_number) > 50:
+            return JsonResponse({'success': False, 'message': 'Account/Mobile number must be less than 50 characters', 'type': 'error'})
+
+        # Validate income source
+        valid_sources = [choice[0] for choice in UserBalance.INCOME_SOURCE_CHOICES]
+        if income_source not in valid_sources:
+            return JsonResponse({'success': False, 'message': 'Invalid income source selected', 'type': 'error'})
+
+        # Validate income method
+        valid_methods = [choice[0] for choice in UserBalance.INCOME_METHOD_CHOICES]
+        if income_method not in valid_methods:
+            return JsonResponse({'success': False, 'message': 'Invalid income method selected', 'type': 'error'})
+
+        # Validate status
+        valid_statuses = [choice[0] for choice in UserBalance.STATUS_CHOICES]
+        if status not in valid_statuses:
+            return JsonResponse({'success': False, 'message': 'Invalid status selected', 'type': 'error'})
+
+        # Validate balance
+        try:
+            balance_decimal = Decimal(available_balance)
+            if balance_decimal < 0:
+                return JsonResponse({'success': False, 'message': 'Balance cannot be negative', 'type': 'error'})
+        except (InvalidOperation, ValueError):
+            return JsonResponse({'success': False, 'message': 'Invalid balance amount', 'type': 'error'})
+
+        # Check for duplicate account (excluding current)
+        if UserBalance.objects.filter(
+            user=request.user,
+            account_name__iexact=account_name,
+            account_number=account_number
+        ).exclude(id=balance_id).exists():
+            return JsonResponse({'success': False, 'message': 'An account with this name and number already exists', 'type': 'error'})
+
+        # Update balance
+        balance.income_source = income_source
+        balance.account_name = account_name
+        balance.income_method = income_method
+        balance.account_number = account_number
+        balance.available_balance = balance_decimal
+        balance.status = status
+        balance.save()
+
+        return JsonResponse({
+            'success': True, 
+            'message': 'Account updated successfully', 
+            'type': 'success',
+            'balance': {
+                'id': balance.id,
+                'account_name': balance.account_name,
+                'available_balance': str(balance.available_balance),
+                'income_source': balance.get_income_source_display(),
+                'income_method': balance.get_income_method_display(),
+                'status': balance.status,
+            }
+        })
+
+    except UserBalance.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Account not found', 'type': 'error'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.', 'type': 'error'})
+
+
+# ============================================
+# Delete Balance View
+# ============================================
+@login_required(login_url='/401/')
+def delete_balance(request, balance_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method', 'type': 'error'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request', 'type': 'error'})
+    
+    try:
+        balance = get_object_or_404(UserBalance, id=balance_id, user=request.user)
+        account_name = balance.account_name
+        balance.delete()
+
+        return JsonResponse({
+            'success': True, 
+            'message': f'Account "{account_name}" deleted successfully', 
+            'type': 'success'
+        })
+
+    except UserBalance.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Account not found', 'type': 'error'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.', 'type': 'error'})
+
+
+# ============================================
+# Get Balance Details (for edit form)
+# ============================================
+@login_required(login_url='/401/')
+def get_balance(request, balance_id):
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request', 'type': 'error'})
+    
+    try:
+        balance = get_object_or_404(UserBalance, id=balance_id, user=request.user)
+
+        return JsonResponse({
+            'success': True,
+            'balance': {
+                'id': balance.id,
+                'income_source': balance.income_source,
+                'account_name': balance.account_name,
+                'income_method': balance.income_method,
+                'account_number': balance.account_number,
+                'available_balance': str(balance.available_balance),
+                'status': balance.status,
+            }
+        })
+
+    except UserBalance.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Account not found', 'type': 'error'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred', 'type': 'error'})
+    
+#?======================================================================================================================
+#!=========================================== END OF BALANCE VIEWS ===========================================
+#?======================================================================================================================
+
+def is_ajax(request):
+    return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+
+
+def get_day_name(date_obj):
+    """Get day name from date"""
+    days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    return days[date_obj.weekday()]
+
+
+def get_today_day_name():
+    """Get today's day name"""
+    return get_day_name(date.today())
+
+
+# ============================================
+# Expenses List View
+# ============================================
+@login_required(login_url='/401/')
+def expenses_view(request):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+
+    first_letter = user.first_name[0].upper() if user.first_name else user.email[0].upper()
+    full_name = f"{user.first_name} {user.last_name}".strip() or user.email.split('@')[0]
+
+    # Get all expense blocks for this user
+    expense_blocks = ExpenseBlock.objects.filter(user=user)
+    
+    # Check and close expired blocks
+    for block in expense_blocks.filter(status='active'):
+        block.check_and_close()
+    
+    # Refresh queryset after closing
+    expense_blocks = ExpenseBlock.objects.filter(user=user)
+    
+    # Pagination
+    page = request.GET.get('page', 1)
+    paginator = Paginator(expense_blocks, 10)
+    
+    try:
+        expense_blocks_page = paginator.page(page)
+    except PageNotAnInteger:
+        expense_blocks_page = paginator.page(1)
+    except EmptyPage:
+        expense_blocks_page = paginator.page(paginator.num_pages)
+    
+    # Calculate stats
+    total_expenses = expense_blocks.aggregate(total=Sum('total_expense'))['total'] or 0
+    active_blocks_count = expense_blocks.filter(status='active').count()
+    closed_blocks_count = expense_blocks.filter(status='closed').count()
+
+    context = {
+        'user': user,
+        'profile': profile,
+        'first_letter': first_letter,
+        'full_name': full_name,
+        'expense_blocks': expense_blocks_page,
+        'total_expenses': total_expenses,
+        'active_blocks_count': active_blocks_count,
+        'closed_blocks_count': closed_blocks_count,
+        'expense_type_choices': ExpenseBlock.EXPENSE_TYPE_CHOICES,
+        'day_choices': ExpenseBlock.DAY_CHOICES,
+    }
+
+    return render(request, 'Expenses/expenses.html', context)
+
+
+# ============================================
+# Create Expense Block
+# ============================================
+@login_required(login_url='/401/')
+def create_expense_block(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request'})
+    
+    try:
+        user = request.user
+        title = request.POST.get('title', '').strip()
+        expense_type = request.POST.get('expense_type', 'weekly').strip()
+        starting_day = request.POST.get('starting_day', 'sunday').strip()
+        
+        # Validate expense_type
+        valid_types = [choice[0] for choice in ExpenseBlock.EXPENSE_TYPE_CHOICES]
+        if expense_type not in valid_types:
+            return JsonResponse({'success': False, 'message': 'Invalid expense type'})
+        
+        # Validate starting_day
+        valid_days = [choice[0] for choice in ExpenseBlock.DAY_CHOICES]
+        if starting_day not in valid_days:
+            return JsonResponse({'success': False, 'message': 'Invalid starting day'})
+        
+        today = date.today()
+        
+        # Check if there's already an active block for this user
+        existing_active = ExpenseBlock.objects.filter(
+            user=user,
+            status='active',
+            start_date__lte=today,
+            end_date__gte=today
+        ).first()
+        
+        if existing_active:
+            return JsonResponse({
+                'success': False, 
+                'message': 'You already have an active expense block',
+                'redirect': f'/main/expenses/{existing_active.id}/'
+            })
+        
+        # Calculate end date
+        end_date = ExpenseBlock.calculate_end_date(today, expense_type, starting_day)
+        
+        # Create new expense block
+        block = ExpenseBlock.objects.create(
+            user=user,
+            title=title if title else None,
+            expense_type=expense_type,
+            starting_day=starting_day,
+            start_date=today,
+            end_date=end_date
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Expense block created successfully',
+            'redirect': f'/main/expenses/{block.id}/'
+        })
+    
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'})
+
+
+# ============================================
+# Expense Block Detail View
+# ============================================
+@login_required(login_url='/401/')
+def expense_detail_view(request, block_id):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+
+    first_letter = user.first_name[0].upper() if user.first_name else user.email[0].upper()
+    full_name = f"{user.first_name} {user.last_name}".strip() or user.email.split('@')[0]
+
+    # Get the expense block
+    expense_block = get_object_or_404(ExpenseBlock, id=block_id, user=user)
+    
+    # Check if block should be closed
+    expense_block.check_and_close()
+    
+    # Get today's info
+    today = date.today()
+    today_day_name = get_day_name(today)
+    
+    # Check if today is within block date range
+    is_today_in_block = expense_block.start_date <= today <= expense_block.end_date
+    
+    # Get expenses grouped by day
+    expenses_by_day = expense_block.get_expenses_by_day()
+    
+    # Get today's expenses
+    today_expenses = expense_block.items.filter(expense_date=today)
+    has_today_expenses = today_expenses.exists()
+    
+    # All expense items with pagination
+    all_expenses = expense_block.items.all()
+    page = request.GET.get('page', 1)
+    paginator = Paginator(all_expenses, 15)
+    
+    try:
+        expense_items = paginator.page(page)
+    except PageNotAnInteger:
+        expense_items = paginator.page(1)
+    except EmptyPage:
+        expense_items = paginator.page(paginator.num_pages)
+    
+    # Check if user has any balance accounts
+    has_balance = UserBalance.objects.filter(user=user, status='active').exists()
     
     context = {
         'user': user,
         'profile': profile,
         'first_letter': first_letter,
         'full_name': full_name,
-        'available_balance': available_balance,
-        'todays_expenses': todays_expenses,
-        'weekly_expenses': weekly_expenses,
+        'expense_block': expense_block,
+        'expense_items': expense_items,
+        'expenses_by_day': expenses_by_day,
+        'today_day_name': today_day_name,
+        'today_date': today,
+        'is_today_in_block': is_today_in_block,
+        'has_today_expenses': has_today_expenses,
+        'today_expenses': today_expenses,
+        'payment_methods': ExpenseItem.PAYMENT_METHOD_CHOICES,
+        'day_choices': ExpenseItem.DAY_CHOICES,
+        'has_balance': has_balance,
     }
+
+    return render(request, 'Expenses/expense_detail.html', context)
+
+
+# ============================================
+# Add Expense Item
+# ============================================
+@login_required(login_url='/401/')
+def add_expense_item(request, block_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method'})
     
-    return render(request, 'Main/dashboard.html', context)
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request'})
+    
+    try:
+        expense_block = get_object_or_404(ExpenseBlock, id=block_id, user=request.user)
+        
+        # Check if block is closed
+        if expense_block.status == 'closed':
+            return JsonResponse({'success': False, 'message': 'This expense block is closed.'})
+        
+        expense_name = request.POST.get('expense_name', '').strip()
+        amount = request.POST.get('amount', '0').strip()
+        payment_method = request.POST.get('payment_method', 'others').strip()
+        notes = request.POST.get('notes', '').strip()
+        
+        # Get today's date and day
+        today = date.today()
+        today_day_name = get_day_name(today)
+        
+        # Check if today is within block date range
+        if not (expense_block.start_date <= today <= expense_block.end_date):
+            return JsonResponse({'success': False, 'message': 'Cannot add expenses outside block date range'})
+        
+        # Validation
+        if not expense_name:
+            return JsonResponse({'success': False, 'message': 'Expense name is required'})
+        
+        if len(expense_name) < 2:
+            return JsonResponse({'success': False, 'message': 'Expense name must be at least 2 characters'})
+        
+        if len(expense_name) > 100:
+            return JsonResponse({'success': False, 'message': 'Expense name must be less than 100 characters'})
+        
+        # Validate amount
+        try:
+            amount_decimal = Decimal(amount)
+            if amount_decimal <= 0:
+                return JsonResponse({'success': False, 'message': 'Amount must be greater than 0'})
+        except (InvalidOperation, ValueError):
+            return JsonResponse({'success': False, 'message': 'Invalid amount'})
+        
+        # Validate payment method
+        valid_methods = [choice[0] for choice in ExpenseItem.PAYMENT_METHOD_CHOICES]
+        if payment_method not in valid_methods:
+            return JsonResponse({'success': False, 'message': 'Invalid payment method'})
+        
+        # Find matching UserBalance and deduct amount
+        user_balance = UserBalance.objects.filter(
+            user=request.user,
+            income_method=payment_method,
+            status='active'
+        ).first()
+        
+        if not user_balance:
+            return JsonResponse({
+                'success': False, 
+                'message': f'No active balance account found for {payment_method}. Please create a balance first.',
+                'redirect_balance': True
+            })
+        
+        if user_balance.available_balance < amount_decimal:
+            return JsonResponse({
+                'success': False, 
+                'message': f'Insufficient balance in {user_balance.account_name}. Available: Rs. {user_balance.available_balance}'
+            })
+        
+        # Deduct from balance
+        user_balance.available_balance -= amount_decimal
+        user_balance.save(update_fields=['available_balance', 'updated_at'])
+        
+        # Create expense item
+        expense_item = ExpenseItem.objects.create(
+            expense_block=expense_block,
+            expense_name=expense_name,
+            amount=amount_decimal,
+            payment_method=payment_method,
+            expense_day=today_day_name,
+            expense_date=today,
+            notes=notes if notes else None
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Expense added successfully',
+            'expense': {
+                'id': expense_item.id,
+                'expense_name': expense_item.expense_name,
+                'amount': str(expense_item.amount),
+                'payment_method': expense_item.get_payment_method_display(),
+                'payment_method_value': expense_item.payment_method,
+                'expense_day': expense_item.expense_day.capitalize(),
+                'expense_date': expense_item.expense_date.strftime('%b %d, %Y'),
+                'notes': expense_item.notes or '',
+                'created_at': expense_item.created_at.strftime('%I:%M %p'),
+            },
+            'block_total': str(expense_block.total_expense),
+            'item_count': expense_block.item_count
+        })
+    
+    except ExpenseBlock.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Expense block not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'})
+
+
+# ============================================
+# Update Expense Item
+# ============================================
+@login_required(login_url='/401/')
+def update_expense_item(request, item_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request'})
+    
+    try:
+        expense_item = get_object_or_404(
+            ExpenseItem, 
+            id=item_id, 
+            expense_block__user=request.user
+        )
+        
+        # Check if block is closed
+        if expense_item.expense_block.status == 'closed':
+            return JsonResponse({'success': False, 'message': 'This expense block is closed.'})
+        
+        expense_name = request.POST.get('expense_name', '').strip()
+        amount = request.POST.get('amount', '0').strip()
+        payment_method = request.POST.get('payment_method', 'others').strip()
+        notes = request.POST.get('notes', '').strip()
+        
+        # Store old values for balance adjustment
+        old_amount = expense_item.amount
+        old_payment_method = expense_item.payment_method
+        
+        # Validation
+        if not expense_name:
+            return JsonResponse({'success': False, 'message': 'Expense name is required'})
+        
+        if len(expense_name) < 2:
+            return JsonResponse({'success': False, 'message': 'Expense name must be at least 2 characters'})
+        
+        if len(expense_name) > 100:
+            return JsonResponse({'success': False, 'message': 'Expense name must be less than 100 characters'})
+        
+        # Validate amount
+        try:
+            amount_decimal = Decimal(amount)
+            if amount_decimal <= 0:
+                return JsonResponse({'success': False, 'message': 'Amount must be greater than 0'})
+        except (InvalidOperation, ValueError):
+            return JsonResponse({'success': False, 'message': 'Invalid amount'})
+        
+        # Validate payment method
+        valid_methods = [choice[0] for choice in ExpenseItem.PAYMENT_METHOD_CHOICES]
+        if payment_method not in valid_methods:
+            return JsonResponse({'success': False, 'message': 'Invalid payment method'})
+        
+        # Handle balance adjustments
+        # Refund old amount to old payment method
+        old_balance = UserBalance.objects.filter(
+            user=request.user,
+            income_method=old_payment_method,
+            status='active'
+        ).first()
+        
+        if old_balance:
+            old_balance.available_balance += old_amount
+            old_balance.save(update_fields=['available_balance', 'updated_at'])
+        
+        # Deduct new amount from new payment method
+        new_balance = UserBalance.objects.filter(
+            user=request.user,
+            income_method=payment_method,
+            status='active'
+        ).first()
+        
+        if not new_balance:
+            # Rollback refund
+            if old_balance:
+                old_balance.available_balance -= old_amount
+                old_balance.save(update_fields=['available_balance', 'updated_at'])
+            return JsonResponse({
+                'success': False, 
+                'message': f'No active balance account found for {payment_method}. Please create a balance first.',
+                'redirect_balance': True
+            })
+        
+        if new_balance.available_balance < amount_decimal:
+            # Rollback refund
+            if old_balance:
+                old_balance.available_balance -= old_amount
+                old_balance.save(update_fields=['available_balance', 'updated_at'])
+            return JsonResponse({
+                'success': False, 
+                'message': f'Insufficient balance in {new_balance.account_name}. Available: Rs. {new_balance.available_balance}'
+            })
+        
+        new_balance.available_balance -= amount_decimal
+        new_balance.save(update_fields=['available_balance', 'updated_at'])
+        
+        # Update expense item (only editable fields)
+        expense_item.expense_name = expense_name
+        expense_item.amount = amount_decimal
+        expense_item.payment_method = payment_method
+        expense_item.notes = notes if notes else None
+        # expense_day and expense_date remain unchanged
+        expense_item.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Expense updated successfully',
+            'expense': {
+                'id': expense_item.id,
+                'expense_name': expense_item.expense_name,
+                'amount': str(expense_item.amount),
+                'payment_method': expense_item.get_payment_method_display(),
+                'payment_method_value': expense_item.payment_method,
+                'expense_day': expense_item.expense_day.capitalize(),
+                'expense_date': expense_item.expense_date.strftime('%b %d, %Y'),
+                'notes': expense_item.notes or '',
+            },
+            'block_total': str(expense_item.expense_block.total_expense),
+            'item_count': expense_item.expense_block.item_count
+        })
+    
+    except ExpenseItem.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Expense item not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'})
+
+
+# ============================================
+# Get Expense Item Details (for edit form)
+# ============================================
+@login_required(login_url='/401/')
+def get_expense_item(request, item_id):
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request'})
+    
+    try:
+        expense_item = get_object_or_404(
+            ExpenseItem, 
+            id=item_id, 
+            expense_block__user=request.user
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'expense': {
+                'id': expense_item.id,
+                'expense_name': expense_item.expense_name,
+                'amount': str(expense_item.amount),
+                'payment_method': expense_item.payment_method,
+                'expense_day': expense_item.expense_day,
+                'expense_day_display': expense_item.expense_day.capitalize(),
+                'expense_date': expense_item.expense_date.strftime('%Y-%m-%d'),
+                'expense_date_display': expense_item.expense_date.strftime('%b %d, %Y'),
+                'notes': expense_item.notes or '',
+            }
+        })
+    
+    except ExpenseItem.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Expense item not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred'})
+
+
+# ============================================
+# Update Expense Block Title Only
+# ============================================
+@login_required(login_url='/401/')
+def update_expense_block(request, block_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request'})
+    
+    try:
+        expense_block = get_object_or_404(ExpenseBlock, id=block_id, user=request.user)
+        
+        title = request.POST.get('title', '').strip()
+        
+        if title:
+            if len(title) > 100:
+                return JsonResponse({'success': False, 'message': 'Title must be less than 100 characters'})
+            expense_block.title = title
+            expense_block.save(update_fields=['title', 'updated_at'])
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Block title updated successfully',
+            'title': expense_block.title
+        })
+    
+    except ExpenseBlock.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Expense block not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred.'})
+    
+
+#?======================================================================================================================
+#!=========================================== END OF EXPENSE VIEWS ===========================================
+#?====================================================================================================================== 
+

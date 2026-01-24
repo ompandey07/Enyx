@@ -9,27 +9,21 @@
     <meta name="description" content="ExpTrack Dashboard - Track your expenses and manage your finances">
     <meta name="theme-color" content="#6366f1">
     
-    <!-- Favicon -->
     <link rel="shortcut icon" href="{% static 'MainLogo.png' %}" type="image/x-icon">
     <link rel="icon" type="image/png" href="{% static 'MainLogo.png' %}">
     
-    <!-- Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&family=Kaushan+Script&display=swap" rel="stylesheet">
     <link href="https://fonts.cdnfonts.com/css/agustina" rel="stylesheet">
     
-    <!-- Icons -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     
     <style>
-        /* ============================================
-           Reset & Base
-           ============================================ */
         *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
@@ -71,8 +65,6 @@
             --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
             --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
             --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
-            --shadow-2xl: 0 25px 50px -12px rgba(0,0,0,0.25);
-            --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.15);
             
             --radius-sm: 6px;
             --radius-md: 10px;
@@ -133,9 +125,7 @@
             font-family: inherit;
         }
 
-        /* ============================================
-           Top Navigation - Full Width
-           ============================================ */
+        /* Top Navigation */
         .top-nav {
             position: fixed;
             top: 0;
@@ -207,7 +197,6 @@
             position: relative;
         }
 
-        /* User Profile */
         .user-profile {
             display: flex;
             align-items: center;
@@ -269,7 +258,6 @@
             transform: rotate(180deg);
         }
 
-        /* User Dropdown */
         .user-dropdown {
             position: absolute;
             top: calc(100% + 12px);
@@ -373,9 +361,7 @@
             color: var(--error);
         }
 
-        /* ============================================
-           Sidebar
-           ============================================ */
+        /* Sidebar */
         .sidebar {
             position: fixed;
             top: var(--topnav-height);
@@ -503,9 +489,7 @@
             color: var(--error);
         }
 
-        /* ============================================
-           Main Content
-           ============================================ */
+        /* Main Content */
         .main-content {
             margin-left: var(--sidebar-width);
             margin-top: var(--topnav-height);
@@ -513,7 +497,6 @@
             padding: 32px;
         }
 
-        /* Page Header */
         .page-header {
             margin-bottom: 32px;
             padding-left: 20px;
@@ -536,7 +519,7 @@
         /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 24px;
             margin-bottom: 32px;
         }
@@ -544,11 +527,10 @@
         .stat-card {
             background: var(--bg-primary);
             border: 1px solid var(--border-light);
-            border-radius: var(--radius-2xl);
             padding: 28px;
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 24px;
             transition: all var(--transition-slow);
             position: relative;
             overflow: hidden;
@@ -559,56 +541,60 @@
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
+            width: 100%;
             height: 4px;
-            background: var(--accent-gradient);
-            opacity: 0;
-            transition: opacity var(--transition-base);
+        }
+
+        .stat-card-balance::before {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7);
+        }
+
+        .stat-card-expense::before {
+            background: linear-gradient(90deg, #ef4444, #f97316, #eab308);
         }
 
         .stat-card:hover {
-            transform: translateY(-6px);
+            transform: translateY(-4px);
             box-shadow: var(--shadow-xl);
-            border-color: var(--accent-primary);
         }
 
-        .stat-card:hover::before {
-            opacity: 1;
-        }
-
-        .stat-card-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: var(--radius-xl);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .stat-chart-container {
+            width: 110px;
+            height: 110px;
             flex-shrink: 0;
+            position: relative;
         }
 
-        .stat-card-icon i {
+        .stat-chart-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .stat-chart-center i {
             font-size: 28px;
         }
 
-        .stat-card-balance .stat-card-icon {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
-            color: var(--accent-primary);
+        .stat-card-balance .stat-chart-center i {
+            color: #6366f1;
         }
 
-        .stat-card-expense .stat-card-icon {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(249, 115, 22, 0.15));
-            color: var(--error);
+        .stat-card-expense .stat-chart-center i {
+            color: #ef4444;
         }
 
         .stat-card-content {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
+            flex: 1;
         }
 
         .stat-card-label {
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -616,123 +602,160 @@
 
         .stat-card-value {
             font-family: var(--font-heading);
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
-            color: var(--text-primary);
         }
 
-        /* Weekly Expenses Section */
-        .weekly-expenses-section {
+        .stat-card-balance .stat-card-value {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-card-expense .stat-card-value {
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-card-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-card-meta i {
+            font-size: 14px;
+        }
+
+        /* Charts Section */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 24px;
+        }
+
+        .chart-card {
             background: var(--bg-primary);
             border: 1px solid var(--border-light);
-            border-radius: var(--radius-2xl);
-            padding: 32px;
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .section-header {
+        .chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .chart-card-weekly::before {
+            background: linear-gradient(90deg, #06b6d4, #3b82f6, #8b5cf6, #d946ef);
+        }
+
+        .chart-card-balance::before {
+            background: linear-gradient(90deg, #10b981, #6366f1, #f59e0b, #ef4444);
+        }
+
+        .chart-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 28px;
-            padding-bottom: 20px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
             border-bottom: 1px solid var(--border-light);
         }
 
-        .section-title {
+        .chart-title {
             display: flex;
             align-items: center;
             gap: 12px;
             font-family: var(--font-heading);
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             color: var(--text-primary);
         }
 
-        .section-title i {
-            color: var(--accent-primary);
+        .chart-title i {
             font-size: 22px;
         }
 
-        .section-subtitle {
+        .chart-card-weekly .chart-title i {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .chart-card-balance .chart-title i {
+            background: linear-gradient(135deg, #10b981, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .chart-badge {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 6px 14px;
-            background: rgba(99, 102, 241, 0.1);
-            border-radius: var(--radius-full);
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--accent-primary);
-        }
-
-        .weekly-expenses-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 16px;
-        }
-
-        .day-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-xl);
-            padding: 20px 16px;
-            text-align: center;
-            transition: all var(--transition-slow);
-        }
-
-        .day-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--accent-primary);
-            background: var(--bg-primary);
-        }
-
-        .day-card-header {
-            margin-bottom: 14px;
-        }
-
-        .day-name {
-            display: block;
+            gap: 6px;
+            padding: 8px 14px;
             font-size: 13px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .day-name-short {
-            display: none;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .day-card-body {
-            margin-bottom: 14px;
-        }
-
-        .day-amount {
-            font-family: var(--font-heading);
-            font-size: 18px;
             font-weight: 700;
-            color: var(--accent-primary);
         }
 
-        .day-card-progress {
-            padding-top: 10px;
+        .chart-card-weekly .chart-badge {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            color: #6366f1;
         }
 
-        .progress-bar {
+        .chart-card-balance .chart-badge {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(99, 102, 241, 0.1));
+            color: #10b981;
+        }
+
+        .chart-container {
+            position: relative;
             width: 100%;
-            height: 6px;
-            background: var(--bg-tertiary);
-            border-radius: var(--radius-full);
-            overflow: hidden;
+            height: 300px;
         }
 
-        .progress-fill {
-            height: 100%;
-            background: var(--accent-gradient);
-            border-radius: var(--radius-full);
-            transition: width var(--transition-slow);
+        .chart-container-pie {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .no-data-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .no-data-message i {
+            font-size: 56px;
+            margin-bottom: 16px;
+            opacity: 0.4;
+            display: block;
+        }
+
+        .no-data-message p {
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .no-data-message span {
+            font-size: 13px;
+            opacity: 0.7;
         }
 
         /* Mobile Overlay */
@@ -752,12 +775,16 @@
             visibility: visible;
         }
 
-        /* ============================================
-           Responsive Styles
-           ============================================ */
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 1024px) {
-            .weekly-expenses-grid {
-                grid-template-columns: repeat(4, 1fr);
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -789,18 +816,6 @@
                 padding: 24px 20px;
             }
 
-            .weekly-expenses-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .day-name {
-                display: none;
-            }
-
-            .day-name-short {
-                display: block;
-            }
-
             .user-info {
                 display: none;
             }
@@ -808,47 +823,50 @@
             .user-profile {
                 padding: 6px 12px;
             }
+
+            .stat-card {
+                flex-direction: column;
+                text-align: center;
+                padding: 24px;
+            }
+
+            .stat-chart-container {
+                width: 100px;
+                height: 100px;
+            }
+
+            .stat-card-value {
+                font-size: 28px;
+            }
         }
 
         @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
+            .chart-container {
+                height: 250px;
             }
 
-            .weekly-expenses-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
+            .chart-container-pie {
+                height: 280px;
             }
 
-            .section-header {
+            .chart-header {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 12px;
-            }
-
-            .day-card {
-                padding: 16px 12px;
-            }
-
-            .day-amount {
-                font-size: 16px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Mobile Overlay -->
     <div class="mobile-overlay" id="mobileOverlay"></div>
 
-    <!-- Top Navigation - Full Width -->
+    <!-- Top Navigation -->
     <header class="top-nav">
         <div class="top-nav-left">
-            <!-- Mobile Menu Toggle -->
             <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
                 <i class="ri-menu-line"></i>
             </button>
             
-            <!-- Brand -->
             <a href="{% url 'dashboard_view' %}" class="top-nav-brand">
                 <span class="brand-text">Exp</span>
                 <span class="brand-text-accent">Track</span>
@@ -856,7 +874,6 @@
         </div>
         
         <div class="top-nav-right">
-            <!-- User Profile -->
             <div class="user-profile" id="userProfile">
                 <div class="user-info">
                     <span class="user-name">{{ full_name }}</span>
@@ -873,7 +890,6 @@
                 <i class="ri-arrow-down-s-line dropdown-arrow"></i>
             </div>
             
-            <!-- User Dropdown Menu -->
             <div class="user-dropdown" id="userDropdown">
                 <div class="dropdown-header">
                     <div class="dropdown-avatar">
@@ -906,9 +922,8 @@
         </div>
     </header>
 
-    <!-- Sidebar - Below Top Nav -->
+    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-        <!-- Sidebar Header (Mobile Only) -->
         <div class="sidebar-header">
             <a href="{% url 'dashboard_view' %}" class="sidebar-brand">
                 <span class="brand-text">Exp</span>
@@ -919,7 +934,6 @@
             </button>
         </div>
         
-        <!-- Sidebar Menu -->
         <nav class="sidebar-nav">
             <span class="sidebar-label">Menu</span>
             <ul class="sidebar-menu">
@@ -930,13 +944,13 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
+                    <a href="{% url 'balance_view' %}" class="sidebar-link">
                         <i class="ri-wallet-3-line"></i>
                         <span>Balance</span>
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
+                    <a href="{% url 'expenses_view' %}" class="sidebar-link">
                         <i class="ri-exchange-dollar-line"></i>
                         <span>Expenses</span>
                     </a>
@@ -949,7 +963,6 @@
                 </li>
             </ul>
             
-            <!-- Sidebar Footer -->
             <div class="sidebar-footer">
                 <a href="{% url 'accounts:logout' %}" class="sidebar-link sidebar-logout">
                     <i class="ri-logout-box-line"></i>
@@ -959,7 +972,7 @@
         </nav>
     </aside>
 
-    <!-- Main Content - Full Width Utilized -->
+    <!-- Main Content -->
     <main class="main-content">
         <!-- Page Header -->
         <div class="page-header">
@@ -971,57 +984,87 @@
         <div class="stats-grid">
             <!-- Available Balance Card -->
             <div class="stat-card stat-card-balance">
-                <div class="stat-card-icon">
-                    <i class="ri-wallet-3-line"></i>
+                <div class="stat-chart-container">
+                    <canvas id="balanceChart"></canvas>
+                    <div class="stat-chart-center">
+                        <i class="ri-wallet-3-line"></i>
+                    </div>
                 </div>
                 <div class="stat-card-content">
                     <span class="stat-card-label">Available Balance</span>
-                    <span class="stat-card-value">{{ available_balance }}</span>
+                    <span class="stat-card-value">Rs. {{ available_balance|floatformat:2 }}</span>
+                    <span class="stat-card-meta">
+                        <i class="ri-bank-card-line"></i>
+                        Across all accounts
+                    </span>
                 </div>
             </div>
 
             <!-- Today's Expenses Card -->
             <div class="stat-card stat-card-expense">
-                <div class="stat-card-icon">
-                    <i class="ri-shopping-cart-line"></i>
+                <div class="stat-chart-container">
+                    <canvas id="todayChart"></canvas>
+                    <div class="stat-chart-center">
+                        <i class="ri-shopping-cart-line"></i>
+                    </div>
                 </div>
                 <div class="stat-card-content">
                     <span class="stat-card-label">Today's Expenses</span>
-                    <span class="stat-card-value">{{ todays_expenses }}</span>
+                    <span class="stat-card-value">Rs. {{ todays_expenses|floatformat:2 }}</span>
+                    <span class="stat-card-meta">
+                        <i class="ri-calendar-line"></i>
+                        {{ today_day_name }}, {{ today_date|date:"M d, Y" }}
+                    </span>
                 </div>
             </div>
         </div>
 
-        <!-- Weekly Expenses Section -->
-        <div class="weekly-expenses-section">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <i class="ri-calendar-line"></i>
-                    Weekly Expenses
-                </h2>
-                <span class="section-subtitle">
-                    <i class="ri-time-line"></i>
-                    Sunday - Saturday
-                </span>
+        <!-- Charts Section -->
+        <div class="charts-grid">
+            <!-- Weekly Expenses Chart -->
+            <div class="chart-card chart-card-weekly">
+                <div class="chart-header">
+                    <h2 class="chart-title">
+                        <i class="ri-bar-chart-grouped-line"></i>
+                        Weekly Expenses
+                    </h2>
+                    <span class="chart-badge">
+                        <i class="ri-money-dollar-circle-line"></i>
+                        Rs. {{ total_weekly_expense|floatformat:2 }}
+                    </span>
+                </div>
+                <div class="chart-container">
+                    {% if has_expenses %}
+                    <canvas id="weeklyChart"></canvas>
+                    {% else %}
+                    <div class="no-data-message">
+                        <i class="ri-bar-chart-box-line"></i>
+                        <p>No expenses this week</p>
+                        <span>Start tracking to see your weekly overview</span>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
 
-            <div class="weekly-expenses-grid">
-                {% for expense in weekly_expenses %}
-                <div class="day-card">
-                    <div class="day-card-header">
-                        <span class="day-name">{{ expense.day }}</span>
-                        <span class="day-name-short">{{ expense.short }}</span>
-                    </div>
-                    <div class="day-card-body">
-                        <span class="day-amount">{{ expense.amount }}</span>
-                    </div>
-                    <div class="day-card-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: {{ expense.percentage }}%;"></div>
-                        </div>
-                    </div>
+            <!-- Balance Distribution Chart -->
+            <div class="chart-card chart-card-balance">
+                <div class="chart-header">
+                    <h2 class="chart-title">
+                        <i class="ri-pie-chart-2-line"></i>
+                        Balance Distribution
+                    </h2>
                 </div>
-                {% endfor %}
+                <div class="chart-container-pie">
+                    {% if has_balance %}
+                    <canvas id="distributionChart"></canvas>
+                    {% else %}
+                    <div class="no-data-message">
+                        <i class="ri-wallet-line"></i>
+                        <p>No balance accounts</p>
+                        <span>Add accounts to see distribution</span>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </main>
@@ -1066,7 +1109,6 @@
             }
         });
 
-        // Close dropdown on escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 userProfile.classList.remove('active');
@@ -1075,10 +1117,225 @@
             }
         });
 
-        // Initialize Lucide Icons if available
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
+        // Chart.js Configuration
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.plugins.tooltip.backgroundColor = '#0f172a';
+        Chart.defaults.plugins.tooltip.padding = 12;
+        Chart.defaults.plugins.tooltip.cornerRadius = 0;
+        Chart.defaults.plugins.tooltip.titleFont = { weight: '600', size: 13 };
+        Chart.defaults.plugins.tooltip.bodyFont = { size: 12 };
+
+        // Data from Django
+        const dayLabels = {{ day_labels|safe }};
+        const dayFullLabels = {{ day_full_labels|safe }};
+        const weeklyData = {{ weekly_amounts|safe }};
+        const balanceLabels = {{ balance_labels|safe }};
+        const balanceValues = {{ balance_values|safe }};
+        const totalBalance = {{ available_balance }};
+        const todaysExpense = {{ todays_expenses }};
+        const totalWeeklyExpense = {{ total_weekly_expense }};
+
+        // Colorful gradients for weekly chart
+        const weeklyColors = [
+            '#06b6d4', // Cyan - Sunday
+            '#3b82f6', // Blue - Monday
+            '#6366f1', // Indigo - Tuesday
+            '#8b5cf6', // Purple - Wednesday
+            '#a855f7', // Violet - Thursday
+            '#d946ef', // Fuchsia - Friday
+            '#ec4899', // Pink - Saturday
+        ];
+
+        // Balance chart colors
+        const balanceChartColors = [
+            '#10b981', // Emerald - Banking
+            '#6366f1', // Indigo - Esewa
+            '#8b5cf6', // Purple - Khalti
+            '#f59e0b', // Amber - Others
+        ];
+
+        // Balance Doughnut Chart
+        const balanceChartCtx = document.getElementById('balanceChart').getContext('2d');
+        new Chart(balanceChartCtx, {
+            type: 'doughnut',
+            data: {
+                labels: balanceLabels.length > 0 ? balanceLabels : ['Balance'],
+                datasets: [{
+                    data: balanceLabels.length > 0 ? balanceValues : [totalBalance || 1],
+                    backgroundColor: balanceLabels.length > 0 ? balanceChartColors.slice(0, balanceLabels.length) : ['#6366f1'],
+                    borderWidth: 0,
+                    borderRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                cutout: '72%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Rs. ' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                elements: {
+                    arc: { borderWidth: 0, borderRadius: 0 }
+                }
+            }
+        });
+
+        // Today's Expense Doughnut Chart
+        const todayChartCtx = document.getElementById('todayChart').getContext('2d');
+        const avgDaily = totalWeeklyExpense > 0 ? totalWeeklyExpense / 7 : 500;
+        const todayPercent = Math.min((todaysExpense / avgDaily) * 100, 100);
+        const remaining = Math.max(100 - todayPercent, 0);
+        
+        new Chart(todayChartCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Spent', 'Remaining'],
+                datasets: [{
+                    data: todaysExpense > 0 ? [todayPercent, remaining] : [0, 100],
+                    backgroundColor: todaysExpense > 0 ? ['#ef4444', '#fecaca'] : ['#e2e8f0', '#f1f5f9'],
+                    borderWidth: 0,
+                    borderRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                cutout: '72%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if (context.dataIndex === 0) {
+                                    return 'Spent: Rs. ' + todaysExpense.toLocaleString();
+                                }
+                                return 'Budget remaining';
+                            }
+                        }
+                    }
+                },
+                elements: {
+                    arc: { borderWidth: 0, borderRadius: 0 }
+                }
+            }
+        });
+
+        // Weekly Expenses Bar Chart
+        {% if has_expenses %}
+        const weeklyChartCtx = document.getElementById('weeklyChart').getContext('2d');
+        new Chart(weeklyChartCtx, {
+            type: 'bar',
+            data: {
+                labels: dayLabels,
+                datasets: [{
+                    label: 'Expenses',
+                    data: weeklyData,
+                    backgroundColor: weeklyColors,
+                    borderWidth: 0,
+                    borderRadius: 0,
+                    borderSkipped: false,
+                    barThickness: 36,
+                    maxBarThickness: 45
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                return dayFullLabels[context[0].dataIndex];
+                            },
+                            label: function(context) {
+                                return 'Rs. ' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        border: { display: false },
+                        ticks: {
+                            color: '#64748b',
+                            font: { size: 12, weight: '600' }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9', drawBorder: false },
+                        border: { display: false },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 11 },
+                            callback: function(value) {
+                                return 'Rs. ' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                elements: {
+                    bar: { borderRadius: 0 }
+                }
+            }
+        });
+        {% endif %}
+
+        // Balance Distribution Pie Chart
+        {% if has_balance %}
+        const distributionChartCtx = document.getElementById('distributionChart').getContext('2d');
+        new Chart(distributionChartCtx, {
+            type: 'doughnut',
+            data: {
+                labels: balanceLabels,
+                datasets: [{
+                    data: balanceValues,
+                    backgroundColor: balanceChartColors.slice(0, balanceLabels.length),
+                    borderWidth: 3,
+                    borderColor: '#ffffff',
+                    borderRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '55%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'rect',
+                            font: { size: 12, weight: '600' },
+                            color: '#475569'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.raw / total) * 100).toFixed(1);
+                                return context.label + ': Rs. ' + context.raw.toLocaleString() + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                },
+                elements: {
+                    arc: { borderWidth: 3, borderRadius: 0 }
+                }
+            }
+        });
+        {% endif %}
     </script>
 </body>
 </html>
