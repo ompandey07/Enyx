@@ -1,0 +1,8 @@
+docker stop exptrac_app
+docker rm exptrac_app
+docker build -t exptrac .
+docker run -d --name exptrac_app -p 7000:7000 exptrac
+
+
+docker exec -it exptrac_app python manage.py makemigrations
+docker exec -it exptrac_app python manage.py migrate

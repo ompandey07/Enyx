@@ -7,7 +7,7 @@ from django.db.models import Sum
 from datetime import date, timedelta, datetime
 from decimal import Decimal, InvalidOperation
 from decimal import Decimal, InvalidOperation
-from .models import UserBalance , ExpenseBlock, ExpenseItem
+from .models import UserBalance , ExpenseBlock, ExpenseItem , UserIncome
 from django.db import models
 
 # ============================================
@@ -40,8 +40,36 @@ def dashboard_view(request):
         status='active'
     ).aggregate(total=models.Sum('available_balance'))['total'] or Decimal('0.00')
 
-    # Get today's date info
+    # Get total income
+    total_income = UserIncome.objects.filter(
+        user=user
+    ).aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
+
+    # Get this month's income
     today = date.today()
+    first_day_of_month = today.replace(day=1)
+    monthly_income = UserIncome.objects.filter(
+        user=user,
+        created_at__date__gte=first_day_of_month,
+        created_at__date__lte=today
+    ).aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
+
+    # Get income breakdown by source for chart
+    income_breakdown = UserIncome.objects.filter(
+        user=user
+    ).values('income_source').annotate(
+        total=models.Sum('amount')
+    ).order_by('-total')[:5]  # Top 5 sources
+
+    income_labels = []
+    income_values = []
+    
+    income_source_display = dict(UserIncome.INCOME_SOURCE_CHOICES)
+    for item in income_breakdown:
+        source = item['income_source']
+        income_labels.append(income_source_display.get(source, source.capitalize()))
+        income_values.append(float(item['total']))
+
     today_day_name = get_day_name(today)
     
     # Get current active expense block
@@ -120,6 +148,8 @@ def dashboard_view(request):
         'first_letter': first_letter,
         'full_name': full_name,
         'available_balance': float(total_balance),
+        'total_income': float(total_income),
+        'monthly_income': float(monthly_income),
         'todays_expenses': float(todays_expenses),
         'total_weekly_expense': float(total_weekly_expense),
         'weekly_amounts': weekly_amounts,
@@ -127,9 +157,13 @@ def dashboard_view(request):
         'day_full_labels': day_full_labels,
         'today_day_name': today_day_name.capitalize(),
         'today_date': today,
+        'current_month': today.strftime('%B %Y'),
         'balance_labels': balance_labels,
         'balance_values': balance_values,
+        'income_labels': income_labels,
+        'income_values': income_values,
         'has_balance': len(balance_labels) > 0,
+        'has_income': len(income_labels) > 0,
         'has_expenses': total_weekly_expense > 0,
     }
 
@@ -948,4 +982,273 @@ def update_expense_block(request, block_id):
 #?======================================================================================================================
 #!=========================================== END OF EXPENSE VIEWS ===========================================
 #?====================================================================================================================== 
+
+
+def is_ajax(request):
+    return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+
+
+# ============================================
+# Income View
+# ============================================
+@login_required(login_url='/401/')
+def income_view(request):
+    user = request.user
+    profile = None
+
+    if hasattr(user, 'profile'):
+        profile = user.profile
+
+    first_letter = user.first_name[0].upper() if user.first_name else user.email[0].upper()
+
+    full_name = f"{user.first_name} {user.last_name}".strip()
+    if not full_name:
+        full_name = user.email.split('@')[0]
+
+    # Get all incomes for the user
+    incomes_list = UserIncome.objects.filter(user=user).select_related('balance_account')
+    
+    # Pagination - 50 items per page
+    paginator = Paginator(incomes_list, 50)
+    page = request.GET.get('page', 1)
+    
+    try:
+        incomes = paginator.page(page)
+    except PageNotAnInteger:
+        incomes = paginator.page(1)
+    except EmptyPage:
+        incomes = paginator.page(paginator.num_pages)
+
+    # Get user's active balance accounts for the dropdown
+    balance_accounts = UserBalance.objects.filter(user=user, status='active')
+
+    context = {
+        'user': user,
+        'profile': profile,
+        'first_letter': first_letter,
+        'full_name': full_name,
+        'incomes': incomes,
+        'total_incomes': incomes_list.count(),
+        'balance_accounts': balance_accounts,
+        'income_sources': UserIncome.INCOME_SOURCE_CHOICES,
+    }
+
+    return render(request, 'Income/income.html', context)
+
+
+# ============================================
+# Add Income View
+# ============================================
+@login_required(login_url='/401/')
+def add_income(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method', 'type': 'error'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request', 'type': 'error'})
+    
+    try:
+        income_source = request.POST.get('income_source', 'salary').strip()
+        amount = request.POST.get('amount', '0').strip()
+        balance_account_id = request.POST.get('balance_account', '').strip()
+        description = request.POST.get('description', '').strip()
+
+        # Validation
+        if not amount:
+            return JsonResponse({'success': False, 'message': 'Amount is required', 'type': 'error'})
+        
+        # Validate amount
+        try:
+            amount_decimal = Decimal(amount)
+            if amount_decimal <= 0:
+                return JsonResponse({'success': False, 'message': 'Amount must be greater than zero', 'type': 'error'})
+        except (InvalidOperation, ValueError):
+            return JsonResponse({'success': False, 'message': 'Invalid amount', 'type': 'error'})
+
+        # Validate income source
+        valid_sources = [choice[0] for choice in UserIncome.INCOME_SOURCE_CHOICES]
+        if income_source not in valid_sources:
+            return JsonResponse({'success': False, 'message': 'Invalid income source selected', 'type': 'error'})
+
+        # Validate balance account
+        if not balance_account_id:
+            return JsonResponse({'success': False, 'message': 'Please select an account', 'type': 'error'})
+        
+        try:
+            balance_account = UserBalance.objects.get(id=balance_account_id, user=request.user, status='active')
+        except UserBalance.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Selected account not found or inactive', 'type': 'error'})
+
+        # Create income
+        income = UserIncome.objects.create(
+            user=request.user,
+            income_source=income_source,
+            amount=amount_decimal,
+            balance_account=balance_account,
+            description=description
+        )
+
+        # Update balance account
+        balance_account.available_balance += amount_decimal
+        balance_account.save()
+
+        return JsonResponse({
+            'success': True, 
+            'message': 'Income added successfully', 
+            'type': 'success',
+            'income': {
+                'id': income.id,
+                'income_source': income.get_income_source_display(),
+                'amount': str(income.amount),
+                'account_name': balance_account.account_name,
+                'description': income.description or '-',
+                'created_at': income.created_at.strftime('%b %d, %Y %I:%M %p'),
+            }
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.', 'type': 'error'})
+
+
+# ============================================
+# Edit Income View
+# ============================================
+@login_required(login_url='/401/')
+def edit_income(request, income_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method', 'type': 'error'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request', 'type': 'error'})
+    
+    try:
+        income = get_object_or_404(UserIncome, id=income_id, user=request.user)
+        old_amount = income.amount
+        old_balance_account = income.balance_account
+
+        income_source = request.POST.get('income_source', 'salary').strip()
+        amount = request.POST.get('amount', '0').strip()
+        balance_account_id = request.POST.get('balance_account', '').strip()
+        description = request.POST.get('description', '').strip()
+
+        # Validation
+        if not amount:
+            return JsonResponse({'success': False, 'message': 'Amount is required', 'type': 'error'})
+        
+        # Validate amount
+        try:
+            amount_decimal = Decimal(amount)
+            if amount_decimal <= 0:
+                return JsonResponse({'success': False, 'message': 'Amount must be greater than zero', 'type': 'error'})
+        except (InvalidOperation, ValueError):
+            return JsonResponse({'success': False, 'message': 'Invalid amount', 'type': 'error'})
+
+        # Validate income source
+        valid_sources = [choice[0] for choice in UserIncome.INCOME_SOURCE_CHOICES]
+        if income_source not in valid_sources:
+            return JsonResponse({'success': False, 'message': 'Invalid income source selected', 'type': 'error'})
+
+        # Validate balance account
+        if not balance_account_id:
+            return JsonResponse({'success': False, 'message': 'Please select an account', 'type': 'error'})
+        
+        try:
+            new_balance_account = UserBalance.objects.get(id=balance_account_id, user=request.user, status='active')
+        except UserBalance.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Selected account not found or inactive', 'type': 'error'})
+
+        # Adjust balance accounts
+        # First, subtract old amount from old account
+        old_balance_account.available_balance -= old_amount
+        old_balance_account.save()
+
+        # Then, add new amount to new account
+        new_balance_account.available_balance += amount_decimal
+        new_balance_account.save()
+
+        # Update income
+        income.income_source = income_source
+        income.amount = amount_decimal
+        income.balance_account = new_balance_account
+        income.description = description
+        income.save()
+
+        return JsonResponse({
+            'success': True, 
+            'message': 'Income updated successfully', 
+            'type': 'success',
+            'income': {
+                'id': income.id,
+                'income_source': income.get_income_source_display(),
+                'amount': str(income.amount),
+                'account_name': new_balance_account.account_name,
+                'description': income.description or '-',
+            }
+        })
+
+    except UserIncome.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Income not found', 'type': 'error'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.', 'type': 'error'})
+
+
+# ============================================
+# Delete Income View
+# ============================================
+@login_required(login_url='/401/')
+def delete_income(request, income_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method', 'type': 'error'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request', 'type': 'error'})
+    
+    try:
+        income = get_object_or_404(UserIncome, id=income_id, user=request.user)
+        
+        # Subtract amount from balance account
+        balance_account = income.balance_account
+        balance_account.available_balance -= income.amount
+        balance_account.save()
+        
+        income.delete()
+
+        return JsonResponse({
+            'success': True, 
+            'message': 'Income deleted successfully', 
+            'type': 'success'
+        })
+
+    except UserIncome.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Income not found', 'type': 'error'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.', 'type': 'error'})
+
+
+# ============================================
+# Get Income Details (for edit form)
+# ============================================
+@login_required(login_url='/401/')
+def get_income(request, income_id):
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request', 'type': 'error'})
+    
+    try:
+        income = get_object_or_404(UserIncome, id=income_id, user=request.user)
+
+        return JsonResponse({
+            'success': True,
+            'income': {
+                'id': income.id,
+                'income_source': income.income_source,
+                'amount': str(income.amount),
+                'balance_account': income.balance_account.id,
+                'description': income.description or '',
+            }
+        })
+
+    except UserIncome.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Income not found', 'type': 'error'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred', 'type': 'error'})
 

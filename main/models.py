@@ -227,3 +227,41 @@ class ExpenseItem(models.Model):
         super().delete(*args, **kwargs)
         # Update block total after deletion
         block.update_total()
+
+
+
+class UserIncome(models.Model):
+    INCOME_SOURCE_CHOICES = [
+        ('salary', 'Salary'),
+        ('budget', 'Budget'),
+        ('loan', 'Loan'),
+        ('share_amount', 'Share Amount'),
+        ('bonus', 'Bonus'),
+        ('investment', 'Investment Returns'),
+        ('freelance', 'Freelance'),
+        ('rental', 'Rental Income'),
+        ('commission', 'Commission'),
+        ('gift', 'Gift'),
+        ('refund', 'Refund'),
+        ('dividend', 'Dividend'),
+        ('interest', 'Interest'),
+        ('others', 'Others'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='incomes')
+    income_source = models.CharField(max_length=20, choices=INCOME_SOURCE_CHOICES, default='salary')
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    balance_account = models.ForeignKey(
+        'UserBalance', 
+        on_delete=models.CASCADE, 
+        related_name='incomes'
+    )
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.get_income_source_display()} - Rs. {self.amount} - {self.user.email}"

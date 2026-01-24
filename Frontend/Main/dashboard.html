@@ -65,6 +65,7 @@
             --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
             --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
             --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+            --shadow-2xl: 0 25px 50px -12px rgba(0,0,0,0.25);
             
             --radius-sm: 6px;
             --radius-md: 10px;
@@ -516,10 +517,12 @@
             color: var(--text-secondary);
         }
 
-        /* Stats Grid */
+        /* ============================================
+           Advanced Stats Cards
+           ============================================ */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 24px;
             margin-bottom: 32px;
         }
@@ -527,13 +530,11 @@
         .stat-card {
             background: var(--bg-primary);
             border: 1px solid var(--border-light);
+            border-radius: var(--radius-2xl);
             padding: 28px;
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            transition: all var(--transition-slow);
             position: relative;
             overflow: hidden;
+            transition: all var(--transition-slow);
         }
 
         .stat-card::before {
@@ -541,7 +542,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
+            right: 0;
             height: 4px;
         }
 
@@ -549,47 +550,85 @@
             background: linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7);
         }
 
+        .stat-card-income::before {
+            background: linear-gradient(90deg, #10b981, #34d399, #6ee7b7);
+        }
+
         .stat-card-expense::before {
-            background: linear-gradient(90deg, #ef4444, #f97316, #eab308);
+            background: linear-gradient(90deg, #ef4444, #f97316, #fbbf24);
         }
 
         .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-xl);
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-2xl);
         }
 
-        .stat-chart-container {
-            width: 110px;
-            height: 110px;
-            flex-shrink: 0;
-            position: relative;
+        .stat-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
         }
 
-        .stat-chart-center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
+        .stat-card-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .stat-chart-center i {
-            font-size: 28px;
-        }
-
-        .stat-card-balance .stat-chart-center i {
+        .stat-card-balance .stat-card-icon {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
             color: #6366f1;
         }
 
-        .stat-card-expense .stat-chart-center i {
+        .stat-card-income .stat-card-icon {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.15));
+            color: #10b981;
+        }
+
+        .stat-card-expense .stat-card-icon {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(249, 115, 22, 0.15));
             color: #ef4444;
         }
 
-        .stat-card-content {
+        .stat-card-icon i {
+            font-size: 26px;
+        }
+
+        .stat-card-trend {
             display: flex;
-            flex-direction: column;
-            gap: 8px;
-            flex: 1;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .stat-card-trend.up {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .stat-card-trend.down {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .stat-card-trend.neutral {
+            background: rgba(148, 163, 184, 0.1);
+            color: #64748b;
+        }
+
+        .stat-card-trend i {
+            font-size: 14px;
+        }
+
+        .stat-card-body {
+            margin-bottom: 20px;
         }
 
         .stat-card-label {
@@ -598,16 +637,25 @@
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
 
         .stat-card-value {
             font-family: var(--font-heading);
             font-size: 32px;
-            font-weight: 700;
+            font-weight: 800;
+            line-height: 1.2;
         }
 
         .stat-card-balance .stat-card-value {
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-card-income .stat-card-value {
+            background: linear-gradient(135deg, #10b981, #34d399);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -621,30 +669,78 @@
         }
 
         .stat-card-meta {
-            font-size: 12px;
+            font-size: 13px;
             color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .stat-card-meta strong {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* Progress Bar */
+        .stat-progress {
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .stat-progress-bar {
+            height: 100%;
+            border-radius: var(--radius-full);
+            transition: width 1s ease-out;
+        }
+
+        .stat-card-balance .stat-progress-bar {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7);
+        }
+
+        .stat-card-income .stat-progress-bar {
+            background: linear-gradient(90deg, #10b981, #34d399, #6ee7b7);
+        }
+
+        .stat-card-expense .stat-progress-bar {
+            background: linear-gradient(90deg, #ef4444, #f97316, #fbbf24);
+        }
+
+        .stat-progress-labels {
             display: flex;
-            align-items: center;
-            gap: 6px;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
         }
 
-        .stat-card-meta i {
-            font-size: 14px;
-        }
-
-        /* Charts Section */
-        .charts-grid {
+        /* ============================================
+           Charts Section
+           ============================================ */
+        .charts-row {
             display: grid;
             grid-template-columns: 1.5fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .charts-row-triple {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 24px;
         }
 
         .chart-card {
             background: var(--bg-primary);
             border: 1px solid var(--border-light);
+            border-radius: var(--radius-2xl);
             padding: 28px;
             position: relative;
             overflow: hidden;
+            transition: all var(--transition-slow);
+        }
+
+        .chart-card:hover {
+            box-shadow: var(--shadow-xl);
         }
 
         .chart-card::before {
@@ -656,12 +752,24 @@
             height: 3px;
         }
 
-        .chart-card-weekly::before {
+        .chart-card-area::before {
             background: linear-gradient(90deg, #06b6d4, #3b82f6, #8b5cf6, #d946ef);
         }
 
-        .chart-card-balance::before {
-            background: linear-gradient(90deg, #10b981, #6366f1, #f59e0b, #ef4444);
+        .chart-card-radar::before {
+            background: linear-gradient(90deg, #f59e0b, #ef4444, #ec4899);
+        }
+
+        .chart-card-polar::before {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7);
+        }
+
+        .chart-card-horizontal::before {
+            background: linear-gradient(90deg, #10b981, #14b8a6, #06b6d4);
+        }
+
+        .chart-card-line::before {
+            background: linear-gradient(90deg, #f97316, #ef4444, #ec4899);
         }
 
         .chart-header {
@@ -671,6 +779,12 @@
             margin-bottom: 24px;
             padding-bottom: 16px;
             border-bottom: 1px solid var(--border-light);
+        }
+
+        .chart-title-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .chart-title {
@@ -687,75 +801,174 @@
             font-size: 22px;
         }
 
-        .chart-card-weekly .chart-title i {
+        .chart-card-area .chart-title i {
             background: linear-gradient(135deg, #3b82f6, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        .chart-card-balance .chart-title i {
-            background: linear-gradient(135deg, #10b981, #6366f1);
+        .chart-card-radar .chart-title i {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+        }
+
+        .chart-card-polar .chart-title i {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .chart-card-horizontal .chart-title i {
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .chart-card-line .chart-title i {
+            background: linear-gradient(135deg, #f97316, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .chart-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .chart-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .chart-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 8px 14px;
+            padding: 8px 16px;
+            border-radius: var(--radius-full);
             font-size: 13px;
             font-weight: 700;
         }
 
-        .chart-card-weekly .chart-badge {
+        .chart-card-area .chart-badge {
             background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
             color: #6366f1;
         }
 
-        .chart-card-balance .chart-badge {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(99, 102, 241, 0.1));
+        .chart-card-radar .chart-badge {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1));
+            color: #ef4444;
+        }
+
+        .chart-card-polar .chart-badge {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            color: #6366f1;
+        }
+
+        .chart-card-horizontal .chart-badge {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
             color: #10b981;
+        }
+
+        .chart-card-line .chart-badge {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(236, 72, 153, 0.1));
+            color: #f97316;
+        }
+
+        .chart-period-btn {
+            padding: 8px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+
+        .chart-period-btn:hover,
+        .chart-period-btn.active {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
         }
 
         .chart-container {
             position: relative;
             width: 100%;
-            height: 300px;
+            height: 320px;
         }
 
-        .chart-container-pie {
-            position: relative;
-            width: 100%;
-            height: 300px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .chart-container-sm {
+            height: 280px;
         }
 
         .no-data-message {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
             text-align: center;
-            padding: 60px 20px;
             color: var(--text-muted);
         }
 
         .no-data-message i {
             font-size: 56px;
             margin-bottom: 16px;
-            opacity: 0.4;
-            display: block;
+            opacity: 0.3;
         }
 
         .no-data-message p {
-            font-size: 15px;
-            margin-bottom: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
         }
 
         .no-data-message span {
             font-size: 13px;
-            opacity: 0.7;
+            opacity: 0.8;
+        }
+
+        /* ============================================
+           Legend Styles
+           ============================================ */
+        .custom-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .legend-value {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-left: 4px;
         }
 
         /* Mobile Overlay */
@@ -775,16 +988,40 @@
             visibility: visible;
         }
 
-        /* Responsive */
+        /* ============================================
+           Responsive
+           ============================================ */
+        @media (max-width: 1400px) {
+            .charts-row-triple {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .charts-row-triple .chart-card:last-child {
+                grid-column: span 2;
+            }
+        }
+
         @media (max-width: 1200px) {
-            .charts-grid {
+            .charts-row {
                 grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .stat-card:last-child {
+                grid-column: span 2;
             }
         }
 
         @media (max-width: 1024px) {
-            .stats-grid {
+            .charts-row-triple {
                 grid-template-columns: 1fr;
+            }
+
+            .charts-row-triple .chart-card:last-child {
+                grid-column: span 1;
             }
         }
 
@@ -824,32 +1061,40 @@
                 padding: 6px 12px;
             }
 
-            .stat-card {
-                flex-direction: column;
-                text-align: center;
-                padding: 24px;
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
 
-            .stat-chart-container {
-                width: 100px;
-                height: 100px;
+            .stat-card:last-child {
+                grid-column: span 1;
             }
 
             .stat-card-value {
-                font-size: 28px;
+                font-size: 26px;
+            }
+
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .chart-actions {
+                width: 100%;
+                justify-content: space-between;
             }
         }
 
         @media (max-width: 480px) {
             .chart-container {
-                height: 250px;
-            }
-
-            .chart-container-pie {
                 height: 280px;
             }
 
-            .chart-header {
+            .chart-container-sm {
+                height: 250px;
+            }
+
+            .stat-card-header {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 12px;
@@ -950,15 +1195,15 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="{% url 'expenses_view' %}" class="sidebar-link">
-                        <i class="ri-exchange-dollar-line"></i>
-                        <span>Expenses</span>
+                    <a href="{% url 'income_view' %}" class="sidebar-link">
+                        <i class="ri-money-dollar-circle-line"></i>
+                        <span>Income</span>
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
-                        <i class="ri-settings-3-line"></i>
-                        <span>Settings</span>
+                    <a href="{% url 'expenses_view' %}" class="sidebar-link">
+                        <i class="ri-exchange-dollar-line"></i>
+                        <span>Expenses</span>
                     </a>
                 </li>
             </ul>
@@ -980,90 +1225,219 @@
             <p class="page-subtitle">Welcome back, {{ user.first_name|default:full_name }}! Here's your financial overview.</p>
         </div>
 
-        <!-- Stats Cards -->
+        <!-- Advanced Stats Cards -->
         <div class="stats-grid">
-            <!-- Available Balance Card -->
+            <!-- Balance Card -->
             <div class="stat-card stat-card-balance">
-                <div class="stat-chart-container">
-                    <canvas id="balanceChart"></canvas>
-                    <div class="stat-chart-center">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
                         <i class="ri-wallet-3-line"></i>
                     </div>
+                    <div class="stat-card-trend {% if available_balance > 0 %}up{% else %}neutral{% endif %}">
+                        {% if available_balance > 0 %}
+                        <i class="ri-arrow-up-line"></i>
+                        Active
+                        {% else %}
+                        <i class="ri-subtract-line"></i>
+                        No Data
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="stat-card-content">
-                    <span class="stat-card-label">Available Balance</span>
-                    <span class="stat-card-value">Rs. {{ available_balance|floatformat:2 }}</span>
-                    <span class="stat-card-meta">
-                        <i class="ri-bank-card-line"></i>
-                        Across all accounts
-                    </span>
+                <div class="stat-card-body">
+                    <div class="stat-card-label">Available Balance</div>
+                    <div class="stat-card-value">Rs. {{ available_balance|floatformat:2 }}</div>
+                    <div class="stat-card-meta">Across <strong>{{ balance_labels|length }}</strong> account{% if balance_labels|length != 1 %}s{% endif %}</div>
+                </div>
+                <div class="stat-progress">
+                    <div class="stat-progress-bar" style="width: {% if available_balance > 0 %}100{% else %}0{% endif %}%;"></div>
+                </div>
+                <div class="stat-progress-labels">
+                    <span>Active Accounts</span>
+                    <span>Rs. {{ available_balance|floatformat:0 }}</span>
                 </div>
             </div>
 
-            <!-- Today's Expenses Card -->
-            <div class="stat-card stat-card-expense">
-                <div class="stat-chart-container">
-                    <canvas id="todayChart"></canvas>
-                    <div class="stat-chart-center">
-                        <i class="ri-shopping-cart-line"></i>
+            <!-- Income Card -->
+            <div class="stat-card stat-card-income">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="ri-money-dollar-circle-line"></i>
+                    </div>
+                    <div class="stat-card-trend {% if monthly_income > 0 %}up{% else %}neutral{% endif %}">
+                        {% if monthly_income > 0 %}
+                        <i class="ri-arrow-up-line"></i>
+                        +{{ monthly_income|floatformat:0 }}
+                        {% else %}
+                        <i class="ri-subtract-line"></i>
+                        No Income
+                        {% endif %}
                     </div>
                 </div>
-                <div class="stat-card-content">
-                    <span class="stat-card-label">Today's Expenses</span>
-                    <span class="stat-card-value">Rs. {{ todays_expenses|floatformat:2 }}</span>
-                    <span class="stat-card-meta">
-                        <i class="ri-calendar-line"></i>
-                        {{ today_day_name }}, {{ today_date|date:"M d, Y" }}
-                    </span>
+                <div class="stat-card-body">
+                    <div class="stat-card-label">Total Income</div>
+                    <div class="stat-card-value">Rs. {{ total_income|floatformat:2 }}</div>
+                    <div class="stat-card-meta">This month: <strong>Rs. {{ monthly_income|floatformat:2 }}</strong></div>
+                </div>
+                <div class="stat-progress">
+                    <div class="stat-progress-bar" style="width: {% widthratio monthly_income total_income 100 %}%;"></div>
+                </div>
+                <div class="stat-progress-labels">
+                    <span>{{ current_month }}</span>
+                    <span>Rs. {{ monthly_income|floatformat:0 }}</span>
+                </div>
+            </div>
+
+            <!-- Expense Card -->
+            <div class="stat-card stat-card-expense">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="ri-shopping-cart-line"></i>
+                    </div>
+                    <div class="stat-card-trend {% if todays_expenses > 0 %}down{% else %}up{% endif %}">
+                        {% if todays_expenses > 0 %}
+                        <i class="ri-arrow-down-line"></i>
+                        -{{ todays_expenses|floatformat:0 }}
+                        {% else %}
+                        <i class="ri-check-line"></i>
+                        No Expense
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="stat-card-body">
+                    <div class="stat-card-label">Today's Expenses</div>
+                    <div class="stat-card-value">Rs. {{ todays_expenses|floatformat:2 }}</div>
+                    <div class="stat-card-meta">{{ today_day_name }}, {{ today_date|date:"M d, Y" }}</div>
+                </div>
+                <div class="stat-progress">
+                    <div class="stat-progress-bar" style="width: {% if total_weekly_expense > 0 %}{% widthratio todays_expenses total_weekly_expense 100 %}{% else %}0{% endif %}%;"></div>
+                </div>
+                <div class="stat-progress-labels">
+                    <span>Weekly: Rs. {{ total_weekly_expense|floatformat:0 }}</span>
+                    <span>Today: Rs. {{ todays_expenses|floatformat:0 }}</span>
                 </div>
             </div>
         </div>
 
-        <!-- Charts Section -->
-        <div class="charts-grid">
-            <!-- Weekly Expenses Chart -->
-            <div class="chart-card chart-card-weekly">
+        <!-- Charts Row 1: Area Chart + Radar Chart -->
+        <div class="charts-row">
+            <!-- Weekly Expenses - Gradient Area Chart -->
+            <div class="chart-card chart-card-area">
                 <div class="chart-header">
-                    <h2 class="chart-title">
-                        <i class="ri-bar-chart-grouped-line"></i>
-                        Weekly Expenses
-                    </h2>
-                    <span class="chart-badge">
-                        <i class="ri-money-dollar-circle-line"></i>
-                        Rs. {{ total_weekly_expense|floatformat:2 }}
-                    </span>
+                    <div class="chart-title-wrapper">
+                        <h2 class="chart-title">
+                            <i class="ri-line-chart-line"></i>
+                            Weekly Expense Trend
+                        </h2>
+                        <span class="chart-subtitle">Daily expense flow for current week</span>
+                    </div>
+                    <div class="chart-actions">
+                        <span class="chart-badge">
+                            <i class="ri-money-dollar-circle-line"></i>
+                            Rs. {{ total_weekly_expense|floatformat:2 }}
+                        </span>
+                    </div>
                 </div>
                 <div class="chart-container">
                     {% if has_expenses %}
-                    <canvas id="weeklyChart"></canvas>
+                    <canvas id="areaChart"></canvas>
                     {% else %}
                     <div class="no-data-message">
-                        <i class="ri-bar-chart-box-line"></i>
+                        <i class="ri-line-chart-line"></i>
                         <p>No expenses this week</p>
-                        <span>Start tracking to see your weekly overview</span>
+                        <span>Start tracking to see your expense trends</span>
                     </div>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Balance Distribution Chart -->
-            <div class="chart-card chart-card-balance">
+            <!-- Daily Expense Pattern - Radar Chart -->
+            <div class="chart-card chart-card-radar">
                 <div class="chart-header">
-                    <h2 class="chart-title">
-                        <i class="ri-pie-chart-2-line"></i>
-                        Balance Distribution
-                    </h2>
+                    <div class="chart-title-wrapper">
+                        <h2 class="chart-title">
+                            <i class="ri-radar-line"></i>
+                            Spending Pattern
+                        </h2>
+                        <span class="chart-subtitle">Weekly spending distribution</span>
+                    </div>
                 </div>
-                <div class="chart-container-pie">
+                <div class="chart-container chart-container-sm">
+                    {% if has_expenses %}
+                    <canvas id="radarChart"></canvas>
+                    {% else %}
+                    <div class="no-data-message">
+                        <i class="ri-radar-line"></i>
+                        <p>No pattern data</p>
+                        <span>Add expenses to see patterns</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2: Three Equal Charts -->
+        <div class="charts-row-triple">
+            <!-- Balance Distribution - Polar Area Chart -->
+            <div class="chart-card chart-card-polar">
+                <div class="chart-header">
+                    <div class="chart-title-wrapper">
+                        <h2 class="chart-title">
+                            <i class="ri-pie-chart-2-line"></i>
+                            Balance Distribution
+                        </h2>
+                        <span class="chart-subtitle">By account type</span>
+                    </div>
+                </div>
+                <div class="chart-container chart-container-sm">
                     {% if has_balance %}
-                    <canvas id="distributionChart"></canvas>
+                    <canvas id="polarChart"></canvas>
                     {% else %}
                     <div class="no-data-message">
                         <i class="ri-wallet-line"></i>
-                        <p>No balance accounts</p>
-                        <span>Add accounts to see distribution</span>
+                        <p>No accounts yet</p>
+                        <span>Add balance accounts</span>
                     </div>
                     {% endif %}
+                </div>
+            </div>
+
+            <!-- Income Sources - Horizontal Bar Chart -->
+            <div class="chart-card chart-card-horizontal">
+                <div class="chart-header">
+                    <div class="chart-title-wrapper">
+                        <h2 class="chart-title">
+                            <i class="ri-funds-line"></i>
+                            Income Sources
+                        </h2>
+                        <span class="chart-subtitle">Top income categories</span>
+                    </div>
+                </div>
+                <div class="chart-container chart-container-sm">
+                    {% if has_income %}
+                    <canvas id="horizontalBarChart"></canvas>
+                    {% else %}
+                    <div class="no-data-message">
+                        <i class="ri-money-dollar-circle-line"></i>
+                        <p>No income data</p>
+                        <span>Add income records</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Expense vs Income - Mixed Line Chart -->
+            <div class="chart-card chart-card-line">
+                <div class="chart-header">
+                    <div class="chart-title-wrapper">
+                        <h2 class="chart-title">
+                            <i class="ri-exchange-funds-line"></i>
+                            Cash Flow
+                        </h2>
+                        <span class="chart-subtitle">Income vs Expense comparison</span>
+                    </div>
+                </div>
+                <div class="chart-container chart-container-sm">
+                    <canvas id="comparisonChart"></canvas>
                 </div>
             </div>
         </div>
@@ -1117,13 +1491,15 @@
             }
         });
 
-        // Chart.js Configuration
+        // Chart.js Global Configuration
         Chart.defaults.font.family = "'Inter', sans-serif";
         Chart.defaults.plugins.tooltip.backgroundColor = '#0f172a';
-        Chart.defaults.plugins.tooltip.padding = 12;
-        Chart.defaults.plugins.tooltip.cornerRadius = 0;
+        Chart.defaults.plugins.tooltip.padding = 14;
+        Chart.defaults.plugins.tooltip.cornerRadius = 10;
         Chart.defaults.plugins.tooltip.titleFont = { weight: '600', size: 13 };
         Chart.defaults.plugins.tooltip.bodyFont = { size: 12 };
+        Chart.defaults.plugins.legend.labels.usePointStyle = true;
+        Chart.defaults.plugins.legend.labels.padding = 20;
 
         // Data from Django
         const dayLabels = {{ day_labels|safe }};
@@ -1131,118 +1507,67 @@
         const weeklyData = {{ weekly_amounts|safe }};
         const balanceLabels = {{ balance_labels|safe }};
         const balanceValues = {{ balance_values|safe }};
+        const incomeLabels = {{ income_labels|safe }};
+        const incomeValues = {{ income_values|safe }};
         const totalBalance = {{ available_balance }};
+        const totalIncome = {{ total_income }};
+        const monthlyIncome = {{ monthly_income }};
         const todaysExpense = {{ todays_expenses }};
         const totalWeeklyExpense = {{ total_weekly_expense }};
 
-        // Colorful gradients for weekly chart
-        const weeklyColors = [
-            '#06b6d4', // Cyan - Sunday
-            '#3b82f6', // Blue - Monday
-            '#6366f1', // Indigo - Tuesday
-            '#8b5cf6', // Purple - Wednesday
-            '#a855f7', // Violet - Thursday
-            '#d946ef', // Fuchsia - Friday
-            '#ec4899', // Pink - Saturday
+        // Color Palettes
+        const gradientColors = {
+            purple: ['#6366f1', '#8b5cf6', '#a855f7'],
+            green: ['#10b981', '#34d399', '#6ee7b7'],
+            orange: ['#f97316', '#fb923c', '#fdba74'],
+            cyan: ['#06b6d4', '#22d3ee', '#67e8f9'],
+            pink: ['#ec4899', '#f472b6', '#f9a8d4'],
+            red: ['#ef4444', '#f87171', '#fca5a5']
+        };
+
+        const chartColors = [
+            '#6366f1', '#8b5cf6', '#a855f7', '#c084fc',
+            '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9',
+            '#f59e0b', '#f97316', '#ef4444', '#ec4899'
         ];
 
-        // Balance chart colors
-        const balanceChartColors = [
-            '#10b981', // Emerald - Banking
-            '#6366f1', // Indigo - Esewa
-            '#8b5cf6', // Purple - Khalti
-            '#f59e0b', // Amber - Others
-        ];
-
-        // Balance Doughnut Chart
-        const balanceChartCtx = document.getElementById('balanceChart').getContext('2d');
-        new Chart(balanceChartCtx, {
-            type: 'doughnut',
-            data: {
-                labels: balanceLabels.length > 0 ? balanceLabels : ['Balance'],
-                datasets: [{
-                    data: balanceLabels.length > 0 ? balanceValues : [totalBalance || 1],
-                    backgroundColor: balanceLabels.length > 0 ? balanceChartColors.slice(0, balanceLabels.length) : ['#6366f1'],
-                    borderWidth: 0,
-                    borderRadius: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                cutout: '72%',
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return 'Rs. ' + context.raw.toLocaleString();
-                            }
-                        }
-                    }
-                },
-                elements: {
-                    arc: { borderWidth: 0, borderRadius: 0 }
-                }
-            }
-        });
-
-        // Today's Expense Doughnut Chart
-        const todayChartCtx = document.getElementById('todayChart').getContext('2d');
-        const avgDaily = totalWeeklyExpense > 0 ? totalWeeklyExpense / 7 : 500;
-        const todayPercent = Math.min((todaysExpense / avgDaily) * 100, 100);
-        const remaining = Math.max(100 - todayPercent, 0);
-        
-        new Chart(todayChartCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Spent', 'Remaining'],
-                datasets: [{
-                    data: todaysExpense > 0 ? [todayPercent, remaining] : [0, 100],
-                    backgroundColor: todaysExpense > 0 ? ['#ef4444', '#fecaca'] : ['#e2e8f0', '#f1f5f9'],
-                    borderWidth: 0,
-                    borderRadius: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                cutout: '72%',
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                if (context.dataIndex === 0) {
-                                    return 'Spent: Rs. ' + todaysExpense.toLocaleString();
-                                }
-                                return 'Budget remaining';
-                            }
-                        }
-                    }
-                },
-                elements: {
-                    arc: { borderWidth: 0, borderRadius: 0 }
-                }
-            }
-        });
-
-        // Weekly Expenses Bar Chart
+        // ============================================
+        // 1. AREA CHART - Weekly Expenses
+        // ============================================
         {% if has_expenses %}
-        const weeklyChartCtx = document.getElementById('weeklyChart').getContext('2d');
-        new Chart(weeklyChartCtx, {
-            type: 'bar',
+        const areaCtx = document.getElementById('areaChart').getContext('2d');
+        
+        // Create gradient
+        const areaGradient = areaCtx.createLinearGradient(0, 0, 0, 320);
+        areaGradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+        areaGradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.2)');
+        areaGradient.addColorStop(1, 'rgba(168, 85, 247, 0.0)');
+
+        const lineGradient = areaCtx.createLinearGradient(0, 0, 600, 0);
+        lineGradient.addColorStop(0, '#6366f1');
+        lineGradient.addColorStop(0.5, '#8b5cf6');
+        lineGradient.addColorStop(1, '#a855f7');
+
+        new Chart(areaCtx, {
+            type: 'line',
             data: {
-                labels: dayLabels,
+                labels: dayFullLabels,
                 datasets: [{
                     label: 'Expenses',
                     data: weeklyData,
-                    backgroundColor: weeklyColors,
-                    borderWidth: 0,
-                    borderRadius: 0,
-                    borderSkipped: false,
-                    barThickness: 36,
-                    maxBarThickness: 45
+                    fill: true,
+                    backgroundColor: areaGradient,
+                    borderColor: lineGradient,
+                    borderWidth: 3,
+                    tension: 0.4,
+                    pointRadius: 6,
+                    pointHoverRadius: 10,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#6366f1',
+                    pointBorderWidth: 3,
+                    pointHoverBackgroundColor: '#6366f1',
+                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBorderWidth: 3
                 }]
             },
             options: {
@@ -1252,11 +1577,8 @@
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            title: function(context) {
-                                return dayFullLabels[context[0].dataIndex];
-                            },
                             label: function(context) {
-                                return 'Rs. ' + context.raw.toLocaleString();
+                                return 'Spent: Rs. ' + context.raw.toLocaleString();
                             }
                         }
                     }
@@ -1272,7 +1594,10 @@
                     },
                     y: {
                         beginAtZero: true,
-                        grid: { color: '#f1f5f9', drawBorder: false },
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.1)',
+                            drawBorder: false
+                        },
                         border: { display: false },
                         ticks: {
                             color: '#94a3b8',
@@ -1283,41 +1608,109 @@
                         }
                     }
                 },
-                elements: {
-                    bar: { borderRadius: 0 }
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
                 }
             }
         });
         {% endif %}
 
-        // Balance Distribution Pie Chart
-        {% if has_balance %}
-        const distributionChartCtx = document.getElementById('distributionChart').getContext('2d');
-        new Chart(distributionChartCtx, {
-            type: 'doughnut',
+        // ============================================
+        // 2. RADAR CHART - Spending Pattern
+        // ============================================
+        {% if has_expenses %}
+        const radarCtx = document.getElementById('radarChart').getContext('2d');
+        
+        new Chart(radarCtx, {
+            type: 'radar',
             data: {
-                labels: balanceLabels,
+                labels: dayLabels,
                 datasets: [{
-                    data: balanceValues,
-                    backgroundColor: balanceChartColors.slice(0, balanceLabels.length),
-                    borderWidth: 3,
-                    borderColor: '#ffffff',
-                    borderRadius: 0
+                    label: 'This Week',
+                    data: weeklyData,
+                    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                    borderColor: '#ef4444',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#ef4444',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 8
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '55%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': Rs. ' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.2)'
+                        },
+                        angleLines: {
+                            color: 'rgba(148, 163, 184, 0.2)'
+                        },
+                        pointLabels: {
+                            color: '#64748b',
+                            font: { size: 12, weight: '600' }
+                        },
+                        ticks: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+
+        // ============================================
+        // 3. POLAR AREA CHART - Balance Distribution
+        // ============================================
+        {% if has_balance %}
+        const polarCtx = document.getElementById('polarChart').getContext('2d');
+
+        new Chart(polarCtx, {
+            type: 'polarArea',
+            data: {
+                labels: balanceLabels,
+                datasets: [{
+                    data: balanceValues,
+                    backgroundColor: [
+                        'rgba(99, 102, 241, 0.7)',
+                        'rgba(139, 92, 246, 0.7)',
+                        'rgba(168, 85, 247, 0.7)',
+                        'rgba(192, 132, 252, 0.7)'
+                    ],
+                    borderColor: [
+                        '#6366f1',
+                        '#8b5cf6',
+                        '#a855f7',
+                        '#c084fc'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            padding: 20,
-                            usePointStyle: true,
-                            pointStyle: 'rect',
-                            font: { size: 12, weight: '600' },
-                            color: '#475569'
+                            color: '#475569',
+                            font: { size: 11, weight: '600' },
+                            padding: 16
                         }
                     },
                     tooltip: {
@@ -1330,12 +1723,165 @@
                         }
                     }
                 },
-                elements: {
-                    arc: { borderWidth: 3, borderRadius: 0 }
+                scales: {
+                    r: {
+                        ticks: { display: false },
+                        grid: { color: 'rgba(148, 163, 184, 0.2)' }
+                    }
                 }
             }
         });
         {% endif %}
+
+        // ============================================
+        // 4. HORIZONTAL BAR CHART - Income Sources
+        // ============================================
+        {% if has_income %}
+        const horizontalCtx = document.getElementById('horizontalBarChart').getContext('2d');
+
+        // Create gradients for each bar
+        const barGradients = incomeLabels.map((_, index) => {
+            const gradient = horizontalCtx.createLinearGradient(0, 0, 400, 0);
+            const colors = [
+                ['#10b981', '#34d399'],
+                ['#14b8a6', '#2dd4bf'],
+                ['#06b6d4', '#22d3ee'],
+                ['#0ea5e9', '#38bdf8'],
+                ['#6366f1', '#818cf8']
+            ];
+            const colorPair = colors[index % colors.length];
+            gradient.addColorStop(0, colorPair[0]);
+            gradient.addColorStop(1, colorPair[1]);
+            return gradient;
+        });
+
+        new Chart(horizontalCtx, {
+            type: 'bar',
+            data: {
+                labels: incomeLabels,
+                datasets: [{
+                    label: 'Income',
+                    data: incomeValues,
+                    backgroundColor: barGradients,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                    barThickness: 24
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Rs. ' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.1)',
+                            drawBorder: false
+                        },
+                        border: { display: false },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 11 },
+                            callback: function(value) {
+                                return 'Rs. ' + value.toLocaleString();
+                            }
+                        }
+                    },
+                    y: {
+                        grid: { display: false },
+                        border: { display: false },
+                        ticks: {
+                            color: '#64748b',
+                            font: { size: 12, weight: '600' }
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+
+        // ============================================
+        // 5. COMPARISON CHART - Income vs Expense
+        // ============================================
+        const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+
+        // Calculate comparison data
+        const incomeTotal = totalIncome || 0;
+        const expenseTotal = totalWeeklyExpense || 0;
+        const savings = incomeTotal - expenseTotal;
+
+        new Chart(comparisonCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Total Income', 'Weekly Expense', savings >= 0 ? 'Savings' : 'Deficit'],
+                datasets: [{
+                    data: [
+                        incomeTotal || 1,
+                        expenseTotal || 0,
+                        Math.abs(savings) || 0
+                    ],
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(239, 68, 68, 0.8)',
+                        savings >= 0 ? 'rgba(99, 102, 241, 0.8)' : 'rgba(245, 158, 11, 0.8)'
+                    ],
+                    borderColor: [
+                        '#10b981',
+                        '#ef4444',
+                        savings >= 0 ? '#6366f1' : '#f59e0b'
+                    ],
+                    borderWidth: 3,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#475569',
+                            font: { size: 11, weight: '600' },
+                            padding: 12
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': Rs. ' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // ============================================
+        // Animate Progress Bars on Load
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const progressBars = document.querySelectorAll('.stat-progress-bar');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 300);
+            });
+        });
     </script>
 </body>
 </html>

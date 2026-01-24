@@ -1,1 +1,4 @@
-Django==6.0.1
+Django>=5.0,<6.0
+django-jazzmin
+Pillow
+psycopg2-binary

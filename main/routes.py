@@ -24,4 +24,12 @@ urlpatterns = [
     path('expenses/<int:block_id>/add/', views.add_expense_item, name='add_expense_item'),
     path('expenses/item/<int:item_id>/update/', views.update_expense_item, name='update_expense_item'),
     path('expenses/item/<int:item_id>/get/', views.get_expense_item, name='get_expense_item'),
+
+
+    # !================= INCOME MANAGEMENT ==========================
+    path('income/', views.income_view, name='income_view'),
+    path('income/add/', views.add_income, name='add_income'),
+    path('income/edit/<int:income_id>/', views.edit_income, name='edit_income'),
+    path('income/delete/<int:income_id>/', views.delete_income, name='delete_income'),
+    path('income/get/<int:income_id>/', views.get_income, name='get_income'),
 ]
