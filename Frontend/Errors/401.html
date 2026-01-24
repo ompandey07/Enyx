@@ -1,0 +1,340 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>401 - Unauthorized Access | ExpTrack</title>
+    <meta name="theme-color" content="#6366f1">
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{% static 'MainLogo.png' %}" type="image/x-icon">
+    <link rel="icon" type="image/png" href="{% static 'MainLogo.png' %}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kaushan+Script&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --font-body: 'Inter', sans-serif;
+            --font-script: 'Kaushan Script', cursive;
+            --font-mono: 'JetBrains Mono', monospace;
+            
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            
+            --bg-primary: #ffffff;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+            --pink: #ec4899;
+            --cyan: #06b6d4;
+            --orange: #f97316;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden;
+        }
+
+        /* Floating Dots */
+        .floating-dots-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .floating-dot {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: floatAround 60s infinite ease-in-out;
+        }
+
+        .floating-dot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50%;
+            height: 50%;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            filter: blur(1px);
+        }
+
+        .floating-dot.dot-1 {
+            width: 12px;
+            height: 12px;
+            background: var(--accent-primary);
+            top: 20%;
+            left: 10%;
+            animation-duration: 80s;
+        }
+
+        .floating-dot.dot-2 {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-secondary);
+            top: 40%;
+            left: 80%;
+            animation-duration: 90s;
+            animation-delay: -10s;
+        }
+
+        .floating-dot.dot-3 {
+            width: 15px;
+            height: 15px;
+            background: var(--pink);
+            top: 60%;
+            left: 20%;
+            animation-duration: 70s;
+            animation-delay: -20s;
+        }
+
+        .floating-dot.dot-4 {
+            width: 10px;
+            height: 10px;
+            background: var(--cyan);
+            top: 30%;
+            left: 60%;
+            animation-duration: 85s;
+            animation-delay: -5s;
+        }
+
+        .floating-dot.dot-5 {
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            top: 70%;
+            left: 70%;
+            animation-duration: 100s;
+            animation-delay: -15s;
+        }
+
+        .floating-dot.dot-6 {
+            width: 14px;
+            height: 14px;
+            background: var(--warning);
+            top: 50%;
+            left: 5%;
+            animation-duration: 65s;
+            animation-delay: -3s;
+        }
+
+        .floating-dot.dot-7 {
+            width: 9px;
+            height: 9px;
+            background: var(--orange);
+            top: 15%;
+            left: 45%;
+            animation-duration: 95s;
+            animation-delay: -25s;
+        }
+
+        .floating-dot.dot-8 {
+            width: 11px;
+            height: 11px;
+            background: var(--info);
+            top: 85%;
+            left: 35%;
+            animation-duration: 75s;
+            animation-delay: -12s;
+        }
+
+        .floating-dot.dot-9 {
+            width: 7px;
+            height: 7px;
+            background: var(--accent-primary);
+            top: 25%;
+            left: 90%;
+            animation-duration: 72s;
+            animation-delay: -8s;
+        }
+
+        .floating-dot.dot-10 {
+            width: 13px;
+            height: 13px;
+            background: var(--error);
+            top: 75%;
+            left: 55%;
+            animation-duration: 88s;
+            animation-delay: -30s;
+        }
+
+        .floating-dot.dot-11 {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-primary);
+            top: 45%;
+            left: 25%;
+            animation-duration: 98s;
+            animation-delay: -18s;
+        }
+
+        .floating-dot.dot-12 {
+            width: 10px;
+            height: 10px;
+            background: var(--cyan);
+            top: 55%;
+            left: 85%;
+            animation-duration: 82s;
+            animation-delay: -22s;
+        }
+
+        @keyframes floatAround {
+            0% {
+                transform: translate(0, 0) rotate(0deg) scale(1);
+                opacity: 0.3;
+            }
+            25% {
+                transform: translate(80px, -60px) rotate(90deg) scale(1.1);
+                opacity: 0.5;
+            }
+            50% {
+                transform: translate(40px, 100px) rotate(180deg) scale(0.9);
+                opacity: 0.4;
+            }
+            75% {
+                transform: translate(-60px, 40px) rotate(270deg) scale(1.1);
+                opacity: 0.5;
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg) scale(1);
+                opacity: 0.3;
+            }
+        }
+
+        /* Main Container */
+        .error-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            padding: 24px;
+        }
+
+        /* Content */
+        .error-content {
+            text-align: center;
+        }
+
+        .error-code {
+            font-family: 'Kaushan Script', cursive;
+            font-size: clamp(120px, 25vw, 200px);
+            font-weight: 400;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 16px;
+        }
+
+        .error-message {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(14px, 2vw, 18px);
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            letter-spacing: -0.5px;
+        }
+
+        .login-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 36px;
+            background: var(--accent-gradient);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .login-btn {
+                padding: 14px 28px;
+                font-size: 14px;
+            }
+
+            .floating-dot.dot-7,
+            .floating-dot.dot-8,
+            .floating-dot.dot-9,
+            .floating-dot.dot-10,
+            .floating-dot.dot-11,
+            .floating-dot.dot-12 {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Dots -->
+    <div class="floating-dots-container">
+        <div class="floating-dot dot-1"></div>
+        <div class="floating-dot dot-2"></div>
+        <div class="floating-dot dot-3"></div>
+        <div class="floating-dot dot-4"></div>
+        <div class="floating-dot dot-5"></div>
+        <div class="floating-dot dot-6"></div>
+        <div class="floating-dot dot-7"></div>
+        <div class="floating-dot dot-8"></div>
+        <div class="floating-dot dot-9"></div>
+        <div class="floating-dot dot-10"></div>
+        <div class="floating-dot dot-11"></div>
+        <div class="floating-dot dot-12"></div>
+    </div>
+
+    <!-- Error Page -->
+    <div class="error-page">
+        <div class="error-content">
+            <div class="error-code">401</div>
+            <p class="error-message">Oops! Looks like you forgot your keys 🔐</p>
+            <a href="/accounts/login" class="login-btn">
+                <i class="ri-arrow-left-line"></i>
+                Back to Login
+            </a>
+        </div>
+    </div>
+</body>
+</html>

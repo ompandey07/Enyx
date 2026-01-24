@@ -207,7 +207,7 @@ def login_view(request):
     """Handle user login"""
     if request.user.is_authenticated:
         if is_ajax(request):
-            return JsonResponse({'success': True, 'redirect': '/dashboard/'})
+            return JsonResponse({'success': True, 'redirect': '/main/dashboard/'})
         return redirect('dashboard_view')
     
     if request.method == 'POST':
@@ -259,7 +259,7 @@ def login_view(request):
                 request.session.set_expiry(60 * 60 * 24 * 30)
             
             if is_ajax(request):
-                return JsonResponse({'success': True, 'redirect': '/dashboard/'})
+                return JsonResponse({'success': True, 'redirect': '/main/dashboard/'})
             return redirect('dashboard_view')
         else:
             record_login_attempt(email, ip_address, False)
@@ -284,7 +284,7 @@ def register_view(request):
     """Handle user registration"""
     if request.user.is_authenticated:
         if is_ajax(request):
-            return JsonResponse({'success': True, 'redirect': '/dashboard/'})
+            return JsonResponse({'success': True, 'redirect': '/main/dashboard/'})
         return redirect('dashboard_view')
     
     if request.method == 'POST':
@@ -386,7 +386,7 @@ def register_view(request):
             login(request, user)
             
             if is_ajax(request):
-                return JsonResponse({'success': True, 'redirect': '/dashboard/'})
+                return JsonResponse({'success': True, 'redirect': '/main/dashboard/'})
             return redirect('dashboard_view')
             
         except Exception as e:
