@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="path/to/your/logo.png" alt="ExpTrack Logo" width="200"/>
+  <img src="static/Banner.png" alt="ExpTrack Banner" width="800"/>
   
   # ExpTrack
   
