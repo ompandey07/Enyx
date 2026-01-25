@@ -193,6 +193,7 @@ class ExpenseItem(models.Model):
     ]
     
     expense_block = models.ForeignKey(ExpenseBlock, on_delete=models.CASCADE, related_name='items')
+    user_balance = models.ForeignKey(UserBalance, on_delete=models.SET_NULL, null=True, blank=True, related_name='expenses')
     expense_name = models.CharField(max_length=100)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='others')
@@ -208,24 +209,31 @@ class ExpenseItem(models.Model):
     def __str__(self):
         return f"{self.expense_name} - Rs. {self.amount}"
     
+    @property
+    def account_name(self):
+        """Get account name from user_balance"""
+        if self.user_balance:
+            return self.user_balance.account_name
+        return "N/A"
+    
     def save(self, *args, **kwargs):
-        # Auto-set expense_day and expense_date if not provided
         if not self.expense_date:
             self.expense_date = date.today()
         
         if not self.expense_day:
-            # Get day name from expense_date
             days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
             self.expense_day = days[self.expense_date.weekday()]
         
+        # Auto-set payment_method from user_balance
+        if self.user_balance:
+            self.payment_method = self.user_balance.income_method
+        
         super().save(*args, **kwargs)
-        # Update block total after saving
         self.expense_block.update_total()
     
     def delete(self, *args, **kwargs):
         block = self.expense_block
         super().delete(*args, **kwargs)
-        # Update block total after deletion
         block.update_total()
 
 

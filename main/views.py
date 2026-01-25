@@ -644,8 +644,9 @@ def expense_detail_view(request, block_id):
     except EmptyPage:
         expense_items = paginator.page(paginator.num_pages)
     
-    # Check if user has any balance accounts
-    has_balance = UserBalance.objects.filter(user=user, status='active').exists()
+    # Get user's active balance accounts
+    user_balances = UserBalance.objects.filter(user=user, status='active')
+    has_balance = user_balances.exists()
     
     context = {
         'user': user,
@@ -662,6 +663,7 @@ def expense_detail_view(request, block_id):
         'today_expenses': today_expenses,
         'payment_methods': ExpenseItem.PAYMENT_METHOD_CHOICES,
         'day_choices': ExpenseItem.DAY_CHOICES,
+        'user_balances': user_balances,
         'has_balance': has_balance,
     }
 
@@ -688,7 +690,7 @@ def add_expense_item(request, block_id):
         
         expense_name = request.POST.get('expense_name', '').strip()
         amount = request.POST.get('amount', '0').strip()
-        payment_method = request.POST.get('payment_method', 'others').strip()
+        balance_id = request.POST.get('balance_id', '').strip()
         notes = request.POST.get('notes', '').strip()
         
         # Get today's date and day
@@ -717,22 +719,21 @@ def add_expense_item(request, block_id):
         except (InvalidOperation, ValueError):
             return JsonResponse({'success': False, 'message': 'Invalid amount'})
         
-        # Validate payment method
-        valid_methods = [choice[0] for choice in ExpenseItem.PAYMENT_METHOD_CHOICES]
-        if payment_method not in valid_methods:
-            return JsonResponse({'success': False, 'message': 'Invalid payment method'})
+        # Validate balance_id
+        if not balance_id:
+            return JsonResponse({'success': False, 'message': 'Please select an account'})
         
-        # Find matching UserBalance and deduct amount
-        user_balance = UserBalance.objects.filter(
-            user=request.user,
-            income_method=payment_method,
-            status='active'
-        ).first()
-        
-        if not user_balance:
+        # Get the selected balance account
+        try:
+            user_balance = UserBalance.objects.get(
+                id=balance_id,
+                user=request.user,
+                status='active'
+            )
+        except UserBalance.DoesNotExist:
             return JsonResponse({
                 'success': False, 
-                'message': f'No active balance account found for {payment_method}. Please create a balance first.',
+                'message': 'Selected account not found or inactive.',
                 'redirect_balance': True
             })
         
@@ -749,9 +750,10 @@ def add_expense_item(request, block_id):
         # Create expense item
         expense_item = ExpenseItem.objects.create(
             expense_block=expense_block,
+            user_balance=user_balance,
             expense_name=expense_name,
             amount=amount_decimal,
-            payment_method=payment_method,
+            payment_method=user_balance.income_method,
             expense_day=today_day_name,
             expense_date=today,
             notes=notes if notes else None
@@ -764,6 +766,8 @@ def add_expense_item(request, block_id):
                 'id': expense_item.id,
                 'expense_name': expense_item.expense_name,
                 'amount': str(expense_item.amount),
+                'account_name': user_balance.account_name,
+                'balance_id': user_balance.id,
                 'payment_method': expense_item.get_payment_method_display(),
                 'payment_method_value': expense_item.payment_method,
                 'expense_day': expense_item.expense_day.capitalize(),
@@ -779,7 +783,6 @@ def add_expense_item(request, block_id):
         return JsonResponse({'success': False, 'message': 'Expense block not found'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'})
-
 
 # ============================================
 # Update Expense Item
@@ -805,12 +808,12 @@ def update_expense_item(request, item_id):
         
         expense_name = request.POST.get('expense_name', '').strip()
         amount = request.POST.get('amount', '0').strip()
-        payment_method = request.POST.get('payment_method', 'others').strip()
+        balance_id = request.POST.get('balance_id', '').strip()
         notes = request.POST.get('notes', '').strip()
         
         # Store old values for balance adjustment
         old_amount = expense_item.amount
-        old_payment_method = expense_item.payment_method
+        old_balance = expense_item.user_balance
         
         # Validation
         if not expense_name:
@@ -830,44 +833,34 @@ def update_expense_item(request, item_id):
         except (InvalidOperation, ValueError):
             return JsonResponse({'success': False, 'message': 'Invalid amount'})
         
-        # Validate payment method
-        valid_methods = [choice[0] for choice in ExpenseItem.PAYMENT_METHOD_CHOICES]
-        if payment_method not in valid_methods:
-            return JsonResponse({'success': False, 'message': 'Invalid payment method'})
+        # Validate balance_id
+        if not balance_id:
+            return JsonResponse({'success': False, 'message': 'Please select an account'})
         
-        # Handle balance adjustments
-        # Refund old amount to old payment method
-        old_balance = UserBalance.objects.filter(
-            user=request.user,
-            income_method=old_payment_method,
-            status='active'
-        ).first()
-        
-        if old_balance:
-            old_balance.available_balance += old_amount
-            old_balance.save(update_fields=['available_balance', 'updated_at'])
-        
-        # Deduct new amount from new payment method
-        new_balance = UserBalance.objects.filter(
-            user=request.user,
-            income_method=payment_method,
-            status='active'
-        ).first()
-        
-        if not new_balance:
-            # Rollback refund
-            if old_balance:
-                old_balance.available_balance -= old_amount
-                old_balance.save(update_fields=['available_balance', 'updated_at'])
+        # Get the new selected balance account
+        try:
+            new_balance = UserBalance.objects.get(
+                id=balance_id,
+                user=request.user,
+                status='active'
+            )
+        except UserBalance.DoesNotExist:
             return JsonResponse({
                 'success': False, 
-                'message': f'No active balance account found for {payment_method}. Please create a balance first.',
+                'message': 'Selected account not found or inactive.',
                 'redirect_balance': True
             })
         
+        # Handle balance adjustments
+        # Refund old amount to old balance account
+        if old_balance and old_balance.status == 'active':
+            old_balance.available_balance += old_amount
+            old_balance.save(update_fields=['available_balance', 'updated_at'])
+        
+        # Check if new balance has sufficient funds
         if new_balance.available_balance < amount_decimal:
             # Rollback refund
-            if old_balance:
+            if old_balance and old_balance.status == 'active':
                 old_balance.available_balance -= old_amount
                 old_balance.save(update_fields=['available_balance', 'updated_at'])
             return JsonResponse({
@@ -875,15 +868,16 @@ def update_expense_item(request, item_id):
                 'message': f'Insufficient balance in {new_balance.account_name}. Available: Rs. {new_balance.available_balance}'
             })
         
+        # Deduct new amount from new balance
         new_balance.available_balance -= amount_decimal
         new_balance.save(update_fields=['available_balance', 'updated_at'])
         
-        # Update expense item (only editable fields)
+        # Update expense item
         expense_item.expense_name = expense_name
         expense_item.amount = amount_decimal
-        expense_item.payment_method = payment_method
+        expense_item.user_balance = new_balance
+        expense_item.payment_method = new_balance.income_method
         expense_item.notes = notes if notes else None
-        # expense_day and expense_date remain unchanged
         expense_item.save()
         
         return JsonResponse({
@@ -893,6 +887,8 @@ def update_expense_item(request, item_id):
                 'id': expense_item.id,
                 'expense_name': expense_item.expense_name,
                 'amount': str(expense_item.amount),
+                'account_name': new_balance.account_name,
+                'balance_id': new_balance.id,
                 'payment_method': expense_item.get_payment_method_display(),
                 'payment_method_value': expense_item.payment_method,
                 'expense_day': expense_item.expense_day.capitalize(),
@@ -907,8 +903,6 @@ def update_expense_item(request, item_id):
         return JsonResponse({'success': False, 'message': 'Expense item not found'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'})
-
-
 # ============================================
 # Get Expense Item Details (for edit form)
 # ============================================
@@ -930,6 +924,8 @@ def get_expense_item(request, item_id):
                 'id': expense_item.id,
                 'expense_name': expense_item.expense_name,
                 'amount': str(expense_item.amount),
+                'balance_id': expense_item.user_balance.id if expense_item.user_balance else '',
+                'account_name': expense_item.user_balance.account_name if expense_item.user_balance else '',
                 'payment_method': expense_item.payment_method,
                 'expense_day': expense_item.expense_day,
                 'expense_day_display': expense_item.expense_day.capitalize(),
@@ -943,8 +939,6 @@ def get_expense_item(request, item_id):
         return JsonResponse({'success': False, 'message': 'Expense item not found'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': 'An error occurred'})
-
-
 # ============================================
 # Update Expense Block Title Only
 # ============================================
@@ -977,8 +971,6 @@ def update_expense_block(request, block_id):
         return JsonResponse({'success': False, 'message': 'Expense block not found'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': 'An error occurred.'})
-    
-
 #?======================================================================================================================
 #!=========================================== END OF EXPENSE VIEWS ===========================================
 #?====================================================================================================================== 

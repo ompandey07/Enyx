@@ -784,6 +784,16 @@
 
         .date-cell { font-size: 13px; color: var(--text-secondary); }
 
+        .account-badge {
+            display: inline-flex;
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-primary);
+        }
+
         .method-badge {
             display: inline-flex;
             padding: 4px 12px;
@@ -1017,7 +1027,8 @@
             background: var(--bg-primary);
         }
 
-        .form-input:read-only {
+        .form-input:read-only,
+        .form-input.readonly {
             background: var(--bg-tertiary);
             color: var(--text-secondary);
             cursor: not-allowed;
@@ -1036,6 +1047,25 @@
         }
 
         .form-hint { font-size: 12px; color: var(--text-muted); }
+
+        .account-balance-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: var(--success-light);
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--success);
+        }
+
+        .account-balance-info.warning {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .account-balance-info i { font-size: 16px; }
 
         .slide-panel-footer {
             padding: 24px;
@@ -1294,7 +1324,7 @@
                         <i class="ri-calendar-line"></i>
                         Day & Date
                     </label>
-                    <input type="text" class="form-input" id="expenseDayDisplay" readonly value="{{ today_day_name|title }} - {{ today_date|date:'M d, Y' }}">
+                    <input type="text" class="form-input readonly" id="expenseDayDisplay" readonly value="{{ today_day_name|title }} - {{ today_date|date:'M d, Y' }}">
                     <span class="form-hint">Automatically set based on when expense was created</span>
                 </div>
 
@@ -1316,18 +1346,41 @@
                     <input type="number" step="0.01" min="0.01" class="form-input" name="amount" id="expenseAmount" placeholder="0.00" required>
                 </div>
 
-                <!-- Payment Method -->
+                <!-- Select Account -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ri-wallet-3-line"></i>
+                        Select Account <span class="required">*</span>
+                    </label>
+                    <select class="form-select" name="balance_id" id="balanceSelect" required>
+                        <option value="">-- Select Account --</option>
+                        {% for balance in user_balances %}
+                        <option value="{{ balance.id }}" 
+                                data-method="{{ balance.income_method }}"
+                                data-method-display="{{ balance.get_income_method_display }}"
+                                data-balance="{{ balance.available_balance }}">
+                            {{ balance.account_name }} (Rs. {{ balance.available_balance }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <span class="form-hint">Select the account to deduct the expense from</span>
+                    
+                    <!-- Account Balance Info -->
+                    <div class="account-balance-info" id="accountBalanceInfo" style="display: none;">
+                        <i class="ri-wallet-line"></i>
+                        <span id="accountBalanceText">Available: Rs. 0.00</span>
+                    </div>
+                </div>
+
+                <!-- Paid From (Auto-populated, Read Only) -->
                 <div class="form-group">
                     <label class="form-label">
                         <i class="ri-bank-card-line"></i>
-                        Paid From <span class="required">*</span>
+                        Paid From
                     </label>
-                    <select class="form-select" name="payment_method" id="paymentMethod" required>
-                        {% for value, label in payment_methods %}
-                        <option value="{{ value }}">{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                    <span class="form-hint">Amount will be deducted from your selected balance</span>
+                    <input type="text" class="form-input readonly" id="paymentMethodDisplay" readonly placeholder="Auto-selected based on account">
+                    <input type="hidden" name="payment_method" id="paymentMethod" value="">
+                    <span class="form-hint">Automatically set based on selected account</span>
                 </div>
 
                 <!-- Notes -->
@@ -1409,7 +1462,7 @@
                 <span>Back to List</span>
             </a>
 
-            <button class="add-expense-btn" id="addExpenseBtn" type="button" {% if expense_block.status == 'closed' or not is_today_in_block %}disabled{% endif %}>
+            <button class="add-expense-btn" id="addExpenseBtn" type="button" {% if expense_block.status == 'closed' or not is_today_in_block or not has_balance %}disabled{% endif %}>
                 <i class="ri-add-line"></i>
                 <span>Add Expense</span>
             </button>
@@ -1514,6 +1567,14 @@
         </div>
         {% endif %}
 
+        <!-- No Balance Notice -->
+        {% if not has_balance and expense_block.status == 'active' %}
+        <div class="closed-notice">
+            <i class="ri-wallet-line"></i>
+            <span class="closed-notice-text">You don't have any active balance accounts. <a href="{% url 'balance_view' %}" style="color: var(--warning); text-decoration: underline;">Create one</a> to start adding expenses.</span>
+        </div>
+        {% endif %}
+
         <!-- Block Header Card -->
         <div class="block-header-card {% if expense_block.status == 'closed' %}closed{% endif %}">
             <div class="block-header-content">
@@ -1587,7 +1648,7 @@
                         </div>
                         <div>
                             <div class="today-expense-name">{{ expense.expense_name }}</div>
-                            <div class="today-expense-time">{{ expense.created_at|time:"g:i A" }} • {{ expense.get_payment_method_display }}</div>
+                            <div class="today-expense-time">{{ expense.created_at|time:"g:i A" }} • {{ expense.account_name }}</div>
                         </div>
                     </div>
                     <div class="today-expense-amount">Rs. {{ expense.amount }}</div>
@@ -1647,6 +1708,7 @@
                             <th class="sn-cell">SN</th>
                             <th>Expense</th>
                             <th>Amount</th>
+                            <th>Account</th>
                             <th>Day</th>
                             <th>Date</th>
                             <th>Paid From</th>
@@ -1664,6 +1726,9 @@
                                 {% endif %}
                             </td>
                             <td class="amount-cell">Rs. {{ expense.amount }}</td>
+                            <td>
+                                <span class="account-badge">{{ expense.account_name }}</span>
+                            </td>
                             <td>
                                 <span class="day-badge">{{ expense.expense_day|capfirst }}</span>
                             </td>
@@ -1727,15 +1792,22 @@
                 <p class="empty-state-text">
                     {% if expense_block.status == 'closed' %}
                     No expenses were recorded in this block.
+                    {% elif not has_balance %}
+                    Create a balance account first to start adding expenses.
                     {% else %}
                     Start adding your expenses to track your spending for this {{ expense_block.get_expense_type_display|lower }} block.
                     {% endif %}
                 </p>
-                {% if expense_block.status == 'active' and is_today_in_block %}
+                {% if expense_block.status == 'active' and is_today_in_block and has_balance %}
                 <button class="empty-state-btn" id="emptyStateAddBtn" type="button">
                     <i class="ri-add-line"></i>
                     Add Your First Expense
                 </button>
+                {% elif not has_balance %}
+                <a href="{% url 'balance_view' %}" class="empty-state-btn">
+                    <i class="ri-wallet-3-line"></i>
+                    Create Balance Account
+                </a>
                 {% endif %}
             </div>
             {% endif %}
@@ -1788,8 +1860,12 @@
         const expenseDayDisplay = document.getElementById('expenseDayDisplay');
         const expenseName = document.getElementById('expenseName');
         const expenseAmount = document.getElementById('expenseAmount');
+        const balanceSelect = document.getElementById('balanceSelect');
+        const paymentMethodDisplay = document.getElementById('paymentMethodDisplay');
         const paymentMethod = document.getElementById('paymentMethod');
         const expenseNotes = document.getElementById('expenseNotes');
+        const accountBalanceInfo = document.getElementById('accountBalanceInfo');
+        const accountBalanceText = document.getElementById('accountBalanceText');
         
         const editTitleBtn = document.getElementById('editTitleBtn');
         const editTitleModal = document.getElementById('editTitleModal');
@@ -1839,6 +1915,38 @@
             }
         });
 
+        // Account Selection - Auto populate payment method
+        if (balanceSelect) {
+            balanceSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                
+                if (selectedOption.value) {
+                    const method = selectedOption.dataset.method;
+                    const methodDisplay = selectedOption.dataset.methodDisplay;
+                    const balance = selectedOption.dataset.balance;
+                    
+                    // Set payment method
+                    paymentMethod.value = method;
+                    paymentMethodDisplay.value = methodDisplay;
+                    
+                    // Show balance info
+                    accountBalanceInfo.style.display = 'flex';
+                    accountBalanceText.textContent = 'Available: Rs. ' + parseFloat(balance).toFixed(2);
+                    
+                    // Check if balance is low
+                    if (parseFloat(balance) < 100) {
+                        accountBalanceInfo.classList.add('warning');
+                    } else {
+                        accountBalanceInfo.classList.remove('warning');
+                    }
+                } else {
+                    paymentMethod.value = '';
+                    paymentMethodDisplay.value = '';
+                    accountBalanceInfo.style.display = 'none';
+                }
+            });
+        }
+
         // Slide Panel Functions
         let isEditMode = false;
 
@@ -1847,6 +1955,10 @@
             slidePanel.classList.add('show');
             slidePanelOverlay.classList.add('show');
             document.body.style.overflow = 'hidden';
+
+            // Reset account balance info
+            accountBalanceInfo.style.display = 'none';
+            accountBalanceInfo.classList.remove('warning');
 
             if (editMode && expenseData) {
                 slidePanelTitleText.textContent = 'Edit Expense';
@@ -1857,8 +1969,17 @@
                 expenseDayDisplay.value = expenseData.expense_day_display + ' - ' + expenseData.expense_date_display;
                 expenseName.value = expenseData.expense_name;
                 expenseAmount.value = expenseData.amount;
-                paymentMethod.value = expenseData.payment_method;
+                balanceSelect.value = expenseData.balance_id;
                 expenseNotes.value = expenseData.notes || '';
+                
+                // Trigger change event to update payment method display
+                if (expenseData.balance_id) {
+                    balanceSelect.dispatchEvent(new Event('change'));
+                } else {
+                    paymentMethodDisplay.value = expenseData.payment_method ? 
+                        expenseData.payment_method.charAt(0).toUpperCase() + expenseData.payment_method.slice(1) : '';
+                    paymentMethod.value = expenseData.payment_method || '';
+                }
             } else {
                 slidePanelTitleText.textContent = 'Add Expense';
                 slidePanelIcon.className = 'ri-add-line';
@@ -1868,7 +1989,9 @@
                 expenseDayDisplay.value = '{{ today_day_name|title }} - {{ today_date|date:"M d, Y" }}';
                 expenseName.value = '';
                 expenseAmount.value = '';
-                paymentMethod.value = 'others';
+                balanceSelect.value = '';
+                paymentMethodDisplay.value = '';
+                paymentMethod.value = '';
                 expenseNotes.value = '';
             }
 
@@ -1880,6 +2003,7 @@
             slidePanelOverlay.classList.remove('show');
             document.body.style.overflow = '';
             expenseForm.reset();
+            accountBalanceInfo.style.display = 'none';
             isEditMode = false;
         }
 
@@ -1921,7 +2045,7 @@
             saveBtn.addEventListener('click', async function() {
                 const name = expenseName.value.trim();
                 const amount = expenseAmount.value.trim();
-                const method = paymentMethod.value;
+                const balanceId = balanceSelect.value;
                 const notes = expenseNotes.value.trim();
 
                 // Validation
@@ -1940,6 +2064,11 @@
                     expenseAmount.focus();
                     return;
                 }
+                if (!balanceId) {
+                    showToast('Please select an account', 'error');
+                    balanceSelect.focus();
+                    return;
+                }
 
                 saveBtn.classList.add('loading');
                 saveBtn.disabled = true;
@@ -1947,7 +2076,7 @@
                 const formData = new FormData();
                 formData.append('expense_name', name);
                 formData.append('amount', amount);
-                formData.append('payment_method', method);
+                formData.append('balance_id', balanceId);
                 formData.append('notes', notes);
 
                 try {

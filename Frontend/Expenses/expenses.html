@@ -691,7 +691,6 @@
 
         .data-table tbody tr {
             transition: background var(--transition-base);
-            cursor: pointer;
         }
 
         .data-table tbody tr:hover {
@@ -782,7 +781,13 @@
         }
 
         .action-cell {
-            width: 80px;
+            width: 120px;
+        }
+
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .action-btn {
@@ -792,17 +797,41 @@
             width: 34px;
             height: 34px;
             border-radius: var(--radius-md);
-            background: var(--accent-gradient);
-            color: white;
             transition: all var(--transition-base);
-        }
-
-        .action-btn:hover {
-            transform: scale(1.1);
         }
 
         .action-btn i {
             font-size: 16px;
+        }
+
+        .action-btn-view {
+            background: var(--accent-gradient);
+            color: white;
+        }
+
+        .action-btn-view:hover {
+            transform: scale(1.1);
+        }
+
+        .action-btn-edit {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-primary);
+        }
+
+        .action-btn-edit:hover {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .action-btn-edit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-btn-edit:disabled:hover {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-primary);
+            transform: none;
         }
 
         /* Pagination */
@@ -919,7 +948,7 @@
             font-size: 20px;
         }
 
-        /* Create Block Modal */
+        /* Modal Styles */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -1072,6 +1101,12 @@
 
         .form-input::placeholder {
             color: var(--text-muted);
+        }
+
+        .form-input:read-only {
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            cursor: not-allowed;
         }
 
         .form-select {
@@ -1302,6 +1337,7 @@
             .form-row { grid-template-columns: 1fr; }
             .toast { min-width: auto; max-width: calc(100vw - 48px); }
             .toast-container { right: 16px; left: 16px; }
+            .action-cell { width: 100px; }
         }
     </style>
 </head>
@@ -1371,6 +1407,61 @@
                     <span class="btn-text-loading">
                         <div class="spinner"></div>
                         Creating...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Block Modal -->
+    <div class="modal-overlay" id="editBlockModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <div class="modal-title-icon">
+                        <i class="ri-pencil-line"></i>
+                    </div>
+                    <span>Edit Block Title</span>
+                </div>
+                <button class="modal-close" id="editModalClose" type="button">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editBlockId" value="">
+                
+                <div class="form-group">
+                    <label class="form-label">Block Title</label>
+                    <input type="text" class="form-input" id="editBlockTitle" placeholder="Enter block title" maxlength="100">
+                </div>
+
+                <!-- Read-only info -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <input type="text" class="form-input" id="editBlockType" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Starting Day</label>
+                        <input type="text" class="form-input" id="editBlockStartingDay" readonly>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Duration</label>
+                    <input type="text" class="form-input" id="editBlockDuration" readonly>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmEditBtn">
+                    <span class="btn-text-default">
+                        <i class="ri-save-line"></i>
+                        Save Changes
+                    </span>
+                    <span class="btn-text-loading">
+                        <div class="spinner"></div>
+                        Saving...
                     </span>
                 </button>
             </div>
@@ -1550,14 +1641,14 @@
                             <th>Total</th>
                             <th>Items</th>
                             <th>Status</th>
-                            <th class="action-cell">View</th>
+                            <th class="action-cell">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for block in expense_blocks %}
-                        <tr onclick="window.location.href='{% url 'expense_detail_view' block.id %}'">
+                        <tr>
                             <td class="sn-cell">{{ forloop.counter|add:expense_blocks.start_index|add:-1 }}</td>
-                            <td class="block-title-cell">
+                            <td class="block-title-cell" id="block-title-{{ block.id }}">
                                 {{ block.title }}
                                 <div class="block-subtitle">Started: {{ block.starting_day|title }}</div>
                             </td>
@@ -1578,9 +1669,23 @@
                                 </span>
                             </td>
                             <td class="action-cell">
-                                <a href="{% url 'expense_detail_view' block.id %}" class="action-btn">
-                                    <i class="ri-arrow-right-line"></i>
-                                </a>
+                                <div class="action-buttons">
+                                    <button class="action-btn action-btn-edit edit-block-btn" 
+                                            type="button"
+                                            data-id="{{ block.id }}"
+                                            data-title="{{ block.title }}"
+                                            data-type="{{ block.get_expense_type_display }}"
+                                            data-starting-day="{{ block.starting_day|title }}"
+                                            data-duration="{{ block.start_date|date:'M d' }} - {{ block.end_date|date:'M d, Y' }}"
+                                            data-status="{{ block.status }}"
+                                            {% if block.status == 'closed' %}disabled{% endif %}
+                                            title="{% if block.status == 'closed' %}Cannot edit closed block{% else %}Edit block title{% endif %}">
+                                        <i class="ri-pencil-line"></i>
+                                    </button>
+                                    <a href="{% url 'expense_detail_view' block.id %}" class="action-btn action-btn-view" title="View details">
+                                        <i class="ri-arrow-right-line"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -1668,6 +1773,7 @@
         const userProfile = document.getElementById('userProfile');
         const userDropdown = document.getElementById('userDropdown');
         
+        // Create Modal Elements
         const createExpenseBtn = document.getElementById('createExpenseBtn');
         const emptyStateBtn = document.getElementById('emptyStateBtn');
         const createBlockModal = document.getElementById('createBlockModal');
@@ -1677,6 +1783,17 @@
         const blockTitle = document.getElementById('blockTitle');
         const expenseType = document.getElementById('expenseType');
         const startingDay = document.getElementById('startingDay');
+        
+        // Edit Modal Elements
+        const editBlockModal = document.getElementById('editBlockModal');
+        const editModalClose = document.getElementById('editModalClose');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const confirmEditBtn = document.getElementById('confirmEditBtn');
+        const editBlockId = document.getElementById('editBlockId');
+        const editBlockTitle = document.getElementById('editBlockTitle');
+        const editBlockType = document.getElementById('editBlockType');
+        const editBlockStartingDay = document.getElementById('editBlockStartingDay');
+        const editBlockDuration = document.getElementById('editBlockDuration');
         
         const toastContainer = document.getElementById('toastContainer');
 
@@ -1719,7 +1836,7 @@
             }
         });
 
-        // Modal Functions
+        // Create Modal Functions
         function openCreateModal() {
             createBlockModal.classList.add('show');
             document.body.style.overflow = 'hidden';
@@ -1743,6 +1860,52 @@
                 if (e.target === createBlockModal) closeCreateModal();
             });
         }
+
+        // Edit Modal Functions
+        function openEditModal(blockData) {
+            editBlockId.value = blockData.id;
+            editBlockTitle.value = blockData.title;
+            editBlockType.value = blockData.type;
+            editBlockStartingDay.value = blockData.startingDay;
+            editBlockDuration.value = blockData.duration;
+            
+            editBlockModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+            editBlockTitle.focus();
+        }
+
+        function closeEditModal() {
+            editBlockModal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        if (editModalClose) editModalClose.addEventListener('click', closeEditModal);
+        if (cancelEditBtn) cancelEditBtn.addEventListener('click', closeEditModal);
+
+        if (editBlockModal) {
+            editBlockModal.addEventListener('click', function(e) {
+                if (e.target === editBlockModal) closeEditModal();
+            });
+        }
+
+        // Edit Block Button Click
+        document.querySelectorAll('.edit-block-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                if (this.disabled) return;
+                
+                const blockData = {
+                    id: this.dataset.id,
+                    title: this.dataset.title,
+                    type: this.dataset.type,
+                    startingDay: this.dataset.startingDay,
+                    duration: this.dataset.duration
+                };
+                
+                openEditModal(blockData);
+            });
+        });
 
         // Create Expense Block
         if (confirmCreateBtn) {
@@ -1791,6 +1954,71 @@
             });
         }
 
+        // Update Expense Block
+        if (confirmEditBtn) {
+            confirmEditBtn.addEventListener('click', async function() {
+                const blockId = editBlockId.value;
+                const newTitle = editBlockTitle.value.trim();
+                
+                if (!newTitle) {
+                    showToast('Please enter a title', 'error');
+                    editBlockTitle.focus();
+                    return;
+                }
+                
+                if (newTitle.length > 100) {
+                    showToast('Title must be less than 100 characters', 'error');
+                    editBlockTitle.focus();
+                    return;
+                }
+
+                confirmEditBtn.classList.add('loading');
+                confirmEditBtn.disabled = true;
+
+                const formData = new FormData();
+                formData.append('title', newTitle);
+
+                try {
+                    const response = await fetch(`/main/expenses/${blockId}/update/`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': csrfToken
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        closeEditModal();
+                        
+                        // Update the title in the table
+                        const titleCell = document.getElementById(`block-title-${blockId}`);
+                        if (titleCell) {
+                            const subtitle = titleCell.querySelector('.block-subtitle').outerHTML;
+                            titleCell.innerHTML = data.title + subtitle;
+                        }
+                        
+                        // Update the data attribute on the edit button
+                        const editBtn = document.querySelector(`.edit-block-btn[data-id="${blockId}"]`);
+                        if (editBtn) {
+                            editBtn.dataset.title = data.title;
+                        }
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Update error:', error);
+                    showToast('An error occurred. Please try again.', 'error');
+                } finally {
+                    confirmEditBtn.classList.remove('loading');
+                    confirmEditBtn.disabled = false;
+                }
+            });
+        }
+
         // Toast Functions
         function showToast(message, type) {
             if (toastContainer) toastContainer.innerHTML = '';
@@ -1830,6 +2058,9 @@
                 closeSidebar();
                 if (createBlockModal && createBlockModal.classList.contains('show')) {
                     closeCreateModal();
+                }
+                if (editBlockModal && editBlockModal.classList.contains('show')) {
+                    closeEditModal();
                 }
             }
         });
