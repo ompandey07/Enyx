@@ -1740,4 +1740,165 @@ def goal_detail_view(request, goal_id):
 
     return render(request, 'Goals/goal_detail.html', context)
 
+# ?======================================================================================================================
+#!=========================================== END OF GOALS VIEWS ===========================================
+# ?======================================================================================================================
+
+
+# ============================================
+# Report View
+# ============================================
+@login_required(login_url='/401/')
+def report_view(request):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+
+    first_letter = user.first_name[0].upper() if user.first_name else user.email[0].upper()
+    full_name = f"{user.first_name} {user.last_name}".strip() or user.email.split('@')[0]
+
+    # Get all expense blocks for the user
+    expense_blocks = ExpenseBlock.objects.filter(user=user).prefetch_related('items')
+    
+    # Check and close expired blocks
+    for block in expense_blocks.filter(status='active'):
+        block.check_and_close()
+    
+    # Refresh queryset
+    expense_blocks = ExpenseBlock.objects.filter(user=user).prefetch_related('items')
+    
+    # Prepare blocks data for JSON
+    import json
+    blocks_tree = []
+    all_expenses_list = []
+    
+    for block in expense_blocks:
+        days_list = []
+        current_date = block.start_date
+        while current_date <= block.end_date:
+            day_name = get_day_name(current_date)
+            day_expenses = block.items.filter(expense_date=current_date)
+            day_total = day_expenses.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+            
+            days_list.append({
+                'name': day_name,
+                'display': day_name.capitalize(),
+                'date': current_date.strftime('%Y-%m-%d'),
+                'date_display': current_date.strftime('%b %d, %Y'),
+                'expense_count': day_expenses.count(),
+                'total': float(day_total),
+            })
+            current_date += timedelta(days=1)
+        
+        blocks_tree.append({
+            'id': block.id,
+            'title': block.title,
+            'expense_type': block.expense_type,
+            'expense_type_display': block.get_expense_type_display(),
+            'status': block.status,
+            'status_display': block.get_status_display(),
+            'start_date': block.start_date.strftime('%b %d'),
+            'end_date': block.end_date.strftime('%b %d, %Y'),
+            'total_expense': float(block.total_expense),
+            'item_count': block.item_count,
+            'days': days_list,
+        })
+    
+    # Get all expense items for JSON
+    all_items = ExpenseItem.objects.filter(expense_block__user=user).select_related('expense_block', 'user_balance')
+    
+    for item in all_items:
+        all_expenses_list.append({
+            'id': item.id,
+            'block_id': item.expense_block.id,
+            'block_title': item.expense_block.title,
+            'expense_name': item.expense_name,
+            'amount': float(item.amount),
+            'account_name': item.account_name,
+            'payment_method': item.get_payment_method_display(),
+            'expense_day': item.expense_day,
+            'expense_day_display': item.expense_day.capitalize(),
+            'expense_date': item.expense_date.strftime('%Y-%m-%d'),
+            'expense_date_display': item.expense_date.strftime('%b %d, %Y'),
+            'notes': item.notes or '',
+            'created_at': item.created_at.strftime('%I:%M %p'),
+        })
+    
+    # Stats
+    total_expenses = expense_blocks.aggregate(total=Sum('total_expense'))['total'] or Decimal('0.00')
+    total_items = ExpenseItem.objects.filter(expense_block__user=user).count()
+    active_blocks = expense_blocks.filter(status='active').count()
+    closed_blocks = expense_blocks.filter(status='closed').count()
+    
+    # Weekly vs Monthly counts
+    weekly_blocks = expense_blocks.filter(expense_type='weekly').count()
+    monthly_blocks = expense_blocks.filter(expense_type='monthly').count()
+
+    context = {
+        'user': user,
+        'profile': profile,
+        'first_letter': first_letter,
+        'full_name': full_name,
+        'total_expenses': total_expenses,
+        'total_items': total_items,
+        'active_blocks': active_blocks,
+        'closed_blocks': closed_blocks,
+        'weekly_blocks': weekly_blocks,
+        'monthly_blocks': monthly_blocks,
+        'blocks_tree_json': json.dumps(blocks_tree),
+        'all_expenses_json': json.dumps(all_expenses_list),
+    }
+
+    return render(request, 'Report/report.html', context)
+
+
+# ============================================
+# Get Day Expenses (AJAX)
+# ============================================
+@login_required(login_url='/401/')
+def get_day_expenses(request, block_id, day):
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request'})
+    
+    try:
+        block = get_object_or_404(ExpenseBlock, id=block_id, user=request.user)
+        
+        # Parse date from day parameter (format: YYYY-MM-DD)
+        try:
+            expense_date = datetime.strptime(day, '%Y-%m-%d').date()
+        except ValueError:
+            return JsonResponse({'success': False, 'message': 'Invalid date format'})
+        
+        # Get expenses for that day
+        expenses = block.items.filter(expense_date=expense_date).order_by('-created_at')
+        
+        expenses_data = []
+        for expense in expenses:
+            expenses_data.append({
+                'id': expense.id,
+                'expense_name': expense.expense_name,
+                'amount': str(expense.amount),
+                'account_name': expense.account_name,
+                'payment_method': expense.get_payment_method_display(),
+                'notes': expense.notes or '',
+                'created_at': expense.created_at.strftime('%I:%M %p'),
+            })
+        
+        day_total = expenses.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        day_name = get_day_name(expense_date)
+        
+        return JsonResponse({
+            'success': True,
+            'block_title': block.title,
+            'block_id': block.id,
+            'day_name': day_name.capitalize(),
+            'day_date': expense_date.strftime('%B %d, %Y'),
+            'day_total': str(day_total),
+            'expense_count': len(expenses_data),
+            'expenses': expenses_data,
+        })
+    
+    except ExpenseBlock.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Expense block not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'})
 

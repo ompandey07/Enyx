@@ -40,4 +40,9 @@ urlpatterns = [
     path('goals/<int:goal_id>/update/', views.update_goal, name='update_goal'),
     path('goals/<int:goal_id>/get/', views.get_goal, name='get_goal'),
     path('goals/<int:goal_id>/', views.goal_detail_view, name='goal_detail_view'),
+
+
+    # !================= REPORTS ========================== 
+    path('report/', views.report_view, name='report_view'),
+    path('report/expenses/<int:block_id>/<str:day>/', views.get_day_expenses, name='get_day_expenses'),
 ]

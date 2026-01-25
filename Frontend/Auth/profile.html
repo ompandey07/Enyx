@@ -1,0 +1,750 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - ExpTrack</title>
+    
+    <link rel="shortcut icon" href="{% static 'MainLogo.png' %}" type="image/x-icon">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/agustina" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --font-body: 'Inter', sans-serif;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --text-white: #ffffff;
+            --border-light: #e2e8f0;
+            --border-medium: #cbd5e1;
+            --accent-primary: #6366f1;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --error-light: #fee2e2;
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+            --shadow-2xl: 0 25px 50px -12px rgba(0,0,0,0.25);
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 20px;
+            --radius-2xl: 28px;
+            --radius-full: 9999px;
+            --transition-base: 200ms ease;
+        }
+
+        html, body { height: 100%; }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar { width: 0px; }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-decoration: none;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-base);
+            z-index: 100;
+        }
+
+        .back-btn:hover {
+            background: var(--accent-gradient);
+            color: white;
+            border-color: transparent;
+        }
+
+        .back-btn i { width: 18px; height: 18px; }
+
+        .profile-container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-2xl);
+            padding: 40px;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .profile-title {
+            font-family: 'Agustina', cursive;
+            font-size: 36px;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .profile-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .profile-upload-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 28px;
+        }
+
+        .profile-upload-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-upload {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+        }
+
+        .profile-upload-input { display: none; }
+
+        .profile-upload-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            border: 3px dashed var(--border-medium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-base);
+            overflow: hidden;
+        }
+
+        .profile-upload:hover .profile-upload-circle {
+            border-color: var(--accent-primary);
+        }
+
+        .profile-upload-icon {
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-upload-icon i { width: 32px; height: 32px; }
+
+        .profile-upload-preview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: none;
+        }
+
+        .profile-upload.has-image .profile-upload-preview { display: block; }
+        .profile-upload.has-image .profile-upload-icon { display: none; }
+        .profile-upload.has-image .profile-upload-circle {
+            border-style: solid;
+            border-color: var(--accent-primary);
+        }
+
+        .profile-upload-edit {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 30px;
+            height: 30px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border: 2px solid var(--bg-primary);
+        }
+
+        .profile-upload-edit i { width: 14px; height: 14px; }
+
+        .remove-image-btn {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            padding: 6px 14px;
+            background: var(--error-light);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--error);
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+
+        .remove-image-btn.show { display: flex; }
+        .remove-image-btn:hover { background: var(--error); color: white; }
+        .remove-image-btn i { width: 14px; height: 14px; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full { grid-column: span 2; }
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-input-wrapper { position: relative; }
+
+        .form-input {
+            width: 100%;
+            padding: 11px 14px 11px 40px;
+            font-size: 14px;
+            font-family: var(--font-body);
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            outline: none;
+            transition: all var(--transition-base);
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-primary);
+            background: var(--bg-primary);
+        }
+
+        .form-input::placeholder { color: var(--text-muted); }
+
+        .form-input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .form-input:focus + .form-input-icon { color: var(--accent-primary); }
+
+        .form-input-icon i { width: 16px; height: 16px; }
+
+        .password-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 4px;
+            display: flex;
+        }
+
+        .password-toggle:hover { color: var(--accent-primary); }
+        .password-toggle i { width: 16px; height: 16px; }
+
+        .password-strength {
+            display: flex;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .strength-bar {
+            height: 3px;
+            flex: 1;
+            background: var(--border-light);
+            border-radius: var(--radius-full);
+        }
+
+        .strength-bar.active.weak { background: var(--error); }
+        .strength-bar.active.medium { background: var(--warning); }
+        .strength-bar.active.strong { background: var(--success); }
+
+        .section-divider {
+            grid-column: span 2;
+            height: 1px;
+            background: var(--border-light);
+            margin: 8px 0;
+        }
+
+        .section-label {
+            grid-column: span 2;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-hint {
+            grid-column: span 2;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: -8px;
+        }
+
+        .submit-btn {
+            grid-column: span 2;
+            width: 100%;
+            padding: 14px 24px;
+            background: var(--accent-gradient);
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: var(--font-body);
+            border: none;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all var(--transition-base);
+            margin-top: 8px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        .submit-btn i { width: 18px; height: 18px; }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .btn-text-loading { display: none; }
+        .submit-btn.loading .btn-text-default { display: none; }
+        .submit-btn.loading .btn-text-loading { display: flex; align-items: center; gap: 10px; }
+
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            padding: 16px 20px;
+            box-shadow: var(--shadow-xl);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 400px;
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            animation: shrink 5s linear forwards;
+        }
+
+        .toast.success::after { background: var(--success); }
+        .toast.error::after { background: var(--error); }
+
+        @keyframes shrink { from { width: 100%; } to { width: 0%; } }
+
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toast.success .toast-icon { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .toast.error .toast-icon { background: rgba(239, 68, 68, 0.1); color: var(--error); }
+
+        .toast-icon i { width: 16px; height: 16px; }
+
+        .toast-message {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 4px;
+            display: flex;
+        }
+
+        .toast-close:hover { color: var(--text-primary); }
+        .toast-close i { width: 18px; height: 18px; }
+
+        @media (max-width: 600px) {
+            body { padding: 16px; padding-top: 70px; }
+            .back-btn { top: 16px; left: 16px; padding: 8px 14px; font-size: 13px; }
+            .profile-container { padding: 24px; border-radius: var(--radius-xl); }
+            .profile-title { font-size: 28px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-group.full { grid-column: span 1; }
+            .section-divider { grid-column: span 1; }
+            .section-label { grid-column: span 1; }
+            .form-hint { grid-column: span 1; }
+            .submit-btn { grid-column: span 1; }
+            .toast { min-width: auto; max-width: calc(100vw - 48px); }
+            .toast-container { right: 16px; left: 16px; }
+        }
+    </style>
+</head>
+<body>
+    {% if toast_message %}
+    <div class="toast-container">
+        <div class="toast {{ toast_type }}" id="toast">
+            <div class="toast-icon">
+                {% if toast_type == 'success' %}
+                <i data-lucide="check"></i>
+                {% else %}
+                <i data-lucide="alert-circle"></i>
+                {% endif %}
+            </div>
+            <span class="toast-message">{{ toast_message }}</span>
+            <button class="toast-close" onclick="closeToast()">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <a href="{% url 'dashboard_view' %}" class="back-btn">
+        <i data-lucide="arrow-left"></i>
+        Dashboard
+    </a>
+
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1 class="profile-title">My Profile</h1>
+            <p class="profile-subtitle">Update your account information</p>
+        </div>
+
+        <form method="POST" action="{% url 'accounts:profile' %}" enctype="multipart/form-data" id="profileForm">
+            {% csrf_token %}
+            
+            <div class="profile-upload-container">
+                <div class="profile-upload-wrapper">
+                    <label class="profile-upload {% if profile.profile_image %}has-image{% endif %}" id="profileUpload">
+                        <input type="file" name="profile_image" class="profile-upload-input" id="profileInput" accept="image/*">
+                        <div class="profile-upload-circle">
+                            <span class="profile-upload-icon">
+                                <i data-lucide="camera"></i>
+                            </span>
+                            <img src="{% if profile.profile_image %}{{ profile.profile_image.url }}{% endif %}" alt="Profile" class="profile-upload-preview" id="profilePreview">
+                        </div>
+                        <div class="profile-upload-edit">
+                            <i data-lucide="pencil"></i>
+                        </div>
+                    </label>
+                    <button type="button" class="remove-image-btn {% if profile.profile_image %}show{% endif %}" id="removeImageBtn">
+                        <i data-lucide="trash-2"></i>
+                        Remove
+                    </button>
+                    <input type="hidden" name="remove_image" id="removeImageInput" value="false">
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    <div class="form-input-wrapper">
+                        <input type="text" name="first_name" class="form-input" placeholder="First name" value="{{ user.first_name }}" required>
+                        <span class="form-input-icon"><i data-lucide="user"></i></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    <div class="form-input-wrapper">
+                        <input type="text" name="last_name" class="form-input" placeholder="Last name" value="{{ user.last_name }}" required>
+                        <span class="form-input-icon"><i data-lucide="user"></i></span>
+                    </div>
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Email Address</label>
+                    <div class="form-input-wrapper">
+                        <input type="email" name="email" class="form-input" placeholder="Email" value="{{ user.email }}" required>
+                        <span class="form-input-icon"><i data-lucide="mail"></i></span>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+                <div class="section-label">Change Password</div>
+                <p class="form-hint">Leave blank to keep current password</p>
+
+                <div class="form-group full">
+                    <label class="form-label">Current Password</label>
+                    <div class="form-input-wrapper">
+                        <input type="password" name="current_password" class="form-input" placeholder="Current password" id="currentPasswordInput">
+                        <span class="form-input-icon"><i data-lucide="lock"></i></span>
+                        <button type="button" class="password-toggle" onclick="togglePassword('currentPasswordInput', 'eye0')">
+                            <i data-lucide="eye" id="eye0"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <div class="form-input-wrapper">
+                        <input type="password" name="new_password" class="form-input" placeholder="New password" id="newPasswordInput">
+                        <span class="form-input-icon"><i data-lucide="lock"></i></span>
+                        <button type="button" class="password-toggle" onclick="togglePassword('newPasswordInput', 'eye1')">
+                            <i data-lucide="eye" id="eye1"></i>
+                        </button>
+                    </div>
+                    <div class="password-strength">
+                        <div class="strength-bar" id="str1"></div>
+                        <div class="strength-bar" id="str2"></div>
+                        <div class="strength-bar" id="str3"></div>
+                        <div class="strength-bar" id="str4"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <div class="form-input-wrapper">
+                        <input type="password" name="confirm_password" class="form-input" placeholder="Confirm password" id="confirmPasswordInput">
+                        <span class="form-input-icon"><i data-lucide="lock"></i></span>
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirmPasswordInput', 'eye2')">
+                            <i data-lucide="eye" id="eye2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <span class="btn-text-default">
+                        <i data-lucide="save"></i>
+                        Save Changes
+                    </span>
+                    <span class="btn-text-loading">
+                        <div class="spinner"></div>
+                        Saving...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const profileInput = document.getElementById('profileInput');
+        const profileUpload = document.getElementById('profileUpload');
+        const profilePreview = document.getElementById('profilePreview');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+        const removeImageInput = document.getElementById('removeImageInput');
+
+        profileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    profilePreview.src = event.target.result;
+                    profileUpload.classList.add('has-image');
+                    removeImageBtn.classList.add('show');
+                    removeImageInput.value = 'false';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        removeImageBtn.addEventListener('click', function() {
+            profilePreview.src = '';
+            profileUpload.classList.remove('has-image');
+            profileInput.value = '';
+            removeImageBtn.classList.remove('show');
+            removeImageInput.value = 'true';
+        });
+
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                input.type = 'password';
+                icon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        }
+
+        const newPasswordInput = document.getElementById('newPasswordInput');
+        const strengthBars = [
+            document.getElementById('str1'),
+            document.getElementById('str2'),
+            document.getElementById('str3'),
+            document.getElementById('str4')
+        ];
+
+        newPasswordInput.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++;
+            
+            strengthBars.forEach((bar, index) => {
+                bar.classList.remove('active', 'weak', 'medium', 'strong');
+                if (index < strength) {
+                    bar.classList.add('active');
+                    if (strength <= 1) bar.classList.add('weak');
+                    else if (strength <= 2) bar.classList.add('medium');
+                    else bar.classList.add('strong');
+                }
+            });
+        });
+
+        function showToast(message, type) {
+            const existingContainer = document.querySelector('.toast-container');
+            if (existingContainer) existingContainer.remove();
+
+            const container = document.createElement('div');
+            container.className = 'toast-container';
+            const iconName = type === 'success' ? 'check' : 'alert-circle';
+            
+            container.innerHTML = `
+                <div class="toast ${type}" id="toast">
+                    <div class="toast-icon"><i data-lucide="${iconName}"></i></div>
+                    <span class="toast-message">${message}</span>
+                    <button class="toast-close" onclick="closeToast()"><i data-lucide="x"></i></button>
+                </div>
+            `;
+            
+            document.body.appendChild(container);
+            lucide.createIcons();
+            setTimeout(() => closeToast(), 5000);
+        }
+
+        function closeToast() {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.style.animation = 'slideOut 0.3s ease-out forwards';
+                setTimeout(() => {
+                    const container = toast.parentElement;
+                    if (container) container.remove();
+                }, 300);
+            }
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                
+                const data = await response.json();
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    document.getElementById('currentPasswordInput').value = '';
+                    document.getElementById('newPasswordInput').value = '';
+                    document.getElementById('confirmPasswordInput').value = '';
+                    strengthBars.forEach(bar => bar.classList.remove('active', 'weak', 'medium', 'strong'));
+                } else {
+                    showToast(data.message, data.type);
+                }
+            } catch (error) {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                showToast('An error occurred. Please try again.', 'error');
+            }
+        });
+
+        const existingToast = document.getElementById('toast');
+        if (existingToast) setTimeout(() => closeToast(), 5000);
+
+        const style = document.createElement('style');
+        style.textContent = `@keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }`;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

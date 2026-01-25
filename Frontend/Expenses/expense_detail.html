@@ -1468,6 +1468,9 @@
             </button>
 
             <div class="user-profile" id="userProfile">
+                 <div class="user-info">
+                    <span class="user-name">{{ full_name }}</span>
+                </div>
                 <div class="user-avatar">
                     {% if profile and profile.profile_image %}
                         <img src="{{ profile.profile_image.url }}" alt="{{ full_name }}" class="avatar-image">
@@ -1493,7 +1496,7 @@
                     </div>
                 </div>
                 <div class="dropdown-divider"></div>
-                <a href="#" class="dropdown-item">
+                <a href="{% url 'accounts:profile' %}" class="dropdown-item">
                     <i class="ri-user-line"></i>
                     <span>Profile</span>
                 </a>
@@ -1543,6 +1546,12 @@
                     <a href="{% url 'expenses_view' %}" class="sidebar-link active">
                         <i class="ri-exchange-dollar-line"></i>
                         <span>Expenses</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{% url 'report_view' %}" class="sidebar-link">
+                        <i class="ri-bar-chart-2-line"></i>
+                        <span>Reports</span>
                     </a>
                 </li>
             </ul>

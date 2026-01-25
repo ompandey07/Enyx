@@ -1,12 +1,14 @@
-from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
-from django.contrib import messages
-from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import update_session_auth_hash
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-from django.http import JsonResponse
 from .models import UserProfile, LoginAttempt
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.http import JsonResponse
+from django.contrib import messages
+from django.utils import timezone
 from datetime import timedelta
 import re
 
@@ -401,3 +403,227 @@ def logout_view(request):
     """Handle user logout"""
     logout(request)
     return redirect('accounts:login')
+
+
+
+@login_required(login_url='/401/')
+def profile_view(request):
+    """Handle user profile view and update"""
+    user = request.user
+    profile, created = UserProfile.objects.get_or_create(user=user)
+    
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip().lower()
+        current_password = request.POST.get('current_password', '')
+        new_password = request.POST.get('new_password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+        profile_image = request.FILES.get('profile_image')
+        remove_image = request.POST.get('remove_image') == 'true'
+        
+        # Validate first name
+        if not first_name:
+            if is_ajax(request):
+                return JsonResponse({'success': False, 'message': 'First name is required', 'type': 'error'})
+            return render(request, 'Auth/profile.html', {
+                'toast_message': 'First name is required',
+                'toast_type': 'error',
+                'user': user,
+                'profile': profile
+            })
+        
+        if len(first_name) < 2:
+            if is_ajax(request):
+                return JsonResponse({'success': False, 'message': 'First name must be at least 2 characters', 'type': 'error'})
+            return render(request, 'Auth/profile.html', {
+                'toast_message': 'First name must be at least 2 characters',
+                'toast_type': 'error',
+                'user': user,
+                'profile': profile
+            })
+        
+        if not first_name.replace(' ', '').isalpha():
+            if is_ajax(request):
+                return JsonResponse({'success': False, 'message': 'First name should only contain letters', 'type': 'error'})
+            return render(request, 'Auth/profile.html', {
+                'toast_message': 'First name should only contain letters',
+                'toast_type': 'error',
+                'user': user,
+                'profile': profile
+            })
+        
+        # Validate last name
+        if not last_name:
+            if is_ajax(request):
+                return JsonResponse({'success': False, 'message': 'Last name is required', 'type': 'error'})
+            return render(request, 'Auth/profile.html', {
+                'toast_message': 'Last name is required',
+                'toast_type': 'error',
+                'user': user,
+                'profile': profile
+            })
+        
+        if len(last_name) < 2:
+            if is_ajax(request):
+                return JsonResponse({'success': False, 'message': 'Last name must be at least 2 characters', 'type': 'error'})
+            return render(request, 'Auth/profile.html', {
+                'toast_message': 'Last name must be at least 2 characters',
+                'toast_type': 'error',
+                'user': user,
+                'profile': profile
+            })
+        
+        if not last_name.replace(' ', '').isalpha():
+            if is_ajax(request):
+                return JsonResponse({'success': False, 'message': 'Last name should only contain letters', 'type': 'error'})
+            return render(request, 'Auth/profile.html', {
+                'toast_message': 'Last name should only contain letters',
+                'toast_type': 'error',
+                'user': user,
+                'profile': profile
+            })
+        
+        # Validate email
+        if not email:
+            if is_ajax(request):
+                return JsonResponse({'success': False, 'message': 'Email is required', 'type': 'error'})
+            return render(request, 'Auth/profile.html', {
+                'toast_message': 'Email is required',
+                'toast_type': 'error',
+                'user': user,
+                'profile': profile
+            })
+        
+        valid, msg = validate_email_complete(email)
+        if not valid:
+            if is_ajax(request):
+                return JsonResponse({'success': False, 'message': msg, 'type': 'error'})
+            return render(request, 'Auth/profile.html', {
+                'toast_message': msg,
+                'toast_type': 'error',
+                'user': user,
+                'profile': profile
+            })
+        
+        # Check if email already exists (excluding current user)
+        if User.objects.filter(email=email).exclude(pk=user.pk).exists():
+            if is_ajax(request):
+                return JsonResponse({'success': False, 'message': 'This email is already in use', 'type': 'error'})
+            return render(request, 'Auth/profile.html', {
+                'toast_message': 'This email is already in use',
+                'toast_type': 'error',
+                'user': user,
+                'profile': profile
+            })
+        
+        # Validate password change if new password provided
+        if new_password:
+            if not current_password:
+                if is_ajax(request):
+                    return JsonResponse({'success': False, 'message': 'Current password is required to change password', 'type': 'error'})
+                return render(request, 'Auth/profile.html', {
+                    'toast_message': 'Current password is required to change password',
+                    'toast_type': 'error',
+                    'user': user,
+                    'profile': profile
+                })
+            
+            if not user.check_password(current_password):
+                if is_ajax(request):
+                    return JsonResponse({'success': False, 'message': 'Current password is incorrect', 'type': 'error'})
+                return render(request, 'Auth/profile.html', {
+                    'toast_message': 'Current password is incorrect',
+                    'toast_type': 'error',
+                    'user': user,
+                    'profile': profile
+                })
+            
+            valid, msg = validate_password(new_password, confirm_password)
+            if not valid:
+                if is_ajax(request):
+                    return JsonResponse({'success': False, 'message': msg, 'type': 'error'})
+                return render(request, 'Auth/profile.html', {
+                    'toast_message': msg,
+                    'toast_type': 'error',
+                    'user': user,
+                    'profile': profile
+                })
+        
+        # Validate profile image if provided
+        if profile_image:
+            allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+            if profile_image.content_type not in allowed_types:
+                if is_ajax(request):
+                    return JsonResponse({'success': False, 'message': 'Profile image must be JPEG, PNG, GIF, or WebP', 'type': 'error'})
+                return render(request, 'Auth/profile.html', {
+                    'toast_message': 'Profile image must be JPEG, PNG, GIF, or WebP',
+                    'toast_type': 'error',
+                    'user': user,
+                    'profile': profile
+                })
+            
+            max_size = 5 * 1024 * 1024
+            if profile_image.size > max_size:
+                if is_ajax(request):
+                    return JsonResponse({'success': False, 'message': 'Profile image must be less than 5MB', 'type': 'error'})
+                return render(request, 'Auth/profile.html', {
+                    'toast_message': 'Profile image must be less than 5MB',
+                    'toast_type': 'error',
+                    'user': user,
+                    'profile': profile
+                })
+        
+        try:
+            # Update user info
+            user.first_name = first_name
+            user.last_name = last_name
+            user.email = email
+            
+            # Update password if provided
+            if new_password:
+                user.set_password(new_password)
+            
+            user.save()
+            
+            # Keep user logged in after password change
+            if new_password:
+                update_session_auth_hash(request, user)
+            
+            # Handle profile image
+            if remove_image and profile.profile_image:
+                profile.profile_image.delete(save=False)
+                profile.profile_image = None
+                profile.save()
+            elif profile_image:
+                if profile.profile_image:
+                    profile.profile_image.delete(save=False)
+                profile.profile_image = profile_image
+                profile.save()
+            
+            if is_ajax(request):
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Profile updated successfully',
+                    'type': 'success'
+                })
+            
+            messages.success(request, 'Profile updated successfully')
+            return redirect('accounts:profile')
+            
+        except Exception as e:
+            if is_ajax(request):
+                return JsonResponse({'success': False, 'message': 'An error occurred. Please try again', 'type': 'error'})
+            return render(request, 'Auth/profile.html', {
+                'toast_message': 'An error occurred. Please try again',
+                'toast_type': 'error',
+                'user': user,
+                'profile': profile
+            })
+    
+    return render(request, 'Auth/profile.html', {
+        'user': user,
+        'profile': profile,
+        'toast_message': None,
+        'toast_type': None
+    })

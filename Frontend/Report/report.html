@@ -1,0 +1,1738 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <title>Expense Report - ExpTrack</title>
+    <link rel="icon" href="{% static 'MainLogo.png' %}">
+    <link href="https://fonts.cdnfonts.com/css/agustina" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 12px;
+            background: #f8fafc;
+            color: #334155;
+            display: flex;
+        }
+
+        /* ===============================
+           SIDEBAR STYLES
+        =============================== */
+        .sidebar-container {
+            min-width: 320px;
+            max-width: 600px;
+            width: 340px;
+            transition: all 0.3s ease;
+            height: 100vh;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-container.collapsed {
+            min-width: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 16px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            margin-bottom: 12px;
+        }
+
+        .sidebar-brand-text {
+            display: flex;
+            align-items: center;
+        }
+
+        .brand-text {
+            font-family: 'Agustina', cursive;
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .brand-text-accent {
+            font-family: 'Agustina', cursive;
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar-search {
+            width: 100%;
+            padding: 8px 12px 8px 36px;
+            font-size: 11px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #334155;
+            transition: all 0.15s ease;
+        }
+
+        .sidebar-search:hover {
+            border-color: #a5b4fc;
+        }
+
+        .sidebar-search:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        /* ===============================
+           TREE ACTION BUTTONS
+        =============================== */
+        .tree-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .tree-action-btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 7px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #64748b;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .tree-action-btn:hover {
+            background: #eef2ff;
+            border-color: #a5b4fc;
+            color: #4f46e5;
+        }
+
+        .tree-action-btn:active {
+            transform: scale(0.98);
+        }
+
+        .tree-action-btn i {
+            font-size: 14px;
+        }
+
+        .tree-action-btn.expand-btn:hover {
+            background: #dcfce7;
+            border-color: #86efac;
+            color: #166534;
+        }
+
+        .tree-action-btn.collapse-btn:hover {
+            background: #fef3c7;
+            border-color: #fcd34d;
+            color: #b45309;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        /* ===============================
+           TREE VIEW STYLES
+        =============================== */
+        .tree-item {
+            position: relative;
+        }
+
+        .tree-content {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+            white-space: nowrap;
+            color: #334155;
+            border: 1px solid transparent;
+            margin-left: 0;
+        }
+
+        .tree-content:hover {
+            background: #eef2ff;
+            border-color: #c7d2fe;
+        }
+
+        .tree-content.active {
+            background: #e0e7ff !important;
+            border-color: #a5b4fc !important;
+            color: #4338ca !important;
+        }
+
+        .tree-content.active-block {
+            background: #dbeafe !important;
+            border-color: #93c5fd !important;
+            color: #1d4ed8 !important;
+        }
+
+        .tree-content.search-match {
+            background: #fef3c7 !important;
+            border-color: #fcd34d !important;
+        }
+
+        .tree-toggle {
+            width: 16px;
+            height: 16px;
+            margin-right: 4px;
+            font-size: 10px;
+            border: 1px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+            font-weight: 700;
+            color: #64748b;
+        }
+
+        .tree-toggle:hover {
+            background: #eef2ff;
+            border-color: #a5b4fc;
+            color: #6366f1;
+        }
+
+        .tree-toggle-empty {
+            width: 16px;
+            height: 16px;
+            margin-right: 4px;
+            flex-shrink: 0;
+        }
+
+        .tree-icon {
+            margin-right: 6px;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .tree-icon-block { color: #6366f1; }
+        .tree-icon-day { color: #8b5cf6; }
+        .tree-icon-weekly { color: #3b82f6; }
+        .tree-icon-monthly { color: #f59e0b; }
+
+        .tree-children {
+            margin-left: 20px;
+            position: relative;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .tree-children.expanded {
+            max-height: 5000px;
+            transition: max-height 0.5s ease-in;
+        }
+
+        .tree-children::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 12px;
+            width: 1px;
+            background: #e2e8f0;
+        }
+
+        .tree-level-0 > .tree-content { font-weight: 600; color: #4338ca; }
+        .tree-level-1 > .tree-content { font-weight: 500; color: #475569; }
+
+        .count-badge {
+            margin-left: auto;
+            font-size: 9px;
+            padding: 2px 6px;
+            background: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .type-badge {
+            font-size: 8px;
+            padding: 1px 4px;
+            margin-left: 6px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .type-badge-weekly { background: #dbeafe; color: #1d4ed8; }
+        .type-badge-monthly { background: #fef3c7; color: #b45309; }
+
+        .status-badge-tree {
+            font-size: 8px;
+            padding: 1px 4px;
+            margin-left: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .status-active { background: #dcfce7; color: #166534; }
+        .status-closed { background: #f1f5f9; color: #64748b; }
+
+        .amount-badge {
+            font-size: 9px;
+            padding: 2px 6px;
+            margin-left: 6px;
+            background: #eef2ff;
+            color: #4f46e5;
+            font-weight: 600;
+            font-family: 'Consolas', monospace;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 30px 15px;
+            color: #94a3b8;
+        }
+
+        .no-results i {
+            font-size: 32px;
+            color: #cbd5e1;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .no-results p {
+            font-size: 11px;
+        }
+
+        /* ===============================
+           MAIN CONTENT STYLES
+        =============================== */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+
+        .toolbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .toolbar-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 16px;
+            padding-right: 16px;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .toolbar-title i {
+            font-size: 18px;
+            color: #6366f1;
+        }
+
+        .toolbar-title span {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4338ca;
+        }
+
+        .toolbar-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            font-size: 11px;
+            cursor: pointer;
+            color: #374151;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+
+        .toolbar-btn:hover {
+            background: #eef2ff;
+            border-color: #a5b4fc;
+            color: #4f46e5;
+        }
+
+        .toolbar-btn i {
+            font-size: 14px;
+        }
+
+        .toolbar-btn.primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-color: #6366f1;
+            color: white;
+        }
+
+        .toolbar-btn.primary:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+
+        .toolbar-separator {
+            width: 1px;
+            height: 24px;
+            background: #e2e8f0;
+            margin: 0 6px;
+        }
+
+        .toolbar-search-wrapper {
+            position: relative;
+            margin-left: auto;
+        }
+
+        .toolbar-search-wrapper i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .toolbar-search-input {
+            padding: 6px 12px 6px 32px;
+            font-size: 11px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #334155;
+            width: 200px;
+            transition: all 0.15s ease;
+        }
+
+        .toolbar-search-input:hover {
+            border-color: #a5b4fc;
+        }
+
+        .toolbar-search-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .info-bar {
+            background: #eef2ff;
+            border-bottom: 1px solid #c7d2fe;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .info-bar i {
+            color: #6366f1;
+            margin-right: 8px;
+            font-size: 14px;
+        }
+
+        .info-bar span {
+            font-size: 11px;
+            color: #4338ca;
+        }
+
+        .info-bar strong {
+            color: #312e81;
+        }
+
+        .summary-cards {
+            display: flex;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            flex-shrink: 0;
+            overflow-x: auto;
+        }
+
+        .summary-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 10px 14px;
+            min-width: 120px;
+            flex-shrink: 0;
+        }
+
+        .summary-card-label {
+            font-size: 9px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .summary-card-value {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            font-family: 'Consolas', monospace;
+        }
+
+        .summary-card-value.primary { color: #6366f1; }
+        .summary-card-value.success { color: #059669; }
+        .summary-card-value.warning { color: #d97706; }
+        .summary-card-value.muted { color: #64748b; }
+
+        .table-container {
+            flex: 1;
+            overflow: hidden;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .table-header {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            font-size: 13px;
+            color: #4338ca;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-header h3 i {
+            font-size: 16px;
+        }
+
+        .table-header-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .view-mode-badge {
+            font-size: 9px;
+            padding: 3px 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .view-mode-block {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border: 1px solid #93c5fd;
+        }
+
+        .view-mode-day {
+            background: #e0e7ff;
+            color: #4338ca;
+            border: 1px solid #a5b4fc;
+        }
+
+        .expense-count-badge {
+            font-size: 11px;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .table-scroll {
+            flex: 1;
+            overflow: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .data-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table th {
+            background: #e0e7ff;
+            border: 1px solid #c7d2fe;
+            padding: 10px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 10px;
+            color: #4338ca;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .data-table th i {
+            font-size: 11px;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+
+        .data-table td {
+            border: 1px solid #e5e7eb;
+            padding: 8px 6px;
+            color: #334155;
+            white-space: nowrap;
+        }
+
+        .data-table tbody tr {
+            cursor: pointer;
+            transition: background 0.1s ease;
+        }
+
+        .data-table tbody tr:hover td {
+            background: #eef2ff !important;
+        }
+
+        .data-table tbody tr:nth-child(even) td {
+            background: #fafbfc;
+        }
+
+        .data-table tbody tr.active td {
+            background: #e0e7ff !important;
+        }
+
+        .data-table tbody tr.day-separator-row {
+            cursor: default;
+        }
+
+        .data-table tbody tr.day-separator-row:hover td {
+            background: #f1f5f9 !important;
+        }
+
+        .data-table tbody tr.total-row {
+            cursor: default;
+        }
+
+        .data-table tbody tr.total-row:hover td {
+            background: #e0e7ff !important;
+        }
+
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .text-right { text-align: right; }
+
+        .amount-cell {
+            font-family: 'Consolas', monospace;
+            font-weight: 600;
+            color: #6366f1;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 9px;
+            font-weight: 600;
+        }
+
+        .badge-banking { background: #dbeafe; color: #1e40af; }
+        .badge-esewa { background: #dcfce7; color: #166534; }
+        .badge-khalti { background: #fae8ff; color: #a21caf; }
+        .badge-others { background: #f1f5f9; color: #475569; }
+
+        .na-text {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .no-data i {
+            font-size: 48px;
+            color: #a5b4fc;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .no-data h4 {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .no-data p {
+            font-size: 12px;
+        }
+
+        /* Day Separator Row */
+        .day-separator {
+            background: #f1f5f9 !important;
+            font-weight: 600;
+            color: #4338ca;
+        }
+
+        .day-separator i {
+            margin-right: 6px;
+            color: #6366f1;
+        }
+
+        .day-separator .day-total {
+            float: right;
+            font-family: 'Consolas', monospace;
+            color: #059669;
+            font-weight: 700;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 6px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: #64748b;
+            flex-shrink: 0;
+        }
+
+        .status-left {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+        }
+
+        .status-time {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-time span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-time i {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #a5b4fc;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6366f1;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Day Header in Tree */
+        .tree-day-header {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tree-day-count {
+            font-size: 8px;
+            color: #94a3b8;
+            margin-left: 4px;
+        }
+
+        /* Empty Blocks State */
+        .empty-blocks {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-blocks i {
+            font-size: 40px;
+            color: #c7d2fe;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .empty-blocks h4 {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .empty-blocks p {
+            font-size: 11px;
+            margin-bottom: 16px;
+        }
+
+        .empty-blocks a {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .empty-blocks a:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar-container {
+                position: fixed;
+                left: 0;
+                top: 0;
+                z-index: 1000;
+                transform: translateX(-100%);
+            }
+
+            .sidebar-container.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-container.collapsed {
+                transform: translateX(-100%);
+            }
+
+            .toolbar-search-wrapper {
+                width: 100%;
+                margin-left: 0;
+                margin-top: 8px;
+            }
+
+            .toolbar-search-input {
+                width: 100%;
+            }
+
+            .summary-cards {
+                flex-wrap: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% csrf_token %}
+    
+    <!-- ===============================
+         SIDEBAR SECTION - TREE VIEW
+    =============================== -->
+    <div class="sidebar-container" id="sidebarContainer">
+        
+        <div class="sidebar-header">
+            <a href="{% url 'dashboard_view' %}" class="sidebar-brand">
+                <div class="sidebar-brand-text">
+                    <span class="brand-text">Exp</span>
+                    <span class="brand-text-accent">Track</span>
+                </div>
+            </a>
+            
+            <div class="search-wrapper">
+                <i class="ri-search-line"></i>
+                <input
+                    type="text"
+                    id="sidebarSearchInput"
+                    placeholder="Search blocks and days..."
+                    class="sidebar-search"
+                />
+            </div>
+
+            <!-- EXPAND/COLLAPSE BUTTONS -->
+            <div class="tree-actions">
+                <button type="button" class="tree-action-btn expand-btn" id="expandAllBtn">
+                    <i class="ri-add-box-line"></i> Expand All
+                </button>
+                <button type="button" class="tree-action-btn collapse-btn" id="collapseAllBtn">
+                    <i class="ri-checkbox-indeterminate-line"></i> Collapse All
+                </button>
+            </div>
+        </div>
+        
+        <div class="sidebar-content" id="treeContainer">
+            <!-- Tree will be built by JavaScript -->
+        </div>
+
+        <div class="no-results hidden" id="sidebarNoResults">
+            <i class="ri-search-line"></i>
+            <p><strong>No results found</strong></p>
+            <p>Try different search terms</p>
+        </div>
+    </div>
+
+    <!-- ===============================
+         MAIN CONTENT SECTION - EXPENSES TABLE
+    =============================== -->
+    <div class="main-content" id="mainContent">
+        
+        <!-- TOOLBAR -->
+        <div class="toolbar">
+            <div class="toolbar-title">
+                <i class="ri-file-chart-line"></i>
+                <span>Expense Report</span>
+            </div>
+
+            <button id="toggleSidebar" class="toolbar-btn">
+                <i class="ri-sidebar-unfold-line"></i> Toggle Sidebar
+            </button>
+
+            <a href="{% url 'dashboard_view' %}" class="toolbar-btn primary">
+                <i class="ri-arrow-left-line"></i> Back to Dashboard
+            </a>
+
+            <div class="toolbar-separator"></div>
+
+            <a href="{% url 'expenses_view' %}" class="toolbar-btn">
+                <i class="ri-add-circle-line"></i> New Block
+            </a>
+
+            <div class="toolbar-separator"></div>
+
+            <div class="toolbar-search-wrapper">
+                <i class="ri-search-line"></i>
+                <input type="text" id="tableSearchInput" class="toolbar-search-input" placeholder="Search expenses...">
+            </div>
+        </div>
+
+        <!-- INFO BAR -->
+        <div class="info-bar">
+            <i class="ri-information-line"></i>
+            <span>
+                <strong>Click Block</strong> to view all expenses | 
+                <strong>Click Day</strong> to filter by day | 
+                <strong>Double-click Block</strong> to go to details
+            </span>
+        </div>
+
+        <!-- SUMMARY CARDS -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="summary-card-label">Total Expenses</div>
+                <div class="summary-card-value primary">Rs. {{ total_expenses }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-label">Total Items</div>
+                <div class="summary-card-value">{{ total_items }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-label">Active Blocks</div>
+                <div class="summary-card-value success">{{ active_blocks }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-label">Closed Blocks</div>
+                <div class="summary-card-value muted">{{ closed_blocks }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-label">Weekly Blocks</div>
+                <div class="summary-card-value">{{ weekly_blocks }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-label">Monthly Blocks</div>
+                <div class="summary-card-value warning">{{ monthly_blocks }}</div>
+            </div>
+        </div>
+
+        <!-- TABLE CONTAINER -->
+        <div class="table-container">
+            
+            <div class="table-header">
+                <h3 id="tableTitle">
+                    <i class="ri-file-list-3-line"></i>
+                    <span id="tableTitleText">Select a Block or Day to View Expenses</span>
+                </h3>
+                <div class="table-header-info">
+                    <span id="viewModeBadge" class="view-mode-badge hidden">Block View</span>
+                    <span id="expenseCount" class="expense-count-badge hidden">0 expenses</span>
+                </div>
+            </div>
+
+            <!-- DATA TABLE -->
+            <div class="table-scroll">
+                <table class="data-table" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">
+                                <i class="ri-hashtag"></i>SN
+                            </th>
+                            <th style="width: 200px;">
+                                <i class="ri-shopping-bag-line"></i>Expense Name
+                            </th>
+                            <th style="width: 120px;">
+                                <i class="ri-money-dollar-circle-line"></i>Amount
+                            </th>
+                            <th style="width: 150px;">
+                                <i class="ri-bank-card-line"></i>Account
+                            </th>
+                            <th style="width: 100px;">
+                                <i class="ri-secure-payment-line"></i>Method
+                            </th>
+                            <th style="width: 200px;">
+                                <i class="ri-sticky-note-line"></i>Notes
+                            </th>
+                            <th style="width: 100px;">
+                                <i class="ri-time-line"></i>Time
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenseTableBody">
+                        <tr>
+                            <td colspan="7">
+                                <div class="no-data" id="initialMessage">
+                                    <i class="ri-arrow-left-line"></i>
+                                    <h4>Select a Block or Day</h4>
+                                    <p>Click on a block to see all its expenses, or click on a specific day</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- NO DATA MESSAGE -->
+                <div class="no-data hidden" id="noDataMessage">
+                    <i class="ri-inbox-line"></i>
+                    <h4>No Expenses Found</h4>
+                    <p>No expenses recorded</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- STATUS BAR -->
+        <div class="status-bar">
+            <div class="status-left">
+                <div class="status-item">
+                    <span class="status-indicator"></span>
+                    Ready
+                </div>
+                <div class="status-item">
+                    <i class="ri-keyboard-box-line"></i>
+                    Click block for all expenses | Click day to filter | Double-click block for details
+                </div>
+            </div>
+
+            <div class="status-time">
+                <span><i class="ri-time-line"></i> <span id="currentTime">--:--:--</span></span>
+                <span><i class="ri-calendar-line"></i> <span id="currentDate">--/--/----</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // ===============================
+        // DATA FROM DJANGO
+        // ===============================
+        const blocksTree = {{ blocks_tree_json|safe }};
+        const allExpenses = {{ all_expenses_json|safe }};
+
+        // ===============================
+        // STATE VARIABLES
+        // ===============================
+        let selectedBlockId = null;
+        let selectedDate = null;
+        let viewMode = null; // 'block' or 'day'
+
+        // ===============================
+        // HELPER FUNCTION - Display N/A for empty values
+        // ===============================
+        function displayValue(value) {
+            if (value === null || value === undefined || value === '') {
+                return '<span class="na-text">N/A</span>';
+            }
+            return value;
+        }
+
+        // ===============================
+        // GET PAYMENT METHOD BADGE CLASS
+        // ===============================
+        function getPaymentBadgeClass(method) {
+            const methodLower = method.toLowerCase();
+            if (methodLower.includes('bank')) return 'badge-banking';
+            if (methodLower.includes('esewa')) return 'badge-esewa';
+            if (methodLower.includes('khalti')) return 'badge-khalti';
+            return 'badge-others';
+        }
+
+        // ===============================
+        // DOM READY
+        // ===============================
+        document.addEventListener('DOMContentLoaded', function() {
+            const treeContainer = document.getElementById('treeContainer');
+            const sidebar = document.getElementById('sidebarContainer');
+            const toggleBtn = document.getElementById('toggleSidebar');
+            const sidebarSearchInput = document.getElementById('sidebarSearchInput');
+            const tableSearchInput = document.getElementById('tableSearchInput');
+            const sidebarNoResults = document.getElementById('sidebarNoResults');
+            const noDataMessage = document.getElementById('noDataMessage');
+            const initialMessage = document.getElementById('initialMessage');
+            const tableTitleText = document.getElementById('tableTitleText');
+            const expenseCount = document.getElementById('expenseCount');
+            const viewModeBadge = document.getElementById('viewModeBadge');
+            const expandAllBtn = document.getElementById('expandAllBtn');
+            const collapseAllBtn = document.getElementById('collapseAllBtn');
+            
+            // ===============================
+            // BUILD TREE VIEW (Blocks & Days)
+            // ===============================
+            function buildTree() {
+                if (blocksTree.length === 0) {
+                    treeContainer.innerHTML = `
+                        <div class="empty-blocks">
+                            <i class="ri-calendar-todo-line"></i>
+                            <h4>No Expense Blocks</h4>
+                            <p>Create your first expense block to start tracking</p>
+                            <a href="{% url 'expenses_view' %}">
+                                <i class="ri-add-line"></i> Create Block
+                            </a>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                
+                for (const block of blocksTree) {
+                    const hasDays = block.days && block.days.length > 0;
+                    const typeIcon = block.expense_type === 'weekly' ? 'ri-calendar-check-line' : 'ri-calendar-2-line';
+                    const typeClass = block.expense_type === 'weekly' ? 'tree-icon-weekly' : 'tree-icon-monthly';
+                    const typeBadgeClass = block.expense_type === 'weekly' ? 'type-badge-weekly' : 'type-badge-monthly';
+                    const statusClass = block.status === 'active' ? 'status-active' : 'status-closed';
+                    
+                    html += `
+                        <div class="tree-item tree-level-0" data-search-name="${block.title.toLowerCase()}" data-block-id="${block.id}">
+                            <div class="tree-content" data-type="block" data-id="${block.id}" data-name="${block.title}">
+                                ${hasDays ? '<span class="tree-toggle">+</span>' : '<div class="tree-toggle-empty"></div>'}
+                                <i class="${typeIcon} tree-icon ${typeClass}"></i>
+                                <span>${block.title}</span>
+                                <span class="type-badge ${typeBadgeClass}">${block.expense_type_display}</span>
+                                <span class="status-badge-tree ${statusClass}">${block.status_display}</span>
+                                <span class="amount-badge">Rs. ${block.total_expense}</span>
+                                ${block.item_count > 0 ? `<span class="count-badge">${block.item_count}</span>` : ''}
+                            </div>
+                    `;
+                    
+                    if (hasDays) {
+                        html += `<div class="tree-children">`;
+                        
+                        for (const day of block.days) {
+                            html += `
+                                <div class="tree-item tree-level-1" data-search-name="${day.display.toLowerCase()} ${day.date_display.toLowerCase()}">
+                                    <div class="tree-content" data-type="day" data-block-id="${block.id}" data-date="${day.date}" data-day-name="${day.display}" data-day-date="${day.date_display}">
+                                        <div class="tree-toggle-empty"></div>
+                                        <i class="ri-calendar-event-line tree-icon tree-icon-day"></i>
+                                        <span class="tree-day-header">${day.display}</span>
+                                        <span class="tree-day-count">(${day.date_display})</span>
+                                        <span class="amount-badge">Rs. ${day.total}</span>
+                                        ${day.expense_count > 0 ? `<span class="count-badge">${day.expense_count}</span>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        
+                        html += `</div>`;
+                    }
+                    
+                    html += `</div>`;
+                }
+                
+                treeContainer.innerHTML = html;
+            }
+
+            // ===============================
+            // EXPAND ALL FUNCTION
+            // ===============================
+            function expandAll() {
+                const allChildren = document.querySelectorAll('.tree-children');
+                const allToggles = document.querySelectorAll('.tree-toggle');
+                
+                allChildren.forEach(child => {
+                    child.classList.add('expanded');
+                });
+                
+                allToggles.forEach(toggle => {
+                    toggle.textContent = '-';
+                });
+            }
+
+            // ===============================
+            // COLLAPSE ALL FUNCTION
+            // ===============================
+            function collapseAll() {
+                const allChildren = document.querySelectorAll('.tree-children');
+                const allToggles = document.querySelectorAll('.tree-toggle');
+                
+                allChildren.forEach(child => {
+                    child.classList.remove('expanded');
+                });
+                
+                allToggles.forEach(toggle => {
+                    toggle.textContent = '+';
+                });
+            }
+
+            // ===============================
+            // EXPAND/COLLAPSE BUTTON EVENTS
+            // ===============================
+            expandAllBtn.addEventListener('click', function() {
+                expandAll();
+            });
+
+            collapseAllBtn.addEventListener('click', function() {
+                collapseAll();
+            });
+            
+            // ===============================
+            // TREE TOGGLE & CLICK FUNCTIONALITY
+            // ===============================
+            treeContainer.addEventListener('click', function(e) {
+                const toggle = e.target.closest('.tree-toggle');
+                if (toggle) {
+                    e.stopPropagation();
+                    const treeItem = toggle.closest('.tree-item');
+                    const children = treeItem.querySelector('.tree-children');
+                    
+                    if (children) {
+                        const isExpanded = children.classList.contains('expanded');
+                        
+                        if (isExpanded) {
+                            children.classList.remove('expanded');
+                            toggle.textContent = '+';
+                        } else {
+                            children.classList.add('expanded');
+                            toggle.textContent = '-';
+                        }
+                    }
+                    return;
+                }
+                
+                // Handle tree content click
+                const content = e.target.closest('.tree-content');
+                if (content) {
+                    const type = content.getAttribute('data-type');
+                    
+                    if (type === 'day') {
+                        // Remove active from all
+                        document.querySelectorAll('.tree-content').forEach(el => {
+                            el.classList.remove('active');
+                            el.classList.remove('active-block');
+                        });
+                        
+                        // Add active to clicked
+                        content.classList.add('active');
+                        
+                        // Get day info
+                        const blockId = parseInt(content.getAttribute('data-block-id'));
+                        const dateStr = content.getAttribute('data-date');
+                        const dayName = content.getAttribute('data-day-name');
+                        const dayDate = content.getAttribute('data-day-date');
+                        
+                        selectedBlockId = blockId;
+                        selectedDate = dateStr;
+                        viewMode = 'day';
+                        
+                        // Show expenses for this day
+                        showExpensesForDay(blockId, dateStr, dayName, dayDate);
+                        
+                    } else if (type === 'block') {
+                        // Remove active from all
+                        document.querySelectorAll('.tree-content').forEach(el => {
+                            el.classList.remove('active');
+                            el.classList.remove('active-block');
+                        });
+                        
+                        // Add active-block to clicked
+                        content.classList.add('active-block');
+                        
+                        // Get block info
+                        const blockId = parseInt(content.getAttribute('data-id'));
+                        const blockName = content.getAttribute('data-name');
+                        
+                        selectedBlockId = blockId;
+                        selectedDate = null;
+                        viewMode = 'block';
+                        
+                        // Show ALL expenses for this block
+                        showExpensesForBlock(blockId, blockName);
+                        
+                        // Also toggle expansion
+                        const treeItem = content.closest('.tree-item');
+                        const children = treeItem.querySelector('.tree-children');
+                        const toggleSpan = content.querySelector('.tree-toggle');
+                        
+                        if (children && toggleSpan) {
+                            const isExpanded = children.classList.contains('expanded');
+                            
+                            if (isExpanded) {
+                                children.classList.remove('expanded');
+                                toggleSpan.textContent = '+';
+                            } else {
+                                children.classList.add('expanded');
+                                toggleSpan.textContent = '-';
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Double-click on block to go to detail page
+            treeContainer.addEventListener('dblclick', function(e) {
+                const content = e.target.closest('.tree-content');
+                if (content) {
+                    const type = content.getAttribute('data-type');
+                    
+                    if (type === 'block') {
+                        const blockId = content.getAttribute('data-id');
+                        window.location.href = `/main/expenses/${blockId}/`;
+                    }
+                }
+            });
+
+            // ===============================
+            // SHOW ALL EXPENSES FOR BLOCK
+            // ===============================
+            function showExpensesForBlock(blockId, blockTitle) {
+                const tbody = document.getElementById('expenseTableBody');
+                
+                // Filter ALL expenses for this block
+                const expenses = allExpenses.filter(exp => exp.block_id === blockId);
+                
+                // Find block info
+                const block = blocksTree.find(b => b.id === blockId);
+                
+                // Update title
+                tableTitleText.textContent = `All Expenses - ${blockTitle}`;
+                expenseCount.textContent = `${expenses.length} expense${expenses.length !== 1 ? 's' : ''}`;
+                expenseCount.classList.remove('hidden');
+                
+                // Update view mode badge
+                viewModeBadge.textContent = 'Block View';
+                viewModeBadge.className = 'view-mode-badge view-mode-block';
+                viewModeBadge.classList.remove('hidden');
+                
+                if (expenses.length === 0) {
+                    tbody.innerHTML = '';
+                    noDataMessage.querySelector('p').textContent = 'No expenses recorded in this block';
+                    noDataMessage.classList.remove('hidden');
+                    return;
+                }
+                
+                noDataMessage.classList.add('hidden');
+                
+                // Sort expenses by date
+                const sortedExpenses = [...expenses].sort((a, b) => 
+                    new Date(a.expense_date) - new Date(b.expense_date)
+                );
+                
+                // Group expenses by date
+                const groupedByDate = {};
+                sortedExpenses.forEach(exp => {
+                    if (!groupedByDate[exp.expense_date]) {
+                        groupedByDate[exp.expense_date] = [];
+                    }
+                    groupedByDate[exp.expense_date].push(exp);
+                });
+                
+                // Calculate block total
+                const blockTotal = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+                
+                // Build table rows with day separators
+                let html = '';
+                let globalIndex = 0;
+                
+                for (const dateKey of Object.keys(groupedByDate).sort()) {
+                    const dayExpenses = groupedByDate[dateKey];
+                    const dayTotal = dayExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+                    
+                    // Find day display info
+                    const firstExp = dayExpenses[0];
+                    
+                    // Day separator row
+                    html += `
+                        <tr class="day-separator-row">
+                            <td colspan="7" class="day-separator">
+                                <i class="ri-calendar-event-line"></i>
+                                ${firstExp.expense_day_display} - ${firstExp.expense_date_display}
+                                <span class="day-total">Rs. ${dayTotal.toFixed(2)}</span>
+                            </td>
+                        </tr>
+                    `;
+                    
+                    // Expense rows for this day
+                    dayExpenses.forEach((expense, dayIndex) => {
+                        globalIndex++;
+                        const badgeClass = getPaymentBadgeClass(expense.payment_method);
+                        
+                        html += `
+                            <tr data-id="${expense.id}">
+                                <td class="text-center">${dayIndex + 1}</td>
+                                <td class="text-left">${displayValue(expense.expense_name)}</td>
+                                <td class="text-right amount-cell">Rs. ${expense.amount.toFixed(2)}</td>
+                                <td class="text-left">${displayValue(expense.account_name)}</td>
+                                <td class="text-center">
+                                    <span class="badge ${badgeClass}">${expense.payment_method}</span>
+                                </td>
+                                <td class="text-left">${displayValue(expense.notes) || '<span class="na-text">-</span>'}</td>
+                                <td class="text-center">${expense.created_at}</td>
+                            </tr>
+                        `;
+                    });
+                }
+                
+                // Add block total row
+                html += `
+                    <tr class="total-row" style="background: #e0e7ff !important; font-weight: 600;">
+                        <td colspan="2" class="text-right" style="color: #4338ca; font-size: 12px;">
+                            <i class="ri-money-dollar-circle-line" style="margin-right: 4px;"></i>
+                            Block Total:
+                        </td>
+                        <td class="text-right amount-cell" style="font-size: 14px; color: #059669;">Rs. ${blockTotal.toFixed(2)}</td>
+                        <td colspan="4" style="color: #64748b; font-size: 10px;">
+                            ${Object.keys(groupedByDate).length} day${Object.keys(groupedByDate).length !== 1 ? 's' : ''} | 
+                            ${expenses.length} expense${expenses.length !== 1 ? 's' : ''}
+                        </td>
+                    </tr>
+                `;
+                
+                tbody.innerHTML = html;
+            }
+            
+            // ===============================
+            // SHOW EXPENSES FOR DAY
+            // ===============================
+            function showExpensesForDay(blockId, dateStr, dayName, dayDate) {
+                const tbody = document.getElementById('expenseTableBody');
+                
+                // Filter expenses for this day
+                const expenses = allExpenses.filter(exp => 
+                    exp.block_id === blockId && exp.expense_date === dateStr
+                );
+                
+                // Find block title
+                const block = blocksTree.find(b => b.id === blockId);
+                const blockTitle = block ? block.title : 'Expense Block';
+                
+                // Update title
+                tableTitleText.textContent = `${dayName}, ${dayDate} - ${blockTitle}`;
+                expenseCount.textContent = `${expenses.length} expense${expenses.length !== 1 ? 's' : ''}`;
+                expenseCount.classList.remove('hidden');
+                
+                // Update view mode badge
+                viewModeBadge.textContent = 'Day View';
+                viewModeBadge.className = 'view-mode-badge view-mode-day';
+                viewModeBadge.classList.remove('hidden');
+                
+                if (expenses.length === 0) {
+                    tbody.innerHTML = '';
+                    noDataMessage.querySelector('p').textContent = 'No expenses recorded for this day';
+                    noDataMessage.classList.remove('hidden');
+                    return;
+                }
+                
+                noDataMessage.classList.add('hidden');
+                
+                // Calculate day total
+                const dayTotal = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+                
+                // Build table rows
+                let html = '';
+                expenses.forEach((expense, index) => {
+                    const badgeClass = getPaymentBadgeClass(expense.payment_method);
+                    
+                    html += `
+                        <tr data-id="${expense.id}">
+                            <td class="text-center">${index + 1}</td>
+                            <td class="text-left">${displayValue(expense.expense_name)}</td>
+                            <td class="text-right amount-cell">Rs. ${expense.amount.toFixed(2)}</td>
+                            <td class="text-left">${displayValue(expense.account_name)}</td>
+                            <td class="text-center">
+                                <span class="badge ${badgeClass}">${expense.payment_method}</span>
+                            </td>
+                            <td class="text-left">${displayValue(expense.notes) || '<span class="na-text">-</span>'}</td>
+                            <td class="text-center">${expense.created_at}</td>
+                        </tr>
+                    `;
+                });
+                
+                // Add total row
+                html += `
+                    <tr class="total-row" style="background: #eef2ff !important; font-weight: 600;">
+                        <td colspan="2" class="text-right" style="color: #4338ca;">Day Total:</td>
+                        <td class="text-right amount-cell" style="font-size: 13px;">Rs. ${dayTotal.toFixed(2)}</td>
+                        <td colspan="4"></td>
+                    </tr>
+                `;
+                
+                tbody.innerHTML = html;
+            }
+            
+            // ===============================
+            // TABLE ROW CLICK
+            // ===============================
+            document.getElementById('expenseTableBody').addEventListener('click', function(e) {
+                const row = e.target.closest('tr');
+                if (row && row.dataset.id) {
+                    this.querySelectorAll('tr').forEach(r => r.classList.remove('active'));
+                    row.classList.add('active');
+                }
+            });
+            
+            // ===============================
+            // SIDEBAR TOGGLE
+            // ===============================
+            let sidebarCollapsed = false;
+            toggleBtn.addEventListener('click', function() {
+                sidebarCollapsed = !sidebarCollapsed;
+                sidebar.classList.toggle('collapsed', sidebarCollapsed);
+                toggleBtn.innerHTML = sidebarCollapsed 
+                    ? '<i class="ri-sidebar-fold-line"></i> Show Sidebar'
+                    : '<i class="ri-sidebar-unfold-line"></i> Toggle Sidebar';
+            });
+            
+            // ===============================
+            // SIDEBAR SEARCH
+            // ===============================
+            sidebarSearchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                const allTreeItems = document.querySelectorAll('.tree-item');
+                
+                // Reset all items
+                allTreeItems.forEach(item => {
+                    item.style.display = '';
+                    const content = item.querySelector(':scope > .tree-content');
+                    if (content) {
+                        content.classList.remove('search-match');
+                    }
+                });
+                
+                // Collapse all first
+                document.querySelectorAll('.tree-children').forEach(el => {
+                    el.classList.remove('expanded');
+                });
+                document.querySelectorAll('.tree-toggle').forEach(el => {
+                    el.textContent = '+';
+                });
+                
+                if (searchTerm === '') {
+                    sidebarNoResults.classList.add('hidden');
+                    treeContainer.style.display = '';
+                    return;
+                }
+                
+                let matchCount = 0;
+                const matchedItems = new Set();
+                const parentItems = new Set();
+                
+                // Find matching items
+                allTreeItems.forEach(item => {
+                    const searchName = item.getAttribute('data-search-name') || '';
+                    
+                    if (searchName.includes(searchTerm)) {
+                        matchCount++;
+                        matchedItems.add(item);
+                        
+                        const content = item.querySelector(':scope > .tree-content');
+                        if (content) {
+                            content.classList.add('search-match');
+                        }
+                        
+                        // Find parent items
+                        let parent = item.parentElement;
+                        while (parent) {
+                            if (parent.classList && parent.classList.contains('tree-children')) {
+                                const parentItem = parent.parentElement;
+                                if (parentItem && parentItem.classList.contains('tree-item')) {
+                                    parentItems.add(parentItem);
+                                }
+                            }
+                            parent = parent.parentElement;
+                        }
+                    }
+                });
+                
+                // Show/hide items
+                allTreeItems.forEach(item => {
+                    if (matchedItems.has(item) || parentItems.has(item)) {
+                        item.style.display = '';
+                    } else {
+                        let isDescendantOfMatch = false;
+                        let parent = item.parentElement;
+                        while (parent) {
+                            if (parent.classList && parent.classList.contains('tree-item') && matchedItems.has(parent)) {
+                                isDescendantOfMatch = true;
+                                break;
+                            }
+                            parent = parent.parentElement;
+                        }
+                        
+                        if (!isDescendantOfMatch) {
+                            item.style.display = 'none';
+                        }
+                    }
+                });
+                
+                // Expand parents
+                parentItems.forEach(parentItem => {
+                    const children = parentItem.querySelector(':scope > .tree-children');
+                    const toggle = parentItem.querySelector(':scope > .tree-content > .tree-toggle');
+                    if (children) {
+                        children.classList.add('expanded');
+                    }
+                    if (toggle) {
+                        toggle.textContent = '-';
+                    }
+                });
+                
+                // Show/hide no results
+                if (matchCount === 0) {
+                    sidebarNoResults.classList.remove('hidden');
+                    treeContainer.style.display = 'none';
+                } else {
+                    sidebarNoResults.classList.add('hidden');
+                    treeContainer.style.display = '';
+                }
+            });
+            
+            // ===============================
+            // TABLE SEARCH
+            // ===============================
+            tableSearchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                const rows = document.querySelectorAll('#expenseTableBody tr');
+                
+                rows.forEach(row => {
+                    // Skip separator and total rows, but keep them visible if no search
+                    if (row.classList.contains('day-separator-row') || row.classList.contains('total-row')) {
+                        if (searchTerm === '') {
+                            row.style.display = '';
+                        }
+                        return;
+                    }
+                    
+                    if (!row.dataset.id) return; // Skip placeholder rows
+                    
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = (searchTerm === '' || text.includes(searchTerm)) ? '' : 'none';
+                });
+                
+                // Hide day separators if all their expenses are hidden
+                if (searchTerm !== '') {
+                    const separators = document.querySelectorAll('.day-separator-row');
+                    separators.forEach(sep => {
+                        let nextRow = sep.nextElementSibling;
+                        let hasVisibleExpense = false;
+                        
+                        while (nextRow && !nextRow.classList.contains('day-separator-row') && !nextRow.classList.contains('total-row')) {
+                            if (nextRow.style.display !== 'none' && nextRow.dataset.id) {
+                                hasVisibleExpense = true;
+                                break;
+                            }
+                            nextRow = nextRow.nextElementSibling;
+                        }
+                        
+                        sep.style.display = hasVisibleExpense ? '' : 'none';
+                    });
+                }
+            });
+            
+            // ===============================
+            // UPDATE TIME
+            // ===============================
+            function updateDateTime() {
+                const now = new Date();
+                document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+                document.getElementById('currentDate').textContent = now.toLocaleDateString();
+            }
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            // ===============================
+            // INITIALIZE
+            // ===============================
+            buildTree();
+        });
+    </script>
+</body>
+</html>

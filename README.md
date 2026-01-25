@@ -1,36 +1,14 @@
 # ExpTrack
 
-<div align="center">
-  <img src="static/Banner.png" alt="ExpTrack Banner" width="100%">
-  
-  ### Master your money, achieve your dreams.
-  
-  [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
-  [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/downloads/)
-  [![Django](https://img.shields.io/badge/Django-5.0+-green.svg)](https://www.djangoproject.com/)
-  [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-blue.svg)](https://www.postgresql.org/)
-</div>
+### Master your money, achieve your dreams.
 
----
-
-## 📋 Table of Contents
-
-- [About](#about)
-- [Key Features](#key-features)
-- [Demo](#demo)
-- [Installation](#installation)
-- [Environment Configuration](#environment-configuration)
-- [Usage](#usage)
-- [Technologies Used](#technologies-used)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/) [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/downloads/) [![Django](https://img.shields.io/badge/Django-5.0+-green.svg)](https://www.djangoproject.com/) [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-blue.svg)](https://www.postgresql.org/)
 
 ---
 
 ## 🎯 About
 
-**ExpTrack** is a comprehensive expense tracking and goal achievement platform designed to help you take control of your finances. Whether you're saving for a vacation, paying off debt, or building an emergency fund, ExpTrack provides the tools you need to succeed.
+**ExpTrack** is a comprehensive expense tracking and goal achievement platform designed to help you take control of your finances. Whether you're saving for a vacation, paying off debt, or building an emergency fund, ExpTrack provides the tools you need to succeed. 
 
 Built with Django and PostgreSQL, ExpTrack offers a beautiful, intuitive interface that makes financial management simple, secure, and even enjoyable.
 
@@ -38,22 +16,80 @@ Built with Django and PostgreSQL, ExpTrack offers a beautiful, intuitive interfa
 
 ## ✨ Key Features
 
-- ⚡ **Lightning Fast Analysis** - Complete site audit in under 30 seconds
-- 📊 **Professional Excel Reports** - 7 detailed sheets with color-coded insights
-- 🔒 **Security Assessment** - Validates critical security headers and vulnerabilities
-- 📈 **SEO Analysis** - Meta tags, headings, image alt text, and link optimization
-- 🖼️ **Image Optimization** - Size analysis, format suggestions, and compression tips
-- 🔗 **Broken Link Detection** - Identifies and reports 404s and failed requests
-- 📱 **Mobile-Friendly Checks** - Responsive design and viewport validation
-- 💡 **Performance Boost Guide** - Step-by-step improvement recommendations
-- 🎯 **Rating System** - Get scored from Beginner to Champion level
-- 🖥️ **Both CLI and Python API** - Use in terminal or integrate into your projects
-- 📊 **Visual Reports** - Beautiful charts and graphs for spending patterns
-- 🎯 **Goal Setting** - Define and track short-term and long-term financial goals
-- 💰 **Budget Planning** - Create and manage monthly budgets
-- 🔔 **Smart Reminders** - Never miss a bill payment
-- 🌐 **Cloud Sync** - Access your data from anywhere
-- 📤 **Export Data** - Download your financial reports
+### 🔐 **Complete Authentication System**
+- Secure user registration and login
+- Password reset and email verification
+- Profile management and security
+- Session management with Django middleware
+- Role-based access control
+
+### 💰 **Balance Management**
+- Track your current account balance in real-time
+- Multiple account support
+- Automatic balance updates with every transaction
+- View balance history and trends
+- Balance alerts and notifications
+
+### 📈 **Income Tracking & Management**
+- Add multiple income sources
+- Categorize income streams
+- Automatic balance addition on income entry
+- Monthly and yearly income reports
+- Income vs expense comparison
+
+### 🎯 **Advanced Goal Setting**
+- Create short-term and long-term financial goals
+- Set target amounts and deadlines
+- Track progress with visual indicators
+- Goal milestones and achievements
+- Smart goal recommendations
+
+### 📊 **Goal Analytics with Advanced Charts**
+- Interactive charts and graphs for goal tracking
+- Progress visualization with Chart.js
+- Comparative analysis of multiple goals
+- Trend analysis and projections
+- Goal success rate statistics
+- Visual timeline of achievements
+
+### 📑 **Advanced Visualization Reports**
+- Comprehensive financial reports
+- Spending pattern analysis
+- Category-wise breakdowns
+- Monthly/Yearly comparisons
+- Custom date range reports
+- PDF report generation
+
+### 📤 **Excel Data Export**
+- Export all financial data to Excel
+- Customizable export templates
+- Include charts and graphs in exports
+- Multiple sheet exports (Income, Expenses, Goals, Balance)
+- Automated monthly reports
+
+### 🖥️ **Advanced Dashboard on Login**
+- Personalized financial overview
+- Quick stats: Balance, Income, Expenses, Goals
+- Recent transactions feed
+- Upcoming bill reminders
+- Goal progress widgets
+- Spending insights at a glance
+
+### 📊 **Real-Time Expense Charts with Blocks**
+- Live updating expense visualization
+- Category-wise expense blocks
+- Interactive pie charts and bar graphs
+- Daily, weekly, monthly views
+- Expense comparison charts
+- Budget vs actual spending
+
+### 📝 **Daily Expense Management**
+- Quick expense entry system
+- Categorize expenses efficiently
+- Add notes and receipts
+- Recurring expense automation
+- Daily spending limits
+- Expense calendar view
 
 ---
 
@@ -73,12 +109,16 @@ Built with Django and PostgreSQL, ExpTrack offers a beautiful, intuitive interfa
 - pip (Python package installer)
 - Git
 
+---
+
 ### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/ompandey07/Exptrac.git
 cd Exptrac
 ```
+
+---
 
 ### Step 2: Create Virtual Environment
 
@@ -92,11 +132,15 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
+---
+
 ### Step 3: Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
+
+---
 
 ### Step 4: Set Up PostgreSQL Database
 
@@ -111,9 +155,13 @@ ALTER ROLE exptrack_user SET timezone TO 'UTC';
 GRANT ALL PRIVILEGES ON DATABASE exptrack_db TO exptrack_user;
 ```
 
+---
+
 ### Step 5: Configure Environment Variables
 
 Create a `.env` file in the root directory and configure your settings (see [Environment Configuration](#environment-configuration) below).
+
+---
 
 ### Step 6: Run Migrations
 
@@ -122,17 +170,23 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
+---
+
 ### Step 7: Create Superuser
 
 ```bash
 python manage.py createsuperuser
 ```
 
+---
+
 ### Step 8: Collect Static Files
 
 ```bash
 python manage.py collectstatic
 ```
+
+---
 
 ### Step 9: Run the Development Server
 
@@ -184,6 +238,8 @@ USE_I18N=True
 USE_TZ=True
 ```
 
+---
+
 ### Generating a Secret Key
 
 To generate a new secret key, run:
@@ -207,28 +263,47 @@ python -c "from django.core.management.utils import get_random_secret_key; print
 
 Access the Django admin panel at `http://127.0.0.1:8000/admin/` with your superuser credentials.
 
+---
+
 ### User Features
 
-1. **Register/Login** - Create your account or sign in
-2. **Set Goals** - Define your financial objectives
-3. **Track Expenses** - Log your daily spending
-4. **View Reports** - Analyze your financial data
-5. **Manage Budgets** - Create and monitor monthly budgets
-6. **Achieve Goals** - Track progress and celebrate milestones
+1. **Register/Login** - Create your account or sign in securely
+2. **Dashboard Overview** - View your complete financial summary at a glance
+3. **Add Income** - Record income sources and watch your balance grow
+4. **Track Expenses** - Log daily expenses with categories
+5. **Set Goals** - Define financial objectives with target amounts
+6. **View Analytics** - Analyze spending patterns with interactive charts
+7. **Export Reports** - Download Excel reports of your financial data
+8. **Monitor Balance** - Keep track of your real-time account balance
 
 ---
 
 ## 🛠️ Technologies Used
 
-- **Backend:** Django 5.0+
-- **Database:** PostgreSQL 13+
-- **Python:** 3.12+
-- **Frontend:** HTML5, CSS3, JavaScript
-- **UI Framework:** Custom CSS with Tailwind-inspired utilities
+### Backend
+- **Django** 5.0+ - High-level Python web framework
+- **PostgreSQL** 13+ - Advanced relational database
+- **Python** 3.12+ - Core programming language
+
+### Frontend
+- **HTML5** - Modern markup language
+- **CSS3** - Advanced styling with animations
+- **JavaScript** - Interactive client-side functionality
+- **Chart.js** - Beautiful data visualization
+- **Custom CSS** - Tailwind-inspired utility classes
+
+### UI/UX Components
 - **Icons:** Remix Icons, Lucide Icons
 - **Fonts:** Google Fonts (Inter, Poppins, Kaushan Script, Agustina)
-- **Charts:** Chart.js / Custom SVG
-- **Security:** Django security middleware, CSRF protection
+- **Charts:** Chart.js for advanced visualizations
+- **Responsive Design:** Mobile-first approach
+
+### Security & Tools
+- **Django Security Middleware** - Built-in security features
+- **CSRF Protection** - Cross-site request forgery prevention
+- **Password Hashing** - Secure password storage
+- **Session Management** - Secure user sessions
+- **Excel Export** - openpyxl/xlsxwriter for data export
 
 ---
 
@@ -236,11 +311,11 @@ Access the Django admin panel at `http://127.0.0.1:8000/admin/` with your superu
 
 Contributions are always welcome! Here's how you can help:
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. **Fork the repository**
+2. **Create your feature branch** (`git checkout -b feature/AmazingFeature`)
+3. **Commit your changes** (`git commit -m 'Add some AmazingFeature'`)
+4. **Push to the branch** (`git push origin feature/AmazingFeature`)
+5. **Open a Pull Request**
 
 Please make sure to update tests as appropriate and adhere to the existing coding style.
 
@@ -266,14 +341,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Inspired by the need for simple, effective personal finance management
 - Built with love for the financial wellness community
 - Special thanks to all contributors and users
+- Powered by open-source technologies
 
 ---
 
-<div align="center">
-  
-  ### "A budget is telling your money where to go instead of wondering where it went."
-  ― Dave Ramsey
-  
-  **Made with ❤️ by Om Pandey**
-  
-</div>
+### "A budget is telling your money where to go instead of wondering where it went." 
+― Dave Ramsey
+
+---
+
+**Made with ❤️ by Om Pandey**
