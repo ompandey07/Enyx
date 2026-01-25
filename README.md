@@ -1,8 +1,12 @@
-# ExpTrack
-
-### Master your money, achieve your dreams.
-
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/) [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/downloads/) [![Django](https://img.shields.io/badge/Django-5.0+-green.svg)](https://www.djangoproject.com/) [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-blue.svg)](https://www.postgresql.org/)
+<div align="center">
+  <img src="path/to/your/logo.png" alt="ExpTrack Logo" width="200"/>
+  
+  # ExpTrack
+  
+  ### Master your money, achieve your dreams.
+  
+  [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/) [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/downloads/) [![Django](https://img.shields.io/badge/Django-5.0+-green.svg)](https://www.djangoproject.com/) [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-blue.svg)](https://www.postgresql.org/)
+</div>
 
 ---
 
