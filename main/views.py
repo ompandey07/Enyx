@@ -7,7 +7,7 @@ from django.db.models import Sum
 from datetime import date, timedelta, datetime
 from decimal import Decimal, InvalidOperation
 from decimal import Decimal, InvalidOperation
-from .models import UserBalance , ExpenseBlock, ExpenseItem , UserIncome
+from .models import UserBalance , ExpenseBlock, ExpenseItem , UserIncome , UserGoal
 from django.db import models
 
 # ============================================
@@ -142,6 +142,88 @@ def dashboard_view(request):
         balance_labels.append(method.capitalize())
         balance_values.append(float(item['total']))
 
+    # ============================================
+    # GOALS DATA
+    # ============================================
+    
+    # Get all user goals
+    all_goals = UserGoal.objects.filter(user=user).prefetch_related('balance_accounts')
+    
+    # Update status for overdue goals
+    for goal in all_goals.filter(status__in=['new', 'running']):
+        if goal.deadline < today:
+            if goal.get_achievement_rate() >= 100:
+                goal.status = 'completed'
+            else:
+                goal.status = 'failed'
+            goal.save(update_fields=['status', 'updated_at'])
+    
+    # Refresh queryset after status updates
+    all_goals = UserGoal.objects.filter(user=user).prefetch_related('balance_accounts')
+    
+    # Goals statistics
+    total_goals = all_goals.count()
+    active_goals = all_goals.filter(status__in=['new', 'running'])
+    active_goals_count = active_goals.count()
+    completed_goals_count = all_goals.filter(status='completed').count()
+    failed_goals_count = all_goals.filter(status='failed').count()
+    
+    # Goals status distribution for chart
+    goals_status_labels = []
+    goals_status_values = []
+    goals_status_colors = []
+    
+    status_data = [
+        ('new', 'New', '#6366f1', all_goals.filter(status='new').count()),
+        ('running', 'Running', '#f59e0b', all_goals.filter(status='running').count()),
+        ('completed', 'Completed', '#10b981', completed_goals_count),
+        ('failed', 'Failed', '#ef4444', failed_goals_count),
+    ]
+    
+    for status_key, status_label, color, count in status_data:
+        if count > 0:
+            goals_status_labels.append(status_label)
+            goals_status_values.append(count)
+            goals_status_colors.append(color)
+    
+    # Active goals progress data for chart
+    goals_progress_labels = []
+    goals_progress_values = []
+    goals_target_values = []
+    goals_current_values = []
+    
+    # Get top 5 active goals for progress chart
+    top_active_goals = active_goals.order_by('-created_at')[:5]
+    
+    for goal in top_active_goals:
+        # Truncate title if too long
+        title = goal.title[:20] + '...' if len(goal.title) > 20 else goal.title
+        goals_progress_labels.append(title)
+        goals_progress_values.append(float(goal.get_achievement_rate()))
+        goals_target_values.append(float(goal.target_amount))
+        goals_current_values.append(float(goal.get_current_savings()))
+    
+    # Calculate total goals target and current savings
+    total_goals_target = sum(float(g.target_amount) for g in active_goals)
+    total_goals_savings = sum(float(g.get_current_savings()) for g in active_goals)
+    
+    # Overall goals achievement rate
+    if total_goals_target > 0:
+        overall_goals_rate = min(100, (total_goals_savings / total_goals_target) * 100)
+    else:
+        overall_goals_rate = 0
+    
+    # Get nearest deadline goal
+    nearest_goal = active_goals.order_by('deadline').first()
+    
+    # Goals prediction summary
+    on_track_count = sum(1 for g in active_goals if g.get_status_prediction() == 'on_track')
+    at_risk_count = sum(1 for g in active_goals if g.get_status_prediction() == 'at_risk')
+    behind_count = sum(1 for g in active_goals if g.get_status_prediction() == 'behind')
+
+    has_goals = total_goals > 0
+    has_active_goals = active_goals_count > 0
+
     context = {
         'user': user,
         'profile': profile,
@@ -165,10 +247,32 @@ def dashboard_view(request):
         'has_balance': len(balance_labels) > 0,
         'has_income': len(income_labels) > 0,
         'has_expenses': total_weekly_expense > 0,
+        
+        # Goals data
+        'total_goals': total_goals,
+        'active_goals_count': active_goals_count,
+        'completed_goals_count': completed_goals_count,
+        'failed_goals_count': failed_goals_count,
+        'has_goals': has_goals,
+        'has_active_goals': has_active_goals,
+        'goals_status_labels': goals_status_labels,
+        'goals_status_values': goals_status_values,
+        'goals_status_colors': goals_status_colors,
+        'goals_progress_labels': goals_progress_labels,
+        'goals_progress_values': goals_progress_values,
+        'goals_target_values': goals_target_values,
+        'goals_current_values': goals_current_values,
+        'total_goals_target': total_goals_target,
+        'total_goals_savings': total_goals_savings,
+        'overall_goals_rate': round(overall_goals_rate, 1),
+        'nearest_goal': nearest_goal,
+        'on_track_count': on_track_count,
+        'at_risk_count': at_risk_count,
+        'behind_count': behind_count,
+        'top_active_goals': top_active_goals,
     }
 
     return render(request, 'Main/dashboard.html', context)
-
 #?======================================================================================================================
 #!=========================================== END OF DASHBOARD VIEWS ===========================================
 #?======================================================================================================================
@@ -1243,4 +1347,397 @@ def get_income(request, income_id):
         return JsonResponse({'success': False, 'message': 'Income not found', 'type': 'error'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': 'An error occurred', 'type': 'error'})
+
+#?======================================================================================================================
+#!=========================================== END OF INCOME VIEWS ===========================================
+#?======================================================================================================================
+
+
+# ============================================
+# Goals View
+# ============================================
+@login_required(login_url='/401/')
+def goals_view(request):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+
+    first_letter = user.first_name[0].upper() if user.first_name else user.email[0].upper()
+    full_name = f"{user.first_name} {user.last_name}".strip() or user.email.split('@')[0]
+
+    # Get all goals for the user with pagination
+    goals_list = UserGoal.objects.filter(user=user).prefetch_related('balance_accounts')
+    
+    # Update status for overdue goals
+    today = date.today()
+    for goal in goals_list.filter(status__in=['new', 'running']):
+        if goal.deadline < today:
+            if goal.get_achievement_rate() >= 100:
+                goal.status = 'completed'
+            else:
+                goal.status = 'failed'
+            goal.save(update_fields=['status', 'updated_at'])
+    
+    # Refresh queryset
+    goals_list = UserGoal.objects.filter(user=user).prefetch_related('balance_accounts')
+    
+    # Pagination - 10 items per page
+    paginator = Paginator(goals_list, 10)
+    page = request.GET.get('page', 1)
+    
+    try:
+        goals = paginator.page(page)
+    except PageNotAnInteger:
+        goals = paginator.page(1)
+    except EmptyPage:
+        goals = paginator.page(paginator.num_pages)
+
+    # Get user's active balance accounts for the form
+    balance_accounts = UserBalance.objects.filter(user=user, status='active')
+
+    # Stats
+    total_goals = goals_list.count()
+    active_goals = goals_list.filter(status__in=['new', 'running']).count()
+    completed_goals = goals_list.filter(status='completed').count()
+    failed_goals = goals_list.filter(status='failed').count()
+
+    context = {
+        'user': user,
+        'profile': profile,
+        'first_letter': first_letter,
+        'full_name': full_name,
+        'goals': goals,
+        'total_goals': total_goals,
+        'active_goals': active_goals,
+        'completed_goals': completed_goals,
+        'failed_goals': failed_goals,
+        'balance_accounts': balance_accounts,
+        'status_choices': UserGoal.STATUS_CHOICES,
+        'today_date': today.strftime('%Y-%m-%d'),
+    }
+
+    return render(request, 'Goals/goals.html', context)
+
+
+# ============================================
+# Create Goal
+# ============================================
+@login_required(login_url='/401/')
+def create_goal(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method', 'type': 'error'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request', 'type': 'error'})
+    
+    try:
+        title = request.POST.get('title', '').strip()
+        target_amount = request.POST.get('target_amount', '0').strip()
+        deadline = request.POST.get('deadline', '').strip()
+        status = request.POST.get('status', 'new').strip()
+        account_ids = request.POST.getlist('balance_accounts')
+
+        # Validation
+        if not title:
+            return JsonResponse({'success': False, 'message': 'Goal title is required', 'type': 'error'})
+        
+        if len(title) < 3:
+            return JsonResponse({'success': False, 'message': 'Goal title must be at least 3 characters', 'type': 'error'})
+        
+        if len(title) > 200:
+            return JsonResponse({'success': False, 'message': 'Goal title must be less than 200 characters', 'type': 'error'})
+        
+        # Validate amount
+        try:
+            amount_decimal = Decimal(target_amount)
+            if amount_decimal <= 0:
+                return JsonResponse({'success': False, 'message': 'Target amount must be greater than zero', 'type': 'error'})
+        except (InvalidOperation, ValueError):
+            return JsonResponse({'success': False, 'message': 'Invalid target amount', 'type': 'error'})
+
+        # Validate deadline
+        if not deadline:
+            return JsonResponse({'success': False, 'message': 'Deadline is required', 'type': 'error'})
+        
+        try:
+            deadline_date = datetime.strptime(deadline, '%Y-%m-%d').date()
+            if deadline_date <= date.today():
+                return JsonResponse({'success': False, 'message': 'Deadline must be in the future', 'type': 'error'})
+        except ValueError:
+            return JsonResponse({'success': False, 'message': 'Invalid deadline date format', 'type': 'error'})
+
+        # Validate status
+        valid_statuses = [choice[0] for choice in UserGoal.STATUS_CHOICES]
+        if status not in valid_statuses:
+            return JsonResponse({'success': False, 'message': 'Invalid status selected', 'type': 'error'})
+
+        # Validate accounts
+        if not account_ids:
+            return JsonResponse({'success': False, 'message': 'Please select at least one account', 'type': 'error'})
+
+        # Verify accounts belong to user
+        accounts = UserBalance.objects.filter(id__in=account_ids, user=request.user, status='active')
+        if accounts.count() != len(account_ids):
+            return JsonResponse({'success': False, 'message': 'One or more selected accounts are invalid', 'type': 'error'})
+
+        # Create goal
+        goal = UserGoal.objects.create(
+            user=request.user,
+            title=title,
+            target_amount=amount_decimal,
+            start_date=date.today(),
+            deadline=deadline_date,
+            status=status
+        )
+        
+        # Add accounts
+        goal.balance_accounts.set(accounts)
+
+        return JsonResponse({
+            'success': True, 
+            'message': 'Goal created successfully', 
+            'type': 'success',
+            'goal': {
+                'id': goal.id,
+                'title': goal.title,
+                'target_amount': str(goal.target_amount),
+                'start_date': goal.start_date.strftime('%b %d, %Y'),
+                'deadline': goal.deadline.strftime('%b %d, %Y'),
+                'status': goal.status,
+                'status_display': goal.get_status_display(),
+            }
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.', 'type': 'error'})
+
+
+# ============================================
+# Update Goal (Title and Status only)
+# ============================================
+@login_required(login_url='/401/')
+def update_goal(request, goal_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method', 'type': 'error'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request', 'type': 'error'})
+    
+    try:
+        goal = get_object_or_404(UserGoal, id=goal_id, user=request.user)
+
+        title = request.POST.get('title', '').strip()
+        status = request.POST.get('status', '').strip()
+
+        # Validation
+        if title:
+            if len(title) < 3:
+                return JsonResponse({'success': False, 'message': 'Goal title must be at least 3 characters', 'type': 'error'})
+            
+            if len(title) > 200:
+                return JsonResponse({'success': False, 'message': 'Goal title must be less than 200 characters', 'type': 'error'})
+            
+            goal.title = title
+
+        if status:
+            valid_statuses = [choice[0] for choice in UserGoal.STATUS_CHOICES]
+            if status not in valid_statuses:
+                return JsonResponse({'success': False, 'message': 'Invalid status selected', 'type': 'error'})
+            goal.status = status
+
+        goal.save()
+
+        return JsonResponse({
+            'success': True, 
+            'message': 'Goal updated successfully', 
+            'type': 'success',
+            'goal': {
+                'id': goal.id,
+                'title': goal.title,
+                'status': goal.status,
+                'status_display': goal.get_status_display(),
+            }
+        })
+
+    except UserGoal.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Goal not found', 'type': 'error'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.', 'type': 'error'})
+
+
+# ============================================
+# Get Goal Details (for edit form)
+# ============================================
+@login_required(login_url='/401/')
+def get_goal(request, goal_id):
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request', 'type': 'error'})
+    
+    try:
+        goal = get_object_or_404(UserGoal, id=goal_id, user=request.user)
+
+        return JsonResponse({
+            'success': True,
+            'goal': {
+                'id': goal.id,
+                'title': goal.title,
+                'target_amount': str(goal.target_amount),
+                'start_date': goal.start_date.strftime('%Y-%m-%d'),
+                'deadline': goal.deadline.strftime('%Y-%m-%d'),
+                'status': goal.status,
+                'account_ids': list(goal.balance_accounts.values_list('id', flat=True)),
+            }
+        })
+
+    except UserGoal.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Goal not found', 'type': 'error'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred', 'type': 'error'})
+
+
+# ============================================
+# Goal Detail View (Progress Page)
+# ============================================
+@login_required(login_url='/401/')
+def goal_detail_view(request, goal_id):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+
+    first_letter = user.first_name[0].upper() if user.first_name else user.email[0].upper()
+    full_name = f"{user.first_name} {user.last_name}".strip() or user.email.split('@')[0]
+
+    # Get the goal
+    goal = get_object_or_404(UserGoal, id=goal_id, user=user)
+    
+    # Update status if needed
+    today = date.today()
+    if goal.status in ['new', 'running'] and goal.deadline < today:
+        if goal.get_achievement_rate() >= 100:
+            goal.status = 'completed'
+        else:
+            goal.status = 'failed'
+        goal.save(update_fields=['status', 'updated_at'])
+    
+    # Get income and expense data for the goal period
+    total_income = goal.get_total_income()
+    total_expense = goal.get_total_expense()
+    current_savings = goal.get_current_savings()
+    achievement_rate = goal.get_achievement_rate()
+    daily_required = goal.get_daily_required()
+    status_prediction = goal.get_status_prediction()
+    
+    # Calculate rates
+    target = goal.target_amount
+    if target > 0:
+        success_rate = min(100, float(current_savings / target * 100)) if current_savings > 0 else 0
+        remaining_rate = max(0, 100 - success_rate)
+    else:
+        success_rate = 0
+        remaining_rate = 100
+    
+    # Get daily data for charts (last 7 days or goal period, whichever is shorter)
+    chart_start = max(goal.start_date, today - timedelta(days=6))
+    chart_end = min(goal.deadline, today)
+    
+    daily_income_data = []
+    daily_expense_data = []
+    daily_labels = []
+    daily_savings_data = []
+    
+    current_date = chart_start
+    while current_date <= chart_end:
+        daily_labels.append(current_date.strftime('%b %d'))
+        
+        # Get daily income
+        day_income = UserIncome.objects.filter(
+            user=user,
+            balance_account__in=goal.balance_accounts.all(),
+            created_at__date=current_date
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        daily_income_data.append(float(day_income))
+        
+        # Get daily expense
+        day_expense = ExpenseItem.objects.filter(
+            expense_block__user=user,
+            user_balance__in=goal.balance_accounts.all(),
+            expense_date=current_date
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        daily_expense_data.append(float(day_expense))
+        
+        # Daily savings
+        daily_savings_data.append(float(day_income - day_expense))
+        
+        current_date += timedelta(days=1)
+    
+    # Cumulative data for progress chart
+    cumulative_savings = []
+    running_total = Decimal('0.00')
+    current_date = goal.start_date
+    cumulative_labels = []
+    target_line = []
+    
+    total_days = goal.total_days if goal.total_days > 0 else 1
+    daily_target = target / total_days
+    
+    while current_date <= min(goal.deadline, today):
+        cumulative_labels.append(current_date.strftime('%b %d'))
+        
+        day_income = UserIncome.objects.filter(
+            user=user,
+            balance_account__in=goal.balance_accounts.all(),
+            created_at__date=current_date
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        
+        day_expense = ExpenseItem.objects.filter(
+            expense_block__user=user,
+            user_balance__in=goal.balance_accounts.all(),
+            expense_date=current_date
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        
+        running_total += (day_income - day_expense)
+        cumulative_savings.append(float(running_total))
+        
+        days_from_start = (current_date - goal.start_date).days + 1
+        target_line.append(float(daily_target * days_from_start))
+        
+        current_date += timedelta(days=1)
+    
+    # Selected accounts info
+    selected_accounts = goal.balance_accounts.all()
+    accounts_total_balance = selected_accounts.aggregate(total=Sum('available_balance'))['total'] or Decimal('0.00')
+
+    context = {
+        'user': user,
+        'profile': profile,
+        'first_letter': first_letter,
+        'full_name': full_name,
+        'goal': goal,
+        'total_income': float(total_income),
+        'total_expense': float(total_expense),
+        'current_savings': float(current_savings),
+        'achievement_rate': achievement_rate,
+        'daily_required': float(daily_required),
+        'status_prediction': status_prediction,
+        'success_rate': round(success_rate, 1),
+        'remaining_rate': round(remaining_rate, 1),
+        'target_amount': float(target),
+        'days_remaining': goal.days_remaining,
+        'days_elapsed': goal.days_elapsed,
+        'total_days': goal.total_days,
+        'progress_percentage': goal.progress_percentage,
+        'is_overdue': goal.is_overdue,
+        'today_date': today,
+        'selected_accounts': selected_accounts,
+        'accounts_total_balance': float(accounts_total_balance),
+        # Chart data
+        'daily_labels': daily_labels,
+        'daily_income_data': daily_income_data,
+        'daily_expense_data': daily_expense_data,
+        'daily_savings_data': daily_savings_data,
+        'cumulative_labels': cumulative_labels,
+        'cumulative_savings': cumulative_savings,
+        'target_line': target_line,
+    }
+
+    return render(request, 'Goals/goal_detail.html', context)
+
 

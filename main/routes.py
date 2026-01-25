@@ -32,4 +32,12 @@ urlpatterns = [
     path('income/edit/<int:income_id>/', views.edit_income, name='edit_income'),
     path('income/delete/<int:income_id>/', views.delete_income, name='delete_income'),
     path('income/get/<int:income_id>/', views.get_income, name='get_income'),
+
+
+    # !================= GOALS MANAGEMENT ==========================
+    path('goals/', views.goals_view, name='goals_view'),
+    path('goals/create/', views.create_goal, name='create_goal'),
+    path('goals/<int:goal_id>/update/', views.update_goal, name='update_goal'),
+    path('goals/<int:goal_id>/get/', views.get_goal, name='get_goal'),
+    path('goals/<int:goal_id>/', views.goal_detail_view, name='goal_detail_view'),
 ]

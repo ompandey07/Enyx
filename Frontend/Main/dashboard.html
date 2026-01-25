@@ -194,8 +194,47 @@
         .top-nav-right {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 16px;
             position: relative;
+        }
+
+        /* Goals Button */
+        .goals-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: none;
+            border-radius: var(--radius-full);
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .goals-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .goals-btn i {
+            font-size: 18px;
+        }
+
+        .goals-btn-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: var(--radius-full);
+            font-size: 11px;
+            font-weight: 700;
         }
 
         .user-profile {
@@ -475,6 +514,21 @@
             font-size: 20px;
         }
 
+        .sidebar-link-badge {
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            background: var(--warning);
+            color: white;
+            border-radius: var(--radius-full);
+            font-size: 11px;
+            font-weight: 700;
+        }
+
         .sidebar-footer {
             margin-top: auto;
             padding-top: 16px;
@@ -522,7 +576,7 @@
            ============================================ */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 24px;
             margin-bottom: 32px;
         }
@@ -556,6 +610,10 @@
 
         .stat-card-expense::before {
             background: linear-gradient(90deg, #ef4444, #f97316, #fbbf24);
+        }
+
+        .stat-card-goals::before {
+            background: linear-gradient(90deg, #f59e0b, #d97706, #b45309);
         }
 
         .stat-card:hover {
@@ -594,6 +652,11 @@
             color: #ef4444;
         }
 
+        .stat-card-goals .stat-card-icon {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.15));
+            color: #f59e0b;
+        }
+
         .stat-card-icon i {
             font-size: 26px;
         }
@@ -621,6 +684,11 @@
         .stat-card-trend.neutral {
             background: rgba(148, 163, 184, 0.1);
             color: #64748b;
+        }
+
+        .stat-card-trend.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
         }
 
         .stat-card-trend i {
@@ -668,6 +736,13 @@
             background-clip: text;
         }
 
+        .stat-card-goals .stat-card-value {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
         .stat-card-meta {
             font-size: 13px;
             color: var(--text-muted);
@@ -705,6 +780,10 @@
             background: linear-gradient(90deg, #ef4444, #f97316, #fbbf24);
         }
 
+        .stat-card-goals .stat-progress-bar {
+            background: linear-gradient(90deg, #f59e0b, #d97706, #b45309);
+        }
+
         .stat-progress-labels {
             display: flex;
             justify-content: space-between;
@@ -727,6 +806,14 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .charts-row-double {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
         }
 
         .chart-card {
@@ -770,6 +857,14 @@
 
         .chart-card-line::before {
             background: linear-gradient(90deg, #f97316, #ef4444, #ec4899);
+        }
+
+        .chart-card-goals::before {
+            background: linear-gradient(90deg, #f59e0b, #d97706, #b45309);
+        }
+
+        .chart-card-goals-status::before {
+            background: linear-gradient(90deg, #6366f1, #10b981, #f59e0b, #ef4444);
         }
 
         .chart-header {
@@ -836,6 +931,14 @@
             background-clip: text;
         }
 
+        .chart-card-goals .chart-title i,
+        .chart-card-goals-status .chart-title i {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
         .chart-subtitle {
             font-size: 13px;
             color: var(--text-muted);
@@ -882,23 +985,10 @@
             color: #f97316;
         }
 
-        .chart-period-btn {
-            padding: 8px 14px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-md);
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all var(--transition-base);
-        }
-
-        .chart-period-btn:hover,
-        .chart-period-btn.active {
-            background: var(--accent-primary);
-            border-color: var(--accent-primary);
-            color: white;
+        .chart-card-goals .chart-badge,
+        .chart-card-goals-status .chart-badge {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+            color: #f59e0b;
         }
 
         .chart-container {
@@ -939,36 +1029,74 @@
             opacity: 0.8;
         }
 
+        .no-data-message .add-btn {
+            margin-top: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--accent-gradient);
+            color: white;
+            border-radius: var(--radius-full);
+            font-size: 14px;
+            font-weight: 600;
+            transition: all var(--transition-base);
+        }
+
+        .no-data-message .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+        }
+
         /* ============================================
-           Legend Styles
+           Goals Summary Cards
            ============================================ */
-        .custom-legend {
-            display: flex;
-            flex-wrap: wrap;
+        .goals-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
             gap: 16px;
             margin-top: 20px;
-            padding-top: 16px;
+            padding-top: 20px;
             border-top: 1px solid var(--border-light);
         }
 
-        .legend-item {
+        .goals-summary-item {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: var(--text-secondary);
+            padding: 16px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            text-align: center;
         }
 
-        .legend-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
+        .goals-summary-value {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 4px;
         }
 
-        .legend-value {
+        .goals-summary-value.on-track {
+            color: #10b981;
+        }
+
+        .goals-summary-value.at-risk {
+            color: #f59e0b;
+        }
+
+        .goals-summary-value.behind {
+            color: #ef4444;
+        }
+
+        .goals-summary-value.new {
+            color: #6366f1;
+        }
+
+        .goals-summary-label {
+            font-size: 12px;
+            color: var(--text-muted);
             font-weight: 600;
-            color: var(--text-primary);
-            margin-left: 4px;
         }
 
         /* Mobile Overlay */
@@ -992,6 +1120,10 @@
            Responsive
            ============================================ */
         @media (max-width: 1400px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
             .charts-row-triple {
                 grid-template-columns: 1fr 1fr;
             }
@@ -1006,12 +1138,12 @@
                 grid-template-columns: 1fr;
             }
 
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
+            .charts-row-double {
+                grid-template-columns: 1fr;
             }
 
-            .stat-card:last-child {
-                grid-column: span 2;
+            .goals-summary {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
 
@@ -1061,12 +1193,16 @@
                 padding: 6px 12px;
             }
 
-            .stats-grid {
-                grid-template-columns: 1fr;
+            .goals-btn span {
+                display: none;
             }
 
-            .stat-card:last-child {
-                grid-column: span 1;
+            .goals-btn {
+                padding: 10px 14px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
 
             .stat-card-value {
@@ -1083,6 +1219,10 @@
                 width: 100%;
                 justify-content: space-between;
             }
+
+            .goals-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         @media (max-width: 480px) {
@@ -1098,6 +1238,19 @@
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 12px;
+            }
+
+            .goals-summary {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .goals-summary-item {
+                padding: 12px;
+            }
+
+            .goals-summary-value {
+                font-size: 20px;
             }
         }
     </style>
@@ -1119,6 +1272,15 @@
         </div>
         
         <div class="top-nav-right">
+            <!-- Goals Button -->
+            <a href="{% url 'goals_view' %}" class="goals-btn">
+                <i class="ri-flag-line"></i>
+                <span>Goals</span>
+                {% if active_goals_count > 0 %}
+                <span class="goals-btn-badge">{{ active_goals_count }}</span>
+                {% endif %}
+            </a>
+
             <div class="user-profile" id="userProfile">
                 <div class="user-info">
                     <span class="user-name">{{ full_name }}</span>
@@ -1316,6 +1478,42 @@
                     <span>Today: Rs. {{ todays_expenses|floatformat:0 }}</span>
                 </div>
             </div>
+
+            <!-- Goals Card -->
+            <div class="stat-card stat-card-goals">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="ri-flag-line"></i>
+                    </div>
+                    <div class="stat-card-trend {% if active_goals_count > 0 %}warning{% else %}neutral{% endif %}">
+                        {% if active_goals_count > 0 %}
+                        <i class="ri-timer-line"></i>
+                        {{ active_goals_count }} Active
+                        {% else %}
+                        <i class="ri-subtract-line"></i>
+                        No Goals
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="stat-card-body">
+                    <div class="stat-card-label">Goals Progress</div>
+                    <div class="stat-card-value">{{ overall_goals_rate }}%</div>
+                    <div class="stat-card-meta">
+                        {% if nearest_goal %}
+                        Next deadline: <strong>{{ nearest_goal.deadline|date:"M d" }}</strong>
+                        {% else %}
+                        <strong>{{ total_goals }}</strong> total goal{% if total_goals != 1 %}s{% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="stat-progress-bar" style="width: {{ overall_goals_rate }}%;"></div>
+                </div>
+                <div class="stat-progress-labels">
+                    <span>Rs. {{ total_goals_savings|floatformat:0 }} saved</span>
+                    <span>Rs. {{ total_goals_target|floatformat:0 }} target</span>
+                </div>
+            </div>
         </div>
 
         <!-- Charts Row 1: Area Chart + Radar Chart -->
@@ -1375,7 +1573,98 @@
             </div>
         </div>
 
-        <!-- Charts Row 2: Three Equal Charts -->
+        <!-- Charts Row 2: Goals Charts -->
+        <div class="charts-row-double">
+            <!-- Goals Progress Chart -->
+            <div class="chart-card chart-card-goals">
+                <div class="chart-header">
+                    <div class="chart-title-wrapper">
+                        <h2 class="chart-title">
+                            <i class="ri-bar-chart-grouped-line"></i>
+                            Goals Progress
+                        </h2>
+                        <span class="chart-subtitle">Achievement rate for active goals</span>
+                    </div>
+                    <div class="chart-actions">
+                        <span class="chart-badge">
+                            <i class="ri-flag-line"></i>
+                            {{ active_goals_count }} Active
+                        </span>
+                    </div>
+                </div>
+                <div class="chart-container chart-container-sm">
+                    {% if has_active_goals %}
+                    <canvas id="goalsProgressChart"></canvas>
+                    {% else %}
+                    <div class="no-data-message">
+                        <i class="ri-flag-line"></i>
+                        <p>No active goals</p>
+                        <span>Create goals to track your progress</span>
+                        <a href="{% url 'goals_view' %}" class="add-btn">
+                            <i class="ri-add-line"></i>
+                            Create Goal
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if has_active_goals %}
+                <div class="goals-summary">
+                    <div class="goals-summary-item">
+                        <span class="goals-summary-value on-track">{{ on_track_count }}</span>
+                        <span class="goals-summary-label">On Track</span>
+                    </div>
+                    <div class="goals-summary-item">
+                        <span class="goals-summary-value at-risk">{{ at_risk_count }}</span>
+                        <span class="goals-summary-label">At Risk</span>
+                    </div>
+                    <div class="goals-summary-item">
+                        <span class="goals-summary-value behind">{{ behind_count }}</span>
+                        <span class="goals-summary-label">Behind</span>
+                    </div>
+                    <div class="goals-summary-item">
+                        <span class="goals-summary-value new">{{ completed_goals_count }}</span>
+                        <span class="goals-summary-label">Completed</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Goals Status Distribution -->
+            <div class="chart-card chart-card-goals-status">
+                <div class="chart-header">
+                    <div class="chart-title-wrapper">
+                        <h2 class="chart-title">
+                            <i class="ri-pie-chart-line"></i>
+                            Goals Status
+                        </h2>
+                        <span class="chart-subtitle">Distribution by status</span>
+                    </div>
+                    <div class="chart-actions">
+                        <span class="chart-badge">
+                            <i class="ri-stack-line"></i>
+                            {{ total_goals }} Total
+                        </span>
+                    </div>
+                </div>
+                <div class="chart-container chart-container-sm">
+                    {% if has_goals %}
+                    <canvas id="goalsStatusChart"></canvas>
+                    {% else %}
+                    <div class="no-data-message">
+                        <i class="ri-pie-chart-line"></i>
+                        <p>No goals yet</p>
+                        <span>Start setting financial goals</span>
+                        <a href="{% url 'goals_view' %}" class="add-btn">
+                            <i class="ri-add-line"></i>
+                            Create Goal
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 3: Three Equal Charts -->
         <div class="charts-row-triple">
             <!-- Balance Distribution - Polar Area Chart -->
             <div class="chart-card chart-card-polar">
@@ -1515,21 +1804,14 @@
         const todaysExpense = {{ todays_expenses }};
         const totalWeeklyExpense = {{ total_weekly_expense }};
 
-        // Color Palettes
-        const gradientColors = {
-            purple: ['#6366f1', '#8b5cf6', '#a855f7'],
-            green: ['#10b981', '#34d399', '#6ee7b7'],
-            orange: ['#f97316', '#fb923c', '#fdba74'],
-            cyan: ['#06b6d4', '#22d3ee', '#67e8f9'],
-            pink: ['#ec4899', '#f472b6', '#f9a8d4'],
-            red: ['#ef4444', '#f87171', '#fca5a5']
-        };
-
-        const chartColors = [
-            '#6366f1', '#8b5cf6', '#a855f7', '#c084fc',
-            '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9',
-            '#f59e0b', '#f97316', '#ef4444', '#ec4899'
-        ];
+        // Goals Data
+        const goalsStatusLabels = {{ goals_status_labels|safe }};
+        const goalsStatusValues = {{ goals_status_values|safe }};
+        const goalsStatusColors = {{ goals_status_colors|safe }};
+        const goalsProgressLabels = {{ goals_progress_labels|safe }};
+        const goalsProgressValues = {{ goals_progress_values|safe }};
+        const goalsTargetValues = {{ goals_target_values|safe }};
+        const goalsCurrentValues = {{ goals_current_values|safe }};
 
         // ============================================
         // 1. AREA CHART - Weekly Expenses
@@ -1675,7 +1957,127 @@
         {% endif %}
 
         // ============================================
-        // 3. POLAR AREA CHART - Balance Distribution
+        // 3. GOALS PROGRESS CHART - Horizontal Bar
+        // ============================================
+        {% if has_active_goals %}
+        const goalsProgressCtx = document.getElementById('goalsProgressChart').getContext('2d');
+
+        new Chart(goalsProgressCtx, {
+            type: 'bar',
+            data: {
+                labels: goalsProgressLabels,
+                datasets: [{
+                    label: 'Achievement Rate',
+                    data: goalsProgressValues,
+                    backgroundColor: function(context) {
+                        const value = context.raw;
+                        if (value >= 80) return 'rgba(16, 185, 129, 0.8)';
+                        if (value >= 50) return 'rgba(245, 158, 11, 0.8)';
+                        return 'rgba(239, 68, 68, 0.8)';
+                    },
+                    borderColor: function(context) {
+                        const value = context.raw;
+                        if (value >= 80) return '#10b981';
+                        if (value >= 50) return '#f59e0b';
+                        return '#ef4444';
+                    },
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                    barThickness: 20
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Achievement: ' + context.raw.toFixed(1) + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.1)',
+                            drawBorder: false
+                        },
+                        border: { display: false },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 11 },
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    },
+                    y: {
+                        grid: { display: false },
+                        border: { display: false },
+                        ticks: {
+                            color: '#64748b',
+                            font: { size: 12, weight: '600' }
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+
+        // ============================================
+        // 4. GOALS STATUS CHART - Doughnut
+        // ============================================
+        {% if has_goals %}
+        const goalsStatusCtx = document.getElementById('goalsStatusChart').getContext('2d');
+
+        new Chart(goalsStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: goalsStatusLabels,
+                datasets: [{
+                    data: goalsStatusValues,
+                    backgroundColor: goalsStatusColors.map(c => c + 'cc'),
+                    borderColor: goalsStatusColors,
+                    borderWidth: 3,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#475569',
+                            font: { size: 12, weight: '600' },
+                            padding: 16
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.raw / total) * 100).toFixed(1);
+                                return context.label + ': ' + context.raw + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+
+        // ============================================
+        // 5. POLAR AREA CHART - Balance Distribution
         // ============================================
         {% if has_balance %}
         const polarCtx = document.getElementById('polarChart').getContext('2d');
@@ -1734,7 +2136,7 @@
         {% endif %}
 
         // ============================================
-        // 4. HORIZONTAL BAR CHART - Income Sources
+        // 6. HORIZONTAL BAR CHART - Income Sources
         // ============================================
         {% if has_income %}
         const horizontalCtx = document.getElementById('horizontalBarChart').getContext('2d');
@@ -1812,7 +2214,7 @@
         {% endif %}
 
         // ============================================
-        // 5. COMPARISON CHART - Income vs Expense
+        // 7. COMPARISON CHART - Income vs Expense
         // ============================================
         const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
 

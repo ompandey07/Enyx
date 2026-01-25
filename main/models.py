@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from datetime import datetime, timedelta, date
 from django.utils import timezone
 from calendar import monthrange
+from decimal import Decimal
 
 
 class UserBalance(models.Model):
@@ -273,3 +274,121 @@ class UserIncome(models.Model):
 
     def __str__(self):
         return f"{self.get_income_source_display()} - Rs. {self.amount} - {self.user.email}"
+    
+
+class UserGoal(models.Model):
+    STATUS_CHOICES = [
+        ('new', 'New'),
+        ('running', 'Running'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='goals')
+    title = models.CharField(max_length=200)
+    target_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    balance_accounts = models.ManyToManyField(UserBalance, related_name='goals', blank=True)
+    start_date = models.DateField()
+    deadline = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} - Rs. {self.target_amount}"
+    
+    def save(self, *args, **kwargs):
+        if not self.start_date:
+            self.start_date = date.today()
+        super().save(*args, **kwargs)
+    
+    @property
+    def days_remaining(self):
+        if self.status in ['completed', 'failed']:
+            return 0
+        remaining = (self.deadline - date.today()).days
+        return max(0, remaining)
+    
+    @property
+    def total_days(self):
+        return (self.deadline - self.start_date).days
+    
+    @property
+    def days_elapsed(self):
+        elapsed = (date.today() - self.start_date).days
+        return max(0, min(elapsed, self.total_days))
+    
+    @property
+    def progress_percentage(self):
+        if self.total_days <= 0:
+            return 100
+        return min(100, round((self.days_elapsed / self.total_days) * 100, 1))
+    
+    @property
+    def is_overdue(self):
+        return date.today() > self.deadline and self.status not in ['completed', 'failed']
+    
+    def get_total_income(self):
+        """Get total income within goal period from selected accounts"""
+        from django.db.models import Sum
+        total = UserIncome.objects.filter(
+            user=self.user,
+            balance_account__in=self.balance_accounts.all(),
+            created_at__date__gte=self.start_date,
+            created_at__date__lte=self.deadline
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        return total
+    
+    def get_total_expense(self):
+        """Get total expenses within goal period from selected accounts"""
+        from django.db.models import Sum
+        total = ExpenseItem.objects.filter(
+            expense_block__user=self.user,
+            user_balance__in=self.balance_accounts.all(),
+            expense_date__gte=self.start_date,
+            expense_date__lte=self.deadline
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        return total
+    
+    def get_current_savings(self):
+        """Calculate current savings (income - expense)"""
+        return self.get_total_income() - self.get_total_expense()
+    
+    def get_achievement_rate(self):
+        """Calculate achievement rate based on current savings vs target"""
+        if self.target_amount <= 0:
+            return 0
+        current = self.get_current_savings()
+        rate = (current / self.target_amount) * 100
+        return min(100, max(0, round(rate, 1)))
+    
+    def get_daily_required(self):
+        """Calculate daily amount required to reach goal"""
+        if self.days_remaining <= 0:
+            return Decimal('0.00')
+        remaining_amount = self.target_amount - self.get_current_savings()
+        if remaining_amount <= 0:
+            return Decimal('0.00')
+        return round(remaining_amount / self.days_remaining, 2)
+    
+    def get_status_prediction(self):
+        """Predict goal status based on current progress"""
+        achievement_rate = self.get_achievement_rate()
+        progress = self.progress_percentage
+        
+        if achievement_rate >= 100:
+            return 'on_track'  # Will complete
+        elif progress > 0:
+            # Calculate if current rate will achieve goal
+            daily_savings = self.get_current_savings() / max(1, self.days_elapsed)
+            projected_savings = daily_savings * self.total_days
+            if projected_savings >= self.target_amount:
+                return 'on_track'
+            elif projected_savings >= self.target_amount * Decimal('0.7'):
+                return 'at_risk'
+            else:
+                return 'behind'
+        return 'new'
