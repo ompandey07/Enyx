@@ -1,19 +1,13 @@
 #!/bin/bash
 
-docker stop exptrac_app || true
-docker rm exptrac_app || true
+# Stop and remove container if exists (quietly)
+docker rm -f exptrac_app 2>/dev/null || true
 
-# Build only once (no --no-cache)
+# Build image
 docker build -t exptrac .
 
-# Run container, mount code for fast reload
-docker run -d \
-  --name exptrac_app \
-  --network host \
-  --restart unless-stopped \
-  -v $(pwd):/app \
-  exptrac
+# Run container in detached mode
+docker run -d --name exptrac_app --network host exptrac
 
-# Run migrations
-docker exec -it exptrac_app python manage.py makemigrations
-docker exec -it exptrac_app python manage.py migrate
+# Run migrations once inside container
+docker exec exptrac_app python manage.py migrate
