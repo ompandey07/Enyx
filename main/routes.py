@@ -8,7 +8,6 @@ urlpatterns = [
 
 
     #!================= BALANCE MANAGEMENT ==========================
-
     path('balance/', views.balance_view, name='balance_view'),
     path('balance/add/', views.add_balance, name='add_balance'),
     path('balance/edit/<int:balance_id>/', views.edit_balance, name='edit_balance'),
@@ -45,4 +44,12 @@ urlpatterns = [
     # !================= REPORTS ========================== 
     path('report/', views.report_view, name='report_view'),
     path('report/expenses/<int:block_id>/<str:day>/', views.get_day_expenses, name='get_day_expenses'),
+
+
+    #!================= KEEP MANAGEMENT ==========================
+    path('keep/', views.keep_view, name='keep_view'),
+    path('keep/add/', views.add_keep, name='add_keep'),
+    path('keep/edit/<int:keep_id>/', views.edit_keep, name='edit_keep'),
+    path('keep/delete/<int:keep_id>/', views.delete_keep, name='delete_keep'),
+    path('keep/get/<int:keep_id>/', views.get_keep, name='get_keep'),
 ]

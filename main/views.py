@@ -1,14 +1,16 @@
+from .models import UserBalance , ExpenseBlock, ExpenseItem , UserIncome , UserGoal , UserKeep
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
-from django.http import JsonResponse
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Sum
 from datetime import date, timedelta, datetime
 from decimal import Decimal, InvalidOperation
 from decimal import Decimal, InvalidOperation
-from .models import UserBalance , ExpenseBlock, ExpenseItem , UserIncome , UserGoal
+from bleach.css_sanitizer import CSSSanitizer
+from django.contrib.auth import logout
+from django.http import JsonResponse
+from django.db.models import Sum
 from django.db import models
+import bleach
 
 # ============================================
 # Helper function
@@ -1902,3 +1904,248 @@ def get_day_expenses(request, block_id, day):
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'})
 
+#?======================================================================================================================
+#!=========================================== END OF REPORT VIEWS ===========================================
+#?====================================================================================================================== 
+
+
+
+# ?======================================================================================================================
+# Allowed tags and attributes for bleach
+ALLOWED_TAGS = [
+    'p', 'br', 'strong', 'em', 'u', 's', 'ul', 'ol', 'li', 'blockquote',
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre', 'code', 'a', 'img',
+    'table', 'thead', 'tbody', 'tr', 'th', 'td', 'hr', 'span', 'div', 'sub', 'sup'
+]
+
+ALLOWED_ATTRIBUTES = {
+    '*': ['class', 'style'],
+    'a': ['href', 'title', 'target', 'rel'],
+    'img': ['src', 'alt', 'width', 'height'],
+    'td': ['colspan', 'rowspan'],
+    'th': ['colspan', 'rowspan'],
+}
+
+css_sanitizer = CSSSanitizer(allowed_css_properties=[
+    'color', 'background-color', 'font-size', 'font-weight', 'font-style',
+    'text-align', 'text-decoration', 'margin', 'padding', 'border',
+    'width', 'height', 'list-style-type'
+])
+
+def is_ajax(request):
+    return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+def sanitize_html(html_content):
+    if not html_content:
+        return ''
+    return bleach.clean(
+        html_content,
+        tags=ALLOWED_TAGS,
+        attributes=ALLOWED_ATTRIBUTES,
+        css_sanitizer=css_sanitizer,
+        strip=True
+    )
+
+# ============================================
+# Keep List View
+# ============================================
+@login_required(login_url='/401/')
+def keep_view(request):
+    user = request.user
+    profile = None
+
+    if hasattr(user, 'profile'):
+        profile = user.profile
+
+    first_letter = user.first_name[0].upper() if user.first_name else user.email[0].upper()
+
+    full_name = f"{user.first_name} {user.last_name}".strip()
+    if not full_name:
+        full_name = user.email.split('@')[0]
+
+    # Get all keeps for the user
+    keeps_list = UserKeep.objects.filter(user=user)
+    
+    # Pagination
+    page = request.GET.get('page', 1)
+    paginator = Paginator(keeps_list, 10)  # 10 items per page
+    
+    try:
+        keeps = paginator.page(page)
+    except PageNotAnInteger:
+        keeps = paginator.page(1)
+    except EmptyPage:
+        keeps = paginator.page(paginator.num_pages)
+
+    context = {
+        'user': user,
+        'profile': profile,
+        'first_letter': first_letter,
+        'full_name': full_name,
+        'keeps': keeps,
+        'paginator': paginator,
+    }
+
+    return render(request, 'Keep/keep.html', context)
+
+
+# ============================================
+# Add Keep View
+# ============================================
+@login_required(login_url='/401/')
+def add_keep(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method', 'type': 'error'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request', 'type': 'error'})
+    
+    try:
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+
+        # Validation
+        if not title:
+            return JsonResponse({'success': False, 'message': 'Title is required', 'type': 'error'})
+        
+        if len(title) < 2:
+            return JsonResponse({'success': False, 'message': 'Title must be at least 2 characters', 'type': 'error'})
+        
+        if len(title) > 200:
+            return JsonResponse({'success': False, 'message': 'Title must be less than 200 characters', 'type': 'error'})
+
+        # Sanitize description
+        sanitized_description = sanitize_html(description)
+
+        # Create keep
+        keep = UserKeep.objects.create(
+            user=request.user,
+            title=title,
+            description=sanitized_description
+        )
+
+        return JsonResponse({
+            'success': True, 
+            'message': 'Note added successfully', 
+            'type': 'success',
+            'keep': {
+                'id': keep.id,
+                'title': keep.title,
+                'description': keep.description,
+                'created_at': keep.get_created_at_local().strftime('%b %d, %Y %I:%M %p'),
+                'updated_at': keep.get_updated_at_local().strftime('%b %d, %Y %I:%M %p'),
+            }
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.', 'type': 'error'})
+
+
+# ============================================
+# Edit Keep View
+# ============================================
+@login_required(login_url='/401/')
+def edit_keep(request, keep_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method', 'type': 'error'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request', 'type': 'error'})
+    
+    try:
+        keep = get_object_or_404(UserKeep, id=keep_id, user=request.user)
+
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+
+        # Validation
+        if not title:
+            return JsonResponse({'success': False, 'message': 'Title is required', 'type': 'error'})
+        
+        if len(title) < 2:
+            return JsonResponse({'success': False, 'message': 'Title must be at least 2 characters', 'type': 'error'})
+        
+        if len(title) > 200:
+            return JsonResponse({'success': False, 'message': 'Title must be less than 200 characters', 'type': 'error'})
+
+        # Sanitize description
+        sanitized_description = sanitize_html(description)
+
+        # Update keep
+        keep.title = title
+        keep.description = sanitized_description
+        keep.save()
+
+        return JsonResponse({
+            'success': True, 
+            'message': 'Note updated successfully', 
+            'type': 'success',
+            'keep': {
+                'id': keep.id,
+                'title': keep.title,
+                'description': keep.description,
+                'created_at': keep.get_created_at_local().strftime('%b %d, %Y %I:%M %p'),
+                'updated_at': keep.get_updated_at_local().strftime('%b %d, %Y %I:%M %p'),
+            }
+        })
+
+    except UserKeep.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Note not found', 'type': 'error'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.', 'type': 'error'})
+
+
+# ============================================
+# Delete Keep View
+# ============================================
+@login_required(login_url='/401/')
+def delete_keep(request, keep_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method', 'type': 'error'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request', 'type': 'error'})
+    
+    try:
+        keep = get_object_or_404(UserKeep, id=keep_id, user=request.user)
+        title = keep.title
+        keep.delete()
+
+        return JsonResponse({
+            'success': True, 
+            'message': f'Note "{title}" deleted successfully', 
+            'type': 'success'
+        })
+
+    except UserKeep.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Note not found', 'type': 'error'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.', 'type': 'error'})
+
+
+# ============================================
+# Get Keep Details
+# ============================================
+@login_required(login_url='/401/')
+def get_keep(request, keep_id):
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request', 'type': 'error'})
+    
+    try:
+        keep = get_object_or_404(UserKeep, id=keep_id, user=request.user)
+
+        return JsonResponse({
+            'success': True,
+            'keep': {
+                'id': keep.id,
+                'title': keep.title,
+                'description': keep.description,
+                'created_at': keep.get_created_at_local().strftime('%b %d, %Y %I:%M %p'),
+                'updated_at': keep.get_updated_at_local().strftime('%b %d, %Y %I:%M %p'),
+            }
+        })
+
+    except UserKeep.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Note not found', 'type': 'error'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred', 'type': 'error'})
