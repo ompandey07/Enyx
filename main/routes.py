@@ -62,4 +62,13 @@ urlpatterns = [
     path('backup/delete/<int:backup_id>/', database_backup.delete_backup, name='delete_backup'),
     path('backup/get/<int:backup_id>/', database_backup.get_backup, name='get_backup'),
     path('backup/list/', database_backup.get_all_backups, name='get_all_backups'),
+
+
+     # !================= HABIT MANAGEMENT ==========================
+    path('habits/', views.habits_view, name='habits_view'),
+    path('habits/create/', views.create_habit_block, name='create_habit_block'),
+    path('habits/<int:block_id>/', views.habit_detail_view, name='habit_detail_view'),
+    path('habits/<int:block_id>/update/', views.update_habit_block, name='update_habit_block'),
+    path('habits/<int:block_id>/delete/', views.delete_habit_block, name='delete_habit_block'),
+    path('habits/<int:block_id>/check/<int:checkin_id>/', views.check_habit, name='check_habit'),
 ]

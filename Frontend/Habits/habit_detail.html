@@ -1,0 +1,1080 @@
+{% load static %}
+{% load habit_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>{{ habit_block.title }} - ExpTrack</title>
+    <meta name="description" content="Track your daily habits">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{% static 'MainLogo.png' %}" type="image/x-icon">
+    <link rel="icon" type="image/png" href="{% static 'MainLogo.png' %}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&family=Kaushan+Script&display=swap" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/agustina" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --font-heading: 'Poppins', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-script: 'Kaushan Script', cursive;
+            --font-agustina: 'Agustina', cursive;
+            
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --bg-dark: #0f172a;
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --text-white: #ffffff;
+            
+            --border-light: #e2e8f0;
+            --border-medium: #cbd5e1;
+            
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-light: #a78bfa;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --error: #ef4444;
+            --error-light: #fee2e2;
+            --info: #3b82f6;
+            --info-light: #dbeafe;
+            
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+            
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 20px;
+            --radius-2xl: 28px;
+            --radius-full: 9999px;
+            
+            --transition-fast: 150ms ease;
+            --transition-base: 200ms ease;
+            --transition-slow: 300ms ease;
+            
+            --topnav-height: 70px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-medium);
+            border-radius: var(--radius-full);
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button {
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: var(--topnav-height);
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            z-index: 1000;
+        }
+
+        .top-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .top-nav-brand {
+            display: flex;
+            align-items: center;
+        }
+
+        .brand-text {
+            font-family: 'Agustina', cursive;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .brand-text-accent {
+            font-family: 'Agustina', cursive;
+            font-size: 26px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .top-nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            transition: all var(--transition-base);
+        }
+
+        .back-btn:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .back-btn i {
+            font-size: 18px;
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+
+        .avatar-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-letter {
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: var(--topnav-height);
+            min-height: calc(100vh - var(--topnav-height));
+        }
+
+        /* Block Header */
+        .block-header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-light);
+            padding: 24px 32px;
+            width: 100%;
+        }
+
+        .block-header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .block-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .block-title {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .block-meta {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .block-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .block-meta-item i {
+            color: var(--accent-primary);
+            font-size: 15px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: var(--radius-full);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.active {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .status-badge.closed {
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+        }
+
+        .status-badge .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .status-badge.active .status-dot {
+            background: var(--success);
+        }
+
+        .status-badge.closed .status-dot {
+            background: var(--text-muted);
+        }
+
+        /* Days & Completion */
+        .block-right {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .days-calendar {
+            display: flex;
+            gap: 6px;
+        }
+
+        .day-pill {
+            padding: 8px 14px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            transition: all var(--transition-base);
+            min-width: 70px;
+        }
+
+        .day-pill.today {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--accent-primary);
+        }
+
+        .day-pill.past {
+            opacity: 0.5;
+        }
+
+        .day-pill.future {
+            opacity: 0.7;
+        }
+
+        .day-pill-name {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .day-pill.today .day-pill-name {
+            color: var(--accent-primary);
+        }
+
+        .day-pill-date {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 2px;
+        }
+
+        .day-pill.today .day-pill-date {
+            color: var(--accent-primary);
+        }
+
+        .completion-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: var(--accent-gradient);
+            border-radius: var(--radius-lg);
+            color: white;
+        }
+
+        .completion-value {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .completion-label {
+            font-size: 11px;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        /* Habits Tracker */
+        .habits-tracker {
+            background: var(--bg-primary);
+            width: 100%;
+            min-height: calc(100vh - var(--topnav-height) - 120px);
+        }
+
+        .habits-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 32px;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg-secondary);
+        }
+
+        .habits-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-heading);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .habits-title i {
+            color: var(--accent-primary);
+            font-size: 20px;
+        }
+
+        .habits-count {
+            padding: 4px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        /* Habits Container - Table Layout */
+        .habits-table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .habits-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .habits-table th,
+        .habits-table td {
+            padding: 16px 12px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .habits-table th {
+            background: var(--bg-tertiary);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .habits-table th.habit-name-header {
+            text-align: left;
+            width: 250px;
+            min-width: 250px;
+        }
+
+        .habits-table th.today-header {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-primary);
+        }
+
+        .habits-table td.habit-name-cell {
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        .habit-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .habit-progress {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .habit-progress-bar {
+            width: 60px;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .habit-progress-fill {
+            height: 100%;
+            background: var(--accent-gradient);
+            border-radius: var(--radius-full);
+            transition: width var(--transition-slow);
+        }
+
+        .habits-table td.today-cell {
+            background: rgba(99, 102, 241, 0.03);
+        }
+
+        /* Custom Checkbox Styles */
+        .habit-check {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            position: relative;
+        }
+
+        /* Unchecked - Can Check (Today) */
+        .habit-check.can-check {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px dashed var(--accent-primary);
+        }
+
+        .habit-check.can-check:hover {
+            background: rgba(99, 102, 241, 0.15);
+            border-style: solid;
+            transform: scale(1.1);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .habit-check.can-check::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            opacity: 0.4;
+        }
+
+        .habit-check.can-check:hover::after {
+            opacity: 1;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Checked */
+        .habit-check.checked {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            cursor: default;
+        }
+
+        .habit-check.checked i {
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* Past - Missed */
+        .habit-check.past-missed {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: none;
+            cursor: default;
+        }
+
+        .habit-check.past-missed i {
+            color: var(--error);
+            font-size: 14px;
+        }
+
+        /* Future */
+        .habit-check.future {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-light);
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Disabled */
+        .habit-check.disabled {
+            cursor: not-allowed;
+        }
+
+        /* Loading */
+        .habit-check.loading {
+            pointer-events: none;
+        }
+
+        .habit-check .spinner-small {
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--border-medium);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toast {
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            padding: 16px 20px;
+            box-shadow: var(--shadow-xl);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 320px;
+            max-width: 420px;
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        .toast::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            animation: shrink 5s linear forwards;
+        }
+
+        .toast.success::after { background: var(--success); }
+        .toast.error::after { background: var(--error); }
+
+        @keyframes shrink {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast.success .toast-icon {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .toast.error .toast-icon {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+
+        .toast-icon i { font-size: 14px; }
+
+        .toast-message {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color var(--transition-base);
+        }
+
+        .toast-close:hover { color: var(--text-primary); }
+        .toast-close i { font-size: 18px; }
+
+        /* Empty State */
+        .empty-habits {
+            padding: 80px 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .empty-habits-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-habits-icon i {
+            font-size: 36px;
+            color: var(--accent-primary);
+        }
+
+        .empty-habits-title {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .empty-habits-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .block-header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .block-right {
+                width: 100%;
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .days-calendar {
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 8px;
+            }
+            
+            .completion-badge {
+                align-self: flex-start;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-nav { padding: 0 20px; }
+            .block-header { padding: 20px; }
+            .back-btn span { display: none; }
+            .back-btn { padding: 10px; }
+            
+            .day-pill {
+                min-width: 60px;
+                padding: 6px 10px;
+            }
+            
+            .habits-table th.habit-name-header,
+            .habits-table td.habit-name-cell {
+                width: 150px;
+                min-width: 150px;
+            }
+            
+            .toast { min-width: auto; max-width: calc(100vw - 48px); }
+            .toast-container { right: 16px; left: 16px; }
+        }
+    </style>
+</head>
+<body>
+    {% csrf_token %}
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Top Navigation -->
+    <header class="top-nav">
+        <div class="top-nav-left">
+            <a href="{% url 'dashboard_view' %}" class="top-nav-brand">
+                <span class="brand-text">Exp</span>
+                <span class="brand-text-accent">Track</span>
+            </a>
+        </div>
+        
+        <div class="top-nav-right">
+            <a href="{% url 'habits_view' %}" class="back-btn">
+                <i class="ri-arrow-left-line"></i>
+                <span>Back to Habits</span>
+            </a>
+
+            <a href="{% url 'accounts:profile' %}" class="user-avatar">
+                {% if profile and profile.profile_image %}
+                    <img src="{{ profile.profile_image.url }}" alt="{{ full_name }}" class="avatar-image">
+                {% else %}
+                    <span class="avatar-letter">{{ first_letter }}</span>
+                {% endif %}
+            </a>
+            <span>{{ full_name }}</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Block Header -->
+        <div class="block-header">
+            <div class="block-header-content">
+                <div class="block-info">
+                    <h1 class="block-title">{{ habit_block.title }}</h1>
+                    <div class="block-meta">
+                        <span class="block-meta-item">
+                            <i class="ri-calendar-line"></i>
+                            {{ habit_block.start_date|date:"M d" }} - {{ habit_block.end_date|date:"M d, Y" }}
+                        </span>
+                        <span class="block-meta-item">
+                            <i class="ri-focus-3-line"></i>
+                            {{ habit_block.habit_count }} Habit{% if habit_block.habit_count != 1 %}s{% endif %}
+                        </span>
+                        <span class="block-meta-item">
+                            <i class="ri-timer-line"></i>
+                            {{ habit_block.days_remaining }} day{% if habit_block.days_remaining != 1 %}s{% endif %} left
+                        </span>
+                        <span class="status-badge {{ habit_block.status }}">
+                            <span class="status-dot"></span>
+                            {{ habit_block.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="block-right">
+                    <!-- Days Calendar -->
+                    <div class="days-calendar">
+                        {% for day in week_days %}
+                        <div class="day-pill {% if day.is_today %}today{% elif day.is_past %}past{% else %}future{% endif %}">
+                            <div class="day-pill-name">{{ day.display|slice:":3" }}</div>
+                            <div class="day-pill-date">{{ day.date_display }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Completion Badge -->
+                    <div class="completion-badge" id="completionBadge">
+                        <span class="completion-value" id="completionValue">{{ completion_rate }}%</span>
+                        <span class="completion-label">Complete</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Habits Tracker -->
+        <div class="habits-tracker">
+            <div class="habits-header">
+                <h2 class="habits-title">
+                    <i class="ri-checkbox-circle-line"></i>
+                    Daily Habits
+                </h2>
+                <span class="habits-count">{{ habit_block.habit_count }} Habit{% if habit_block.habit_count != 1 %}s{% endif %}</span>
+            </div>
+
+            {% if habits_data %}
+            <div class="habits-table-container">
+                <table class="habits-table">
+                    <thead>
+                        <tr>
+                            <th class="habit-name-header">Habit</th>
+                            {% for day in week_days %}
+                            <th class="{% if day.is_today %}today-header{% endif %}">
+                                {{ day.display|slice:":3" }}<br>
+                                <small style="font-weight: 500;">{{ day.date_display }}</small>
+                            </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for habit in habits_data %}
+                        <tr>
+                            <td class="habit-name-cell">
+                                <div class="habit-name">{{ habit.name }}</div>
+                                <div class="habit-progress" id="progress-{{ habit.id }}">
+                                    <div class="habit-progress-bar">
+                                        <div class="habit-progress-fill" style="width: {% widthratio habit.completion_count habit.total_days 100 %}%;"></div>
+                                    </div>
+                                    <span>{{ habit.completion_count }}/{{ habit.total_days }}</span>
+                                </div>
+                            </td>
+                            {% for day in week_days %}
+                                {% with checkin_data=habit.checkins %}
+                                    {% with checkin=checkin_data|get_item:day.name %}
+                                    <td class="{% if day.is_today %}today-cell{% endif %}">
+                                        {% if checkin %}
+                                            <div class="habit-check 
+                                                {% if checkin.is_checked %}checked{% endif %}
+                                                {% if checkin.can_check %}can-check{% endif %}
+                                                {% if checkin.is_past and not checkin.is_checked %}past-missed{% endif %}
+                                                {% if checkin.is_future %}future{% endif %}
+                                                {% if not checkin.can_check and not checkin.is_checked and not checkin.is_past and not checkin.is_future %}disabled{% endif %}"
+                                                {% if checkin.can_check and checkin.id %}
+                                                onclick="checkHabit({{ habit_block.id }}, {{ checkin.id }}, this, {{ habit.id }}, {{ habit.total_days }})"
+                                                {% endif %}
+                                                data-checkin-id="{{ checkin.id }}"
+                                                title="{% if checkin.is_checked %}Completed{% elif checkin.can_check %}Click to check{% elif checkin.is_past %}Missed{% else %}Not yet{% endif %}">
+                                                {% if checkin.is_checked %}
+                                                    <i class="ri-check-line"></i>
+                                                {% elif checkin.is_past and not checkin.is_checked %}
+                                                    <i class="ri-close-line"></i>
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            <div class="habit-check future" title="No data">
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    {% endwith %}
+                                {% endwith %}
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-habits">
+                <div class="empty-habits-icon">
+                    <i class="ri-checkbox-circle-line"></i>
+                </div>
+                <h3 class="empty-habits-title">No Habits</h3>
+                <p class="empty-habits-text">No habits found in this block</p>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrfToken = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        const toastContainer = document.getElementById('toastContainer');
+
+        async function checkHabit(blockId, checkinId, element, habitId, totalDays) {
+            if (!checkinId) {
+                showToast('Invalid checkin', 'error');
+                return;
+            }
+            
+            if (element.classList.contains('loading') || element.classList.contains('checked')) {
+                return;
+            }
+
+            element.classList.add('loading');
+            element.innerHTML = '<div class="spinner-small"></div>';
+
+            try {
+                const response = await fetch(`/main/habits/${blockId}/check/${checkinId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrfToken
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update checkbox
+                    element.classList.remove('loading', 'can-check');
+                    element.classList.add('checked', 'disabled');
+                    element.innerHTML = '<i class="ri-check-line"></i>';
+                    element.onclick = null;
+                    element.title = 'Completed';
+                    
+                    // Update progress bar
+                    const progressEl = document.getElementById(`progress-${habitId}`);
+                    if (progressEl) {
+                        const progressBar = progressEl.querySelector('.habit-progress-fill');
+                        const progressText = progressEl.querySelector('span');
+                        if (progressBar && totalDays > 0) {
+                            const percentage = (data.completion_count / totalDays) * 100;
+                            progressBar.style.width = `${percentage}%`;
+                        }
+                        if (progressText) {
+                            progressText.textContent = `${data.completion_count}/${totalDays}`;
+                        }
+                    }
+                    
+                    // Update completion badge
+                    const completionValue = document.getElementById('completionValue');
+                    if (completionValue) {
+                        completionValue.textContent = `${data.block_completion_rate}%`;
+                    }
+                    
+                    showToast(data.message, 'success');
+                } else {
+                    element.classList.remove('loading');
+                    element.classList.add('can-check');
+                    element.innerHTML = '';
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Check error:', error);
+                element.classList.remove('loading');
+                element.classList.add('can-check');
+                element.innerHTML = '';
+                showToast('An error occurred. Please try again.', 'error');
+            }
+        }
+
+        function showToast(message, type) {
+            if (toastContainer) toastContainer.innerHTML = '';
+            
+            const iconName = type === 'success' ? 'ri-check-line' : 'ri-error-warning-line';
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.id = 'toast-' + Date.now();
+            toast.innerHTML = `
+                <div class="toast-icon"><i class="${iconName}"></i></div>
+                <span class="toast-message">${message}</span>
+                <button class="toast-close" type="button" onclick="closeToast('${toast.id}')">
+                    <i class="ri-close-line"></i>
+                </button>
+            `;
+            toastContainer.appendChild(toast);
+            setTimeout(function() { closeToast(toast.id); }, 5000);
+        }
+
+        function closeToast(toastId) {
+            const toast = document.getElementById(toastId);
+            if (toast) {
+                toast.style.animation = 'slideOut 0.3s ease-out forwards';
+                setTimeout(function() { if (toast.parentNode) toast.remove(); }, 300);
+            }
+        }
+
+        window.closeToast = closeToast;
+    </script>
+</body>
+</html>

@@ -1,16 +1,18 @@
-from .models import UserBalance , ExpenseBlock, ExpenseItem , UserIncome , UserGoal , UserKeep
+from .models import UserBalance , ExpenseBlock, ExpenseItem , UserIncome , UserGoal , UserKeep , HabitBlock , HabitItem , HabitCheckIn
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta, datetime ,timedelta
 from decimal import Decimal, InvalidOperation
 from decimal import Decimal, InvalidOperation
 from bleach.css_sanitizer import CSSSanitizer
 from django.contrib.auth import logout
 from django.http import JsonResponse
+from django.utils import timezone
 from django.db.models import Sum
 from django.db import models
 import bleach
+import json
 
 # ============================================
 # Helper function
@@ -2153,5 +2155,380 @@ def get_keep(request, keep_id):
 #?======================================================================================================================
 #!=========================================== END OF KEEP VIEWS ===========================================
 #?====================================================================================================================== 
+
+
+def is_ajax(request):
+    return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+
+
+def get_day_name(date_obj):
+    """Get day name from date"""
+    days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    return days[date_obj.weekday()]
+
+
+# ============================================
+# Habit Blocks List View
+# ============================================
+@login_required(login_url='/401/')
+def habits_view(request):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+
+    first_letter = user.first_name[0].upper() if user.first_name else user.email[0].upper()
+    full_name = f"{user.first_name} {user.last_name}".strip() or user.email.split('@')[0]
+
+    # Get all habit blocks for this user
+    habit_blocks = HabitBlock.objects.filter(user=user)
+    
+    # Check and close expired blocks
+    for block in habit_blocks.filter(status='active'):
+        block.check_and_close()
+    
+    # Refresh queryset after closing
+    habit_blocks = HabitBlock.objects.filter(user=user)
+    
+    # Pagination
+    page = request.GET.get('page', 1)
+    paginator = Paginator(habit_blocks, 10)
+    
+    try:
+        habit_blocks_page = paginator.page(page)
+    except PageNotAnInteger:
+        habit_blocks_page = paginator.page(1)
+    except EmptyPage:
+        habit_blocks_page = paginator.page(paginator.num_pages)
+    
+    # Calculate stats
+    total_blocks = habit_blocks.count()
+    active_blocks_count = habit_blocks.filter(status='active').count()
+    closed_blocks_count = habit_blocks.filter(status='closed').count()
+    total_habits = HabitItem.objects.filter(habit_block__user=user).count()
+
+    context = {
+        'user': user,
+        'profile': profile,
+        'first_letter': first_letter,
+        'full_name': full_name,
+        'habit_blocks': habit_blocks_page,
+        'total_blocks': total_blocks,
+        'active_blocks_count': active_blocks_count,
+        'closed_blocks_count': closed_blocks_count,
+        'total_habits': total_habits,
+        'day_choices': HabitBlock.DAY_CHOICES,
+    }
+
+    return render(request, 'Habits/habits.html', context)
+
+
+# ============================================
+# Create Habit Block
+# ============================================
+@login_required(login_url='/401/')
+def create_habit_block(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request'})
+    
+    try:
+        user = request.user
+        title = request.POST.get('title', '').strip()
+        starting_day = request.POST.get('starting_day', 'sunday').strip()
+        habits_json = request.POST.get('habits', '[]')
+        
+        # Parse habits
+        try:
+            habits_list = json.loads(habits_json)
+        except json.JSONDecodeError:
+            habits_list = []
+        
+        # Validate title
+        if not title:
+            return JsonResponse({'success': False, 'message': 'Block title is required'})
+        
+        if len(title) > 100:
+            return JsonResponse({'success': False, 'message': 'Title must be less than 100 characters'})
+        
+        # Validate starting_day
+        valid_days = [choice[0] for choice in HabitBlock.DAY_CHOICES]
+        if starting_day not in valid_days:
+            return JsonResponse({'success': False, 'message': 'Invalid starting day'})
+        
+        # Validate habits
+        if not habits_list or len(habits_list) == 0:
+            return JsonResponse({'success': False, 'message': 'Please add at least one habit'})
+        
+        # Clean and validate habits
+        cleaned_habits = []
+        for habit in habits_list:
+            habit_name = habit.strip() if isinstance(habit, str) else ''
+            if habit_name and len(habit_name) >= 2 and len(habit_name) <= 100:
+                cleaned_habits.append(habit_name)
+        
+        if not cleaned_habits:
+            return JsonResponse({'success': False, 'message': 'Please add valid habits (at least 2 characters each)'})
+        
+        today = date.today()
+        
+        # Check if there's already an active block for this user
+        existing_active = HabitBlock.objects.filter(
+            user=user,
+            status='active',
+            start_date__lte=today,
+            end_date__gte=today
+        ).first()
+        
+        if existing_active:
+            return JsonResponse({
+                'success': False, 
+                'message': 'You already have an active habit block',
+                'redirect': f'/main/habits/{existing_active.id}/'
+            })
+        
+        # Calculate end date (always Saturday)
+        end_date = HabitBlock.calculate_end_date(today, starting_day)
+        
+        # Create new habit block
+        block = HabitBlock.objects.create(
+            user=user,
+            title=title,
+            starting_day=starting_day,
+            start_date=today,
+            end_date=end_date
+        )
+        
+        # Create habit items and their checkins
+        week_days = block.get_week_days()
+        
+        for habit_name in cleaned_habits:
+            habit_item = HabitItem.objects.create(
+                habit_block=block,
+                habit_name=habit_name
+            )
+            
+            # Create checkin entries for each day
+            for day_info in week_days:
+                HabitCheckIn.objects.create(
+                    habit_item=habit_item,
+                    check_date=day_info['date'],
+                    day_name=day_info['name'],
+                    is_checked=False
+                )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Habit block created successfully',
+            'redirect': f'/main/habits/{block.id}/'
+        })
+    
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'})
+
+
+# ============================================
+# Habit Block Detail View
+# ============================================
+@login_required(login_url='/401/')
+def habit_detail_view(request, block_id):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+
+    first_letter = user.first_name[0].upper() if user.first_name else user.email[0].upper()
+    full_name = f"{user.first_name} {user.last_name}".strip() or user.email.split('@')[0]
+
+    # Get the habit block
+    habit_block = get_object_or_404(HabitBlock, id=block_id, user=user)
+    
+    # Check if block should be closed
+    habit_block.check_and_close()
+    
+    # Get today's info
+    today = date.today()
+    today_day_name = get_day_name(today)
+    
+    # Get week days for the block
+    week_days = habit_block.get_week_days()
+    
+    # Get all habits with their checkins
+    habits = habit_block.habits.all()
+    
+    # Build habit data with checkins for each day
+    habits_data = []
+    for habit in habits:
+        habit_info = {
+            'id': habit.id,
+            'name': habit.habit_name,
+            'checkins': {},
+            'completion_count': habit.get_completion_count(),
+            'total_days': habit.get_total_days(),
+        }
+        
+        for day_info in week_days:
+            checkin = habit.checkins.filter(check_date=day_info['date']).first()
+            if checkin:
+                habit_info['checkins'][day_info['name']] = {
+                    'id': checkin.id,
+                    'is_checked': checkin.is_checked,
+                    'can_check': day_info['is_today'] and not checkin.is_checked and habit_block.is_active,
+                    'is_past': day_info['is_past'],
+                    'is_future': day_info['is_future'],
+                    'is_today': day_info['is_today'],
+                }
+            else:
+                habit_info['checkins'][day_info['name']] = {
+                    'id': None,
+                    'is_checked': False,
+                    'can_check': False,
+                    'is_past': day_info['is_past'],
+                    'is_future': day_info['is_future'],
+                    'is_today': day_info['is_today'],
+                }
+        
+        habits_data.append(habit_info)
+    
+    # Calculate completion rate
+    completion_rate = habit_block.get_completion_rate()
+
+    context = {
+        'user': user,
+        'profile': profile,
+        'first_letter': first_letter,
+        'full_name': full_name,
+        'habit_block': habit_block,
+        'week_days': week_days,
+        'habits_data': habits_data,
+        'today': today,
+        'today_day_name': today_day_name,
+        'completion_rate': completion_rate,
+    }
+
+    return render(request, 'Habits/habit_detail.html', context)
+
+
+# ============================================
+# Check Habit (Toggle Check-in)
+# ============================================
+@login_required(login_url='/401/')
+def check_habit(request, block_id, checkin_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request'})
+    
+    try:
+        # Get the habit block
+        habit_block = get_object_or_404(HabitBlock, id=block_id, user=request.user)
+        
+        # Check if block is closed
+        if habit_block.status == 'closed':
+            return JsonResponse({'success': False, 'message': 'This habit block is closed'})
+        
+        # Get the checkin
+        checkin = get_object_or_404(HabitCheckIn, id=checkin_id, habit_item__habit_block=habit_block)
+        
+        # Check if it's already checked (can't uncheck)
+        if checkin.is_checked:
+            return JsonResponse({'success': False, 'message': 'Already checked. Cannot uncheck.'})
+        
+        # Check if it's for today only
+        today = date.today()
+        if checkin.check_date != today:
+            return JsonResponse({'success': False, 'message': 'You can only check habits for today'})
+        
+        # Check the habit
+        checkin.is_checked = True
+        checkin.checked_at = timezone.now()
+        checkin.save()
+        
+        # Get updated stats
+        habit_item = checkin.habit_item
+        completion_count = habit_item.get_completion_count()
+        total_days = habit_item.get_total_days()
+        block_completion_rate = habit_block.get_completion_rate()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'{habit_item.habit_name} checked for today!',
+            'checkin_id': checkin.id,
+            'is_checked': True,
+            'completion_count': completion_count,
+            'total_days': total_days,
+            'block_completion_rate': block_completion_rate,
+        })
+    
+    except HabitCheckIn.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Check-in not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'})
+
+
+# ============================================
+# Update Habit Block Title
+# ============================================
+@login_required(login_url='/401/')
+def update_habit_block(request, block_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request'})
+    
+    try:
+        habit_block = get_object_or_404(HabitBlock, id=block_id, user=request.user)
+        
+        if habit_block.status == 'closed':
+            return JsonResponse({'success': False, 'message': 'Cannot edit closed block'})
+        
+        title = request.POST.get('title', '').strip()
+        
+        if not title:
+            return JsonResponse({'success': False, 'message': 'Title is required'})
+        
+        if len(title) > 100:
+            return JsonResponse({'success': False, 'message': 'Title must be less than 100 characters'})
+        
+        habit_block.title = title
+        habit_block.save(update_fields=['title', 'updated_at'])
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Block title updated successfully',
+            'title': habit_block.title
+        })
+    
+    except HabitBlock.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Habit block not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred'})
+
+
+# ============================================
+# Delete Habit Block
+# ============================================
+@login_required(login_url='/401/')
+def delete_habit_block(request, block_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method'})
+    
+    if not is_ajax(request):
+        return JsonResponse({'success': False, 'message': 'Invalid request'})
+    
+    try:
+        habit_block = get_object_or_404(HabitBlock, id=block_id, user=request.user)
+        habit_block.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Habit block deleted successfully',
+            'redirect': '/main/habits/'
+        })
+    
+    except HabitBlock.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Habit block not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred'})
 
 

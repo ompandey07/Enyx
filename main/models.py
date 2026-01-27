@@ -446,3 +446,184 @@ class DatabaseBackup(models.Model):
                 return f"{size:.2f} {unit}"
             size /= 1024
         return f"{size:.2f} TB"
+
+
+
+class HabitBlock(models.Model):
+    """
+    Weekly habit tracking block
+    Nepal week: Sunday (start) to Saturday (end)
+    """
+    DAY_CHOICES = [
+        ('sunday', 'Sunday'),
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+        ('saturday', 'Saturday'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('closed', 'Closed'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='habit_blocks')
+    title = models.CharField(max_length=100)
+    starting_day = models.CharField(max_length=20, choices=DAY_CHOICES, default='sunday')
+    start_date = models.DateField()
+    end_date = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-start_date', '-created_at']
+
+    def __str__(self):
+        return f"{self.title} ({self.start_date} - {self.end_date})"
+    
+    @staticmethod
+    def calculate_end_date(start_date, starting_day):
+        """Calculate end date - always ends on Saturday"""
+        # In Python: Monday=0, Sunday=6, Saturday=5
+        days_until_saturday = (5 - start_date.weekday()) % 7
+        if days_until_saturday == 0 and start_date.weekday() != 5:
+            days_until_saturday = 7
+        return start_date + timedelta(days=days_until_saturday)
+    
+    def check_and_close(self):
+        """Check if block should be closed based on current time"""
+        now = timezone.now()
+        if now.date() > self.end_date or (now.date() == self.end_date and now.hour >= 23 and now.minute >= 59):
+            if self.status == 'active':
+                self.status = 'closed'
+                self.save(update_fields=['status', 'updated_at'])
+                return True
+        return False
+    
+    @property
+    def is_active(self):
+        return self.status == 'active'
+    
+    @property
+    def habit_count(self):
+        return self.habits.count()
+    
+    @property
+    def days_remaining(self):
+        if self.status == 'closed':
+            return 0
+        remaining = (self.end_date - date.today()).days
+        return max(0, remaining)
+    
+    def get_week_days(self):
+        """Get list of days from starting_day to Saturday"""
+        day_order = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+        start_index = day_order.index(self.starting_day)
+        
+        days = []
+        current_date = self.start_date
+        
+        for i in range(7):
+            day_index = (start_index + i) % 7
+            day_name = day_order[day_index]
+            
+            if current_date <= self.end_date:
+                days.append({
+                    'name': day_name,
+                    'display': day_name.capitalize(),
+                    'date': current_date,
+                    'date_display': current_date.strftime('%b %d'),
+                    'is_today': current_date == date.today(),
+                    'is_past': current_date < date.today(),
+                    'is_future': current_date > date.today(),
+                })
+                current_date += timedelta(days=1)
+            
+            if day_name == 'saturday':
+                break
+        
+        return days
+    
+    def get_completion_rate(self):
+        """Calculate overall completion rate"""
+        total_possible = 0
+        total_checked = 0
+        
+        today = date.today()
+        
+        for habit in self.habits.all():
+            for checkin in habit.checkins.filter(check_date__lte=today):
+                total_possible += 1
+                if checkin.is_checked:
+                    total_checked += 1
+        
+        if total_possible == 0:
+            return 0
+        return round((total_checked / total_possible) * 100)
+
+
+class HabitItem(models.Model):
+    """Individual habit to track within a habit block"""
+    habit_block = models.ForeignKey(HabitBlock, on_delete=models.CASCADE, related_name='habits')
+    habit_name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return self.habit_name
+    
+    def get_checkin_for_date(self, check_date):
+        """Get or create checkin for a specific date"""
+        days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+        day_name = days[check_date.weekday()]
+        
+        checkin, created = HabitCheckIn.objects.get_or_create(
+            habit_item=self,
+            check_date=check_date,
+            defaults={'day_name': day_name}
+        )
+        return checkin
+    
+    def get_completion_count(self):
+        """Get number of days completed"""
+        return self.checkins.filter(is_checked=True).count()
+    
+    def get_total_days(self):
+        """Get total days up to today"""
+        today = date.today()
+        return self.checkins.filter(check_date__lte=today).count()
+
+
+class HabitCheckIn(models.Model):
+    """Daily check-in for a habit"""
+    DAY_CHOICES = [
+        ('sunday', 'Sunday'),
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+        ('saturday', 'Saturday'),
+    ]
+    
+    habit_item = models.ForeignKey(HabitItem, on_delete=models.CASCADE, related_name='checkins')
+    check_date = models.DateField()
+    day_name = models.CharField(max_length=20, choices=DAY_CHOICES)
+    is_checked = models.BooleanField(default=False)
+    checked_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['check_date']
+        unique_together = ['habit_item', 'check_date']
+
+    def __str__(self):
+        status = "✓" if self.is_checked else "✗"
+        return f"{self.habit_item.habit_name} - {self.check_date} [{status}]"
