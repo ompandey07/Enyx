@@ -3,3 +3,4 @@ django-jazzmin
 Pillow
 psycopg2-binary
 bleach
+tinycss2

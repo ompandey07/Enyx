@@ -10,4 +10,5 @@ docker build -t exptrac .
 docker run -d --name exptrac_app --network host exptrac
 
 # Run migrations once inside container
+docker exec exptrac_app python manage.py makemigrations
 docker exec exptrac_app python manage.py migrate
