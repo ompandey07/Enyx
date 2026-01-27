@@ -418,3 +418,31 @@ class UserKeep(models.Model):
         import pytz
         kathmandu_tz = pytz.timezone('Asia/Kathmandu')
         return self.updated_at.astimezone(kathmandu_tz)
+    
+
+class DatabaseBackup(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='backups')
+    filename = models.CharField(max_length=255)
+    file_path = models.FileField(upload_to='backups/')
+    file_size = models.BigIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.filename} - {self.user.email}"
+    
+    def get_created_at_local(self):
+        import pytz
+        kathmandu_tz = pytz.timezone('Asia/Kathmandu')
+        return self.created_at.astimezone(kathmandu_tz)
+    
+    def get_file_size_display(self):
+        size = self.file_size
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if size < 1024:
+                return f"{size:.2f} {unit}"
+            size /= 1024
+        return f"{size:.2f} TB"

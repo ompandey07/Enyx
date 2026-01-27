@@ -1,0 +1,1913 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Backup - ExpTrack</title>
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{% static 'MainLogo.png' %}" type="image/x-icon">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800;900&family=Kaushan+Script&display=swap" rel="stylesheet">
+    
+    <!-- Agustina Font -->
+    <link href="https://fonts.cdnfonts.com/css/agustina" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --info: #3b82f6;
+            --info-light: #dbeafe;
+            
+            --cream: #8800ff;
+            --cream-light: #fffdd0;
+            
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --bg-card: #ffffff;
+            
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            
+            --border-color: #e2e8f0;
+            --border-light: #cbd5e1;
+            
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+            
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            
+            --transition: all 0.3s ease;
+            
+            --nav-height: 70px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .agustina-font {
+            font-family: 'Agustina', cursive;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .ri-spin {
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        /* ============================================
+           TOP NAVIGATION
+        ============================================ */
+        .top-nav {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            height: var(--nav-height);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            height: 100%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .nav-logo-text {
+            font-family: 'Agustina', cursive;
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-logo-text .exp {
+            color: #000000;
+        }
+
+        .nav-logo-text .track {
+            color: var(--cream);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .btn-back:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* ============================================
+           MAIN CONTENT
+        ============================================ */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Agustina', cursive;
+        }
+
+        .page-title i {
+            color: var(--primary);
+            
+        }
+
+        /* ============================================
+           TWO COLUMN LAYOUT
+        ============================================ */
+        .backup-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        /* ============================================
+           SECTION CARD
+        ============================================ */
+        .section-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-header.backup-header {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05));
+        }
+
+        .section-header.restore-header {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(37, 99, 235, 0.05));
+        }
+
+        .section-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title i {
+            font-size: 1.25rem;
+        }
+
+        .section-title.backup i {
+            color: var(--success);
+        }
+
+        .section-title.restore i {
+            color: var(--info);
+        }
+
+        .section-body {
+            padding: 1.25rem;
+        }
+
+        /* ============================================
+           BACKUP SECTION
+        ============================================ */
+        .backup-actions {
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-take-backup {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-take-backup:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-take-backup:disabled {
+            opacity: 0.8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Backup List */
+        .backup-list-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .backup-list-title span {
+            background: var(--primary);
+            color: white;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+        }
+
+        .backup-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .backup-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            margin-bottom: 0.75rem;
+            transition: var(--transition);
+        }
+
+        .backup-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .backup-item:hover {
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .backup-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .backup-filename {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .backup-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .backup-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .backup-actions-btns {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-backup-action {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .btn-backup-action:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-backup-action.download:hover {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .btn-backup-action.delete:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: white;
+        }
+
+        /* Empty Backup State */
+        .empty-backup {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .empty-backup-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+
+        .empty-backup-icon i {
+            font-size: 2.5rem;
+            color: var(--success);
+        }
+
+        .empty-backup-text {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* ============================================
+           RESTORE SECTION
+        ============================================ */
+        .restore-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .restore-option-card {
+            padding: 1.25rem;
+            background: var(--bg-tertiary);
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-md);
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .restore-option-card:hover {
+            border-color: var(--info);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .restore-option-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.1));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+
+        .restore-option-icon i {
+            font-size: 1.75rem;
+            color: var(--info);
+        }
+
+        .restore-option-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .restore-option-text {
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-restore {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--info), #2563eb);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-restore:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-restore:disabled {
+            opacity: 0.8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Warning Box */
+        .warning-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--warning-light);
+            border: 1px solid var(--warning);
+            border-radius: var(--radius-md);
+            margin-top: 1.5rem;
+        }
+
+        .warning-box i {
+            color: var(--warning);
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            margin-top: 0.125rem;
+        }
+
+        .warning-box-content h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 0.25rem;
+        }
+
+        .warning-box-content p {
+            font-size: 0.8125rem;
+            color: #a16207;
+        }
+
+        /* ============================================
+           MODALS
+        ============================================ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: modalSlideUp 0.3s ease;
+            box-shadow: var(--shadow-xl);
+            border-radius: var(--radius-lg);
+        }
+
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+        }
+
+        .modal-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-title i {
+            color: var(--primary);
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1.25rem;
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: white;
+        }
+
+        .modal-body {
+            padding: 1.25rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            background: var(--bg-tertiary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            transition: var(--transition);
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* File Upload */
+        .file-upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .file-upload-icon {
+            font-size: 2.5rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .file-upload-text {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .file-upload-hint {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .selected-file {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: var(--success-light);
+            border: 1px solid var(--success);
+            border-radius: var(--radius-md);
+            margin-top: 1rem;
+        }
+
+        .selected-file-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--success);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .btn-remove-file {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1.125rem;
+            padding: 0.25rem;
+            transition: var(--transition);
+        }
+
+        .btn-remove-file:hover {
+            transform: scale(1.1);
+        }
+
+        /* Backup Select List */
+        .backup-select-list {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+
+        .backup-select-item {
+            display: flex;
+            align-items: center;
+            padding: 0.875rem 1rem;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .backup-select-item:hover {
+            border-color: var(--primary-light);
+        }
+
+        .backup-select-item.selected {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .backup-select-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .backup-select-item.selected .backup-select-radio {
+            border-color: var(--primary);
+            background: var(--primary);
+        }
+
+        .backup-select-item.selected .backup-select-radio::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .backup-select-info {
+            flex: 1;
+        }
+
+        .backup-select-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .backup-select-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Buttons */
+        .btn-cancel {
+            padding: 0.625rem 1.25rem;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-cancel:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .btn-submit {
+            padding: 0.625rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-width: 120px;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Delete Confirmation */
+        .confirm-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            animation: modalSlideUp 0.3s ease;
+            box-shadow: var(--shadow-xl);
+            border-radius: var(--radius-lg);
+        }
+
+        .confirm-icon {
+            width: 72px;
+            height: 72px;
+            background: var(--danger-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .confirm-icon i {
+            font-size: 2.25rem;
+            color: var(--danger);
+        }
+
+        .confirm-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.375rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .confirm-text {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .confirm-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-confirm-cancel {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-confirm-cancel:hover {
+            background: var(--bg-secondary);
+        }
+
+        .btn-confirm-delete {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: var(--danger);
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-confirm-delete:hover:not(:disabled) {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-confirm-delete:disabled {
+            opacity: 0.8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Progress Modal */
+        .progress-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            animation: modalSlideUp 0.3s ease;
+            box-shadow: var(--shadow-xl);
+            border-radius: var(--radius-lg);
+        }
+
+        .progress-spinner {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            position: relative;
+        }
+
+        .progress-spinner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .progress-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-text {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        /* ============================================
+           TOAST NOTIFICATION
+        ============================================ */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 280px;
+            max-width: 380px;
+            box-shadow: var(--shadow-lg);
+            animation: toastSlideIn 0.3s ease;
+        }
+
+        @keyframes toastSlideIn {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast.warning { border-left: 4px solid var(--warning); }
+
+        .toast-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .toast.success .toast-icon { background: var(--success-light); color: var(--success); }
+        .toast.error .toast-icon { background: var(--danger-light); color: var(--danger); }
+        .toast.warning .toast-icon { background: var(--warning-light); color: var(--warning); }
+
+        .toast-message {
+            flex: 1;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+            transition: var(--transition);
+        }
+
+        .toast-close:hover {
+            color: var(--text-primary);
+        }
+
+        /* ============================================
+           RESPONSIVE
+        ============================================ */
+        @media (max-width: 992px) {
+            .backup-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-nav {
+                padding: 0.75rem 1rem;
+                height: auto;
+            }
+
+            .nav-container {
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+
+            .nav-logo-text {
+                font-size: 1.5rem;
+            }
+
+            .nav-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .btn-back {
+                padding: 0.5rem 1rem;
+                font-size: 0.8125rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .modal-content,
+            .confirm-content,
+            .progress-content {
+                margin: 0.5rem;
+            }
+
+            .confirm-buttons {
+                flex-direction: column;
+            }
+
+            .backup-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+
+            .backup-actions-btns {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-logo-text {
+                font-size: 1.375rem;
+            }
+
+            .btn-back span {
+                display: none;
+            }
+
+            .page-title {
+                font-size: 1.25rem;
+            }
+
+            .section-header {
+                padding: 1rem;
+            }
+
+            .section-body {
+                padding: 1rem;
+            }
+
+            .toast-container {
+                left: 1rem;
+                right: 1rem;
+            }
+
+            .toast {
+                min-width: auto;
+                max-width: 100%;
+            }
+        }
+
+        @keyframes fadeOutCard {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0.9); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <a href="{% url 'backup_view' %}" class="nav-brand">
+                <span class="nav-logo-text agustina-font">
+                    <span class="exp">Exp</span><span class="track">Track</span>
+                </span>
+            </a>
+            
+            <div class="nav-actions">
+                <a href="{% url 'dashboard_view' %}" class="btn-back">
+                    <i class="ri-arrow-left-line"></i>
+                    <span>Back to Dashboard</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="ri-database-2-line"></i>
+                Database Backup & Restore
+            </h1>
+        </div>
+
+        <!-- Two Column Grid -->
+        <div class="backup-grid">
+            <!-- Left Column: Backup Section -->
+            <div class="section-card">
+                <div class="section-header backup-header">
+                    <h2 class="section-title backup">
+                        <i class="ri-download-cloud-line"></i>
+                        Take Backup
+                    </h2>
+                </div>
+                <div class="section-body">
+                    <!-- Take Backup Button -->
+                    <div class="backup-actions">
+                        <button type="button" class="btn-take-backup" id="btnTakeBackup">
+                            <i class="ri-download-2-line"></i>
+                            Create New Backup
+                        </button>
+                    </div>
+
+                    <!-- Backup List -->
+                    <div class="backup-list-title">
+                        Available Backups 
+                        <span id="backupCount">{{ backups|length }}</span>
+                    </div>
+
+                    {% if backups %}
+                    <div class="backup-list" id="backupList">
+                        {% for backup in backups %}
+                        <div class="backup-item" data-id="{{ backup.id }}">
+                            <div class="backup-info">
+                                <div class="backup-filename" title="{{ backup.filename }}">{{ backup.filename }}</div>
+                                <div class="backup-meta">
+                                    <span><i class="ri-hard-drive-2-line"></i> {{ backup.get_file_size_display }}</span>
+                                    <span><i class="ri-time-line"></i> {{ backup.get_created_at_local|date:"M d, Y h:i A" }}</span>
+                                </div>
+                            </div>
+                            <div class="backup-actions-btns">
+                                <a href="{% url 'download_backup' backup.id %}" class="btn-backup-action download" title="Download">
+                                    <i class="ri-download-line"></i>
+                                </a>
+                                <button type="button" class="btn-backup-action delete" data-id="{{ backup.id }}" data-filename="{{ backup.filename }}" title="Delete">
+                                    <i class="ri-delete-bin-line"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-backup" id="emptyBackup">
+                        <div class="empty-backup-icon">
+                            <i class="ri-database-2-line"></i>
+                        </div>
+                        <p class="empty-backup-text">No backups yet. Create your first backup!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Column: Restore Section -->
+            <div class="section-card">
+                <div class="section-header restore-header">
+                    <h2 class="section-title restore">
+                        <i class="ri-upload-cloud-line"></i>
+                        Restore Backup
+                    </h2>
+                </div>
+                <div class="section-body">
+                    <div class="restore-options">
+                        <!-- Option 1: Select from existing backups -->
+                        <div class="restore-option-card">
+                            <div class="restore-option-icon">
+                                <i class="ri-folder-open-line"></i>
+                            </div>
+                            <h3 class="restore-option-title">Select Existing Backup</h3>
+                            <p class="restore-option-text">Choose from your previously created backups</p>
+                            <button type="button" class="btn-restore" id="btnRestoreExisting">
+                                <i class="ri-folder-open-line"></i>
+                                Select Backup
+                            </button>
+                        </div>
+
+                        <!-- Option 2: Upload backup file -->
+                        <div class="restore-option-card">
+                            <div class="restore-option-icon">
+                                <i class="ri-upload-2-line"></i>
+                            </div>
+                            <h3 class="restore-option-title">Upload Backup File</h3>
+                            <p class="restore-option-text">Upload a .sql backup file from your computer</p>
+                            <button type="button" class="btn-restore" id="btnRestoreUpload">
+                                <i class="ri-upload-2-line"></i>
+                                Upload File
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Warning -->
+                    <div class="warning-box">
+                        <i class="ri-alert-line"></i>
+                        <div class="warning-box-content">
+                            <h4>Warning</h4>
+                            <p>Restoring a backup will overwrite all current data. This action cannot be undone. Make sure to create a backup of your current data before restoring.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Take Backup Modal -->
+    <div class="modal-overlay" id="takeBackupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="ri-download-cloud-line"></i>
+                    Create New Backup
+                </h3>
+                <button type="button" class="modal-close" id="closeTakeBackupModal">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <form id="takeBackupForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="backupNotes">Notes (Optional)</label>
+                        <textarea 
+                            id="backupNotes" 
+                            name="notes" 
+                            class="form-textarea" 
+                            placeholder="Add any notes about this backup..."
+                            rows="3"
+                        ></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" id="cancelTakeBackup">Cancel</button>
+                    <button type="submit" class="btn-submit" id="submitTakeBackup">
+                        <i class="ri-download-2-line"></i>
+                        Create Backup
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Select Backup Modal (for restore) -->
+    <div class="modal-overlay" id="selectBackupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="ri-folder-open-line"></i>
+                    Select Backup to Restore
+                </h3>
+                <button type="button" class="modal-close" id="closeSelectBackupModal">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="backup-select-list" id="backupSelectList">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" id="cancelSelectBackup">Cancel</button>
+                <button type="button" class="btn-submit" id="confirmRestoreSelected" disabled>
+                    <i class="ri-upload-cloud-line"></i>
+                    Restore Selected
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Backup Modal -->
+    <div class="modal-overlay" id="uploadBackupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="ri-upload-2-line"></i>
+                    Upload Backup File
+                </h3>
+                <button type="button" class="modal-close" id="closeUploadBackupModal">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <form id="uploadBackupForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <i class="ri-upload-cloud-2-line file-upload-icon"></i>
+                        <p class="file-upload-text">Drag & drop your backup file here</p>
+                        <p class="file-upload-hint">or click to browse (.sql files only)</p>
+                        <input type="file" id="backupFileInput" name="backup_file" class="file-input" accept=".sql">
+                    </div>
+                    <div class="selected-file" id="selectedFile" style="display: none;">
+                        <div class="selected-file-info">
+                            <i class="ri-file-text-line"></i>
+                            <span id="selectedFileName"></span>
+                        </div>
+                        <button type="button" class="btn-remove-file" id="removeFile">
+                            <i class="ri-close-line"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" id="cancelUploadBackup">Cancel</button>
+                    <button type="submit" class="btn-submit" id="submitUploadBackup" disabled>
+                        <i class="ri-upload-cloud-line"></i>
+                        Restore
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="confirm-content">
+            <div class="confirm-icon">
+                <i class="ri-delete-bin-line"></i>
+            </div>
+            <h3 class="confirm-title">Delete Backup?</h3>
+            <p class="confirm-text">Are you sure you want to delete "<span id="deleteFileName"></span>"? This action cannot be undone.</p>
+            <div class="confirm-buttons">
+                <button type="button" class="btn-confirm-cancel" id="cancelDelete">Cancel</button>
+                <button type="button" class="btn-confirm-delete" id="confirmDelete">
+                    <i class="ri-delete-bin-line"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Modal -->
+    <div class="modal-overlay" id="progressModal">
+        <div class="progress-content">
+            <div class="progress-spinner"></div>
+            <h3 class="progress-title" id="progressTitle">Processing...</h3>
+            <p class="progress-text" id="progressText">Please wait while we process your request.</p>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CSRF Token
+        // ============================================
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+
+        // ============================================
+        // Toast Notifications
+        // ============================================
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = 'ri-check-line';
+            if (type === 'error') icon = 'ri-close-circle-line';
+            if (type === 'warning') icon = 'ri-alert-line';
+            
+            toast.innerHTML = `
+                <div class="toast-icon"><i class="${icon}"></i></div>
+                <div class="toast-message">${message}</div>
+                <button class="toast-close" onclick="this.parentElement.remove()">
+                    <i class="ri-close-line"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => { if (toast.parentElement) toast.remove(); }, 5000);
+        }
+
+        // ============================================
+        // Show/Hide Progress Modal
+        // ============================================
+        function showProgress(title, text) {
+            document.getElementById('progressTitle').textContent = title;
+            document.getElementById('progressText').textContent = text;
+            document.getElementById('progressModal').classList.add('active');
+        }
+
+        function hideProgress() {
+            document.getElementById('progressModal').classList.remove('active');
+        }
+
+        // ============================================
+        // Take Backup Modal
+        // ============================================
+        const takeBackupModal = document.getElementById('takeBackupModal');
+        const btnTakeBackup = document.getElementById('btnTakeBackup');
+        const closeTakeBackupModal = document.getElementById('closeTakeBackupModal');
+        const cancelTakeBackup = document.getElementById('cancelTakeBackup');
+
+        function openTakeBackupModal() {
+            takeBackupModal.classList.add('active');
+        }
+
+        function closeTakeBackupModalFn() {
+            takeBackupModal.classList.remove('active');
+            document.getElementById('backupNotes').value = '';
+        }
+
+        btnTakeBackup.addEventListener('click', openTakeBackupModal);
+        closeTakeBackupModal.addEventListener('click', closeTakeBackupModalFn);
+        cancelTakeBackup.addEventListener('click', closeTakeBackupModalFn);
+        takeBackupModal.addEventListener('click', (e) => { if (e.target === takeBackupModal) closeTakeBackupModalFn(); });
+
+        // Take Backup Form Submission
+        document.getElementById('takeBackupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const notes = document.getElementById('backupNotes').value.trim();
+            const submitBtn = document.getElementById('submitTakeBackup');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Creating...';
+            
+            closeTakeBackupModalFn();
+            showProgress('Creating Backup', 'Please wait while we create your database backup...');
+            
+            const formData = new FormData();
+            formData.append('notes', notes);
+            formData.append('csrfmiddlewaretoken', getCSRFToken());
+            
+            try {
+                const response = await fetch('/main/backup/create/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                
+                const data = await response.json();
+                hideProgress();
+                
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                hideProgress();
+                showToast('An error occurred. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="ri-download-2-line"></i> Create Backup';
+            }
+        });
+
+        // ============================================
+        // Select Backup Modal (for restore)
+        // ============================================
+        const selectBackupModal = document.getElementById('selectBackupModal');
+        const btnRestoreExisting = document.getElementById('btnRestoreExisting');
+        const closeSelectBackupModal = document.getElementById('closeSelectBackupModal');
+        const cancelSelectBackup = document.getElementById('cancelSelectBackup');
+        const confirmRestoreSelected = document.getElementById('confirmRestoreSelected');
+        let selectedBackupId = null;
+
+        async function openSelectBackupModal() {
+            try {
+                const response = await fetch('/main/backup/list/', {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const list = document.getElementById('backupSelectList');
+                    
+                    if (data.backups.length === 0) {
+                        list.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No backups available</p>';
+                        confirmRestoreSelected.disabled = true;
+                    } else {
+                        list.innerHTML = data.backups.map(backup => `
+                            <div class="backup-select-item" data-id="${backup.id}">
+                                <div class="backup-select-radio"></div>
+                                <div class="backup-select-info">
+                                    <div class="backup-select-name">${backup.filename}</div>
+                                    <div class="backup-select-meta">${backup.file_size} • ${backup.created_at}</div>
+                                </div>
+                            </div>
+                        `).join('');
+                        
+                        // Add click listeners
+                        document.querySelectorAll('.backup-select-item').forEach(item => {
+                            item.addEventListener('click', function() {
+                                document.querySelectorAll('.backup-select-item').forEach(i => i.classList.remove('selected'));
+                                this.classList.add('selected');
+                                selectedBackupId = this.dataset.id;
+                                confirmRestoreSelected.disabled = false;
+                            });
+                        });
+                    }
+                    
+                    selectBackupModal.classList.add('active');
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Failed to load backups', 'error');
+            }
+        }
+
+        function closeSelectBackupModalFn() {
+            selectBackupModal.classList.remove('active');
+            selectedBackupId = null;
+            confirmRestoreSelected.disabled = true;
+        }
+
+        btnRestoreExisting.addEventListener('click', openSelectBackupModal);
+        closeSelectBackupModal.addEventListener('click', closeSelectBackupModalFn);
+        cancelSelectBackup.addEventListener('click', closeSelectBackupModalFn);
+        selectBackupModal.addEventListener('click', (e) => { if (e.target === selectBackupModal) closeSelectBackupModalFn(); });
+
+        // Confirm Restore Selected
+        confirmRestoreSelected.addEventListener('click', async function() {
+            if (!selectedBackupId) return;
+            
+            if (!confirm('Are you sure you want to restore this backup? This will overwrite all current data!')) return;
+            
+            this.disabled = true;
+            this.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Restoring...';
+            
+            closeSelectBackupModalFn();
+            showProgress('Restoring Database', 'Please wait while we restore your database. This may take a few moments...');
+            
+            const formData = new FormData();
+            formData.append('backup_id', selectedBackupId);
+            formData.append('csrfmiddlewaretoken', getCSRFToken());
+            
+            try {
+                const response = await fetch('/main/backup/restore/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                
+                const data = await response.json();
+                hideProgress();
+                
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => window.location.reload(), 2000);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                hideProgress();
+                showToast('An error occurred. Please try again.', 'error');
+            } finally {
+                this.disabled = false;
+                this.innerHTML = '<i class="ri-upload-cloud-line"></i> Restore Selected';
+            }
+        });
+
+        // ============================================
+        // Upload Backup Modal
+        // ============================================
+        const uploadBackupModal = document.getElementById('uploadBackupModal');
+        const btnRestoreUpload = document.getElementById('btnRestoreUpload');
+        const closeUploadBackupModal = document.getElementById('closeUploadBackupModal');
+        const cancelUploadBackup = document.getElementById('cancelUploadBackup');
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const backupFileInput = document.getElementById('backupFileInput');
+        const selectedFile = document.getElementById('selectedFile');
+        const selectedFileName = document.getElementById('selectedFileName');
+        const removeFile = document.getElementById('removeFile');
+        const submitUploadBackup = document.getElementById('submitUploadBackup');
+
+        function openUploadBackupModal() {
+            uploadBackupModal.classList.add('active');
+        }
+
+        function closeUploadBackupModalFn() {
+            uploadBackupModal.classList.remove('active');
+            backupFileInput.value = '';
+            selectedFile.style.display = 'none';
+            fileUploadArea.style.display = 'block';
+            submitUploadBackup.disabled = true;
+        }
+
+        btnRestoreUpload.addEventListener('click', openUploadBackupModal);
+        closeUploadBackupModal.addEventListener('click', closeUploadBackupModalFn);
+        cancelUploadBackup.addEventListener('click', closeUploadBackupModalFn);
+        uploadBackupModal.addEventListener('click', (e) => { if (e.target === uploadBackupModal) closeUploadBackupModalFn(); });
+
+        // File Upload Area Click
+        fileUploadArea.addEventListener('click', () => backupFileInput.click());
+
+        // Drag and Drop
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        });
+
+        fileUploadArea.addEventListener('dragleave', () => {
+            fileUploadArea.classList.remove('dragover');
+        });
+
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        // File Input Change
+        backupFileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                handleFileSelect(this.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            if (!file.name.endsWith('.sql')) {
+                showToast('Please select a .sql file', 'error');
+                return;
+            }
+            
+            selectedFileName.textContent = file.name;
+            selectedFile.style.display = 'flex';
+            fileUploadArea.style.display = 'none';
+            submitUploadBackup.disabled = false;
+        }
+
+        // Remove File
+        removeFile.addEventListener('click', () => {
+            backupFileInput.value = '';
+            selectedFile.style.display = 'none';
+            fileUploadArea.style.display = 'block';
+            submitUploadBackup.disabled = true;
+        });
+
+        // Upload Form Submission
+        document.getElementById('uploadBackupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!backupFileInput.files.length) {
+                showToast('Please select a file', 'error');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to restore this backup? This will overwrite all current data!')) return;
+            
+            submitUploadBackup.disabled = true;
+            submitUploadBackup.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Restoring...';
+            
+            closeUploadBackupModalFn();
+            showProgress('Restoring Database', 'Please wait while we restore your database. This may take a few moments...');
+            
+            const formData = new FormData();
+            formData.append('backup_file', backupFileInput.files[0]);
+            formData.append('csrfmiddlewaretoken', getCSRFToken());
+            
+            try {
+                const response = await fetch('/main/backup/restore/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                
+                const data = await response.json();
+                hideProgress();
+                
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => window.location.reload(), 2000);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                hideProgress();
+                showToast('An error occurred. Please try again.', 'error');
+            } finally {
+                submitUploadBackup.disabled = false;
+                submitUploadBackup.innerHTML = '<i class="ri-upload-cloud-line"></i> Restore';
+            }
+        });
+
+        // ============================================
+        // Delete Backup
+        // ============================================
+        const deleteModal = document.getElementById('deleteModal');
+        const cancelDelete = document.getElementById('cancelDelete');
+        const confirmDeleteBtn = document.getElementById('confirmDelete');
+        let deleteId = null;
+
+        document.querySelectorAll('.btn-backup-action.delete').forEach(btn => {
+            btn.addEventListener('click', function() {
+                deleteId = this.dataset.id;
+                document.getElementById('deleteFileName').textContent = this.dataset.filename;
+                deleteModal.classList.add('active');
+            });
+        });
+
+        cancelDelete.addEventListener('click', () => {
+            deleteModal.classList.remove('active');
+            deleteId = null;
+        });
+
+        deleteModal.addEventListener('click', (e) => {
+            if (e.target === deleteModal) {
+                deleteModal.classList.remove('active');
+                deleteId = null;
+            }
+        });
+
+        confirmDeleteBtn.addEventListener('click', async () => {
+            if (!deleteId) return;
+            
+            confirmDeleteBtn.disabled = true;
+            confirmDeleteBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Deleting...';
+            
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', getCSRFToken());
+            
+            try {
+                const response = await fetch(`/main/backup/delete/${deleteId}/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    deleteModal.classList.remove('active');
+                    
+                    const item = document.querySelector(`.backup-item[data-id="${deleteId}"]`);
+                    if (item) {
+                        item.style.animation = 'fadeOutCard 0.3s ease forwards';
+                        setTimeout(() => {
+                            item.remove();
+                            // Update count
+                            const countEl = document.getElementById('backupCount');
+                            const currentCount = parseInt(countEl.textContent);
+                            countEl.textContent = currentCount - 1;
+                            
+                            // Show empty state if no backups left
+                            const list = document.getElementById('backupList');
+                            if (list && list.children.length === 0) {
+                                list.innerHTML = `
+                                    <div class="empty-backup">
+                                        <div class="empty-backup-icon">
+                                            <i class="ri-database-2-line"></i>
+                                        </div>
+                                        <p class="empty-backup-text">No backups yet. Create your first backup!</p>
+                                    </div>
+                                `;
+                            }
+                        }, 300);
+                    }
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Failed to delete backup', 'error');
+            } finally {
+                confirmDeleteBtn.disabled = false;
+                confirmDeleteBtn.innerHTML = '<i class="ri-delete-bin-line"></i> Delete';
+                deleteId = null;
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeTakeBackupModalFn();
+                closeSelectBackupModalFn();
+                closeUploadBackupModalFn();
+                deleteModal.classList.remove('active');
+                deleteId = null;
+            }
+        });
+    </script>
+</body>
+</html>

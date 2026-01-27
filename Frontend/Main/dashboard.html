@@ -313,6 +313,14 @@
             color: #10b981;
         }
 
+        .app-item-backup i {
+            color: #6a00ff;
+        }
+
+        .app-item-backup:hover {
+            color: #6a00ff;
+        }
+
         /* Placeholder apps - you can remove or customize */
         .app-item-placeholder {
             opacity: 0.4;
@@ -1406,15 +1414,11 @@
                             <i class="ri-sticky-note-line"></i>
                             <span>Keep</span>
                         </a>
-                        <!-- Placeholder slots for future apps -->
-                        <div class="app-item app-item-placeholder">
-                            <i class="ri-add-circle-line"></i>
-                            <span>Soon</span>
-                        </div>
-                        <div class="app-item app-item-placeholder">
-                            <i class="ri-add-circle-line"></i>
-                            <span>Soon</span>
-                        </div>
+
+                        <a href="{% url 'backup_view' %}" class="app-item app-item-backup">
+                            <i class="ri-database-2-line"></i>
+                            <span>Backup</span>
+                        </a>
                     </div>
                 </div>
             </div>

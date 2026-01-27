@@ -2149,3 +2149,9 @@ def get_keep(request, keep_id):
         return JsonResponse({'success': False, 'message': 'Note not found', 'type': 'error'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': 'An error occurred', 'type': 'error'})
+
+#?======================================================================================================================
+#!=========================================== END OF KEEP VIEWS ===========================================
+#?====================================================================================================================== 
+
+

@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import views , database_backup
 
 urlpatterns = [
 
@@ -52,4 +52,14 @@ urlpatterns = [
     path('keep/edit/<int:keep_id>/', views.edit_keep, name='edit_keep'),
     path('keep/delete/<int:keep_id>/', views.delete_keep, name='delete_keep'),
     path('keep/get/<int:keep_id>/', views.get_keep, name='get_keep'),
+
+
+    #!================= BACKUP MANAGEMENT ==========================
+    path('backup/', database_backup.backup_view, name='backup_view'),
+    path('backup/create/', database_backup.create_backup, name='create_backup'),
+    path('backup/download/<int:backup_id>/', database_backup.download_backup, name='download_backup'),
+    path('backup/restore/', database_backup.restore_backup, name='restore_backup'),
+    path('backup/delete/<int:backup_id>/', database_backup.delete_backup, name='delete_backup'),
+    path('backup/get/<int:backup_id>/', database_backup.get_backup, name='get_backup'),
+    path('backup/list/', database_backup.get_all_backups, name='get_all_backups'),
 ]
