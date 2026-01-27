@@ -95,11 +95,45 @@ Built with Django and PostgreSQL, Enyx offers a beautiful, intuitive interface t
 - Daily spending limits
 - Expense calendar view
 
+### 📓 **Smart Notes & Organization**
+- Create and store notes with rich text formatting
+- Color-coded note organization
+- Pin important notes to the top
+- Search and filter notes instantly
+- Archive and organize by categories
+- Attach notes to specific expenses or goals
+- Tag system for easy retrieval
+- Markdown support for advanced formatting
+
+### 🎯 **Habit Tracker with Advanced Analytics**
+- Create and track daily habits
+- Visual habit blocks for daily completion
+- Streak tracking and milestone celebrations
+- Advanced habit analytics and insights
+- Custom habit categories (Health, Finance, Productivity, etc.)
+- Habit success rate calculations
+- Weekly and monthly habit reports
+- Smart reminders and notifications
+- Habit correlation with financial goals
+- Visual heat maps for habit consistency
+
+### 💾 **Cross-Platform Database Backup & Restore**
+- One-click database backup functionality
+- Automated scheduled backups
+- Secure encrypted backup files
+- Restore database from any backup point
+- Cross-platform compatibility (Windows, macOS, Linux)
+- Cloud storage integration options
+- Backup version history
+- Selective data restore (restore specific tables)
+- Export backups to external storage
+- Automatic backup before major updates
+
 ---
 
 ## 🎬 Demo
 
-🔗 **Live Demo:** [https://github.com/ompandey07/Exptrac](https://github.com/ompandey07/Exptrac)
+🔗 **Live Demo:** [https://github.com/ompandey07/Enyx](https://github.com/ompandey07/Enyx)
 
 ---
 
@@ -118,8 +152,8 @@ Built with Django and PostgreSQL, Enyx offers a beautiful, intuitive interface t
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/ompandey07/Exptrac.git
-cd Exptrac
+git clone https://github.com/ompandey07/Enyx
+cd Enyx
 ```
 
 ---
@@ -227,6 +261,11 @@ EMAIL_USE_TLS=True
 EMAIL_HOST_USER=your-email@gmail.com
 EMAIL_HOST_PASSWORD=your-email-password
 
+# Backup Settings
+BACKUP_DIR=backups/
+ENABLE_AUTO_BACKUP=True
+BACKUP_RETENTION_DAYS=30
+
 # Security Settings (Production)
 SECURE_SSL_REDIRECT=False
 SESSION_COOKIE_SECURE=False
@@ -276,9 +315,12 @@ Access the Django admin panel at `http://127.0.0.1:8000/admin/` with your superu
 3. **Add Income** - Record income sources and watch your balance grow
 4. **Track Expenses** - Log daily expenses with categories
 5. **Set Goals** - Define financial objectives with target amounts
-6. **View Analytics** - Analyze spending patterns with interactive charts
-7. **Export Reports** - Download Excel reports of your financial data
-8. **Monitor Balance** - Keep track of your real-time account balance
+6. **Create Notes** - Jot down ideas, reminders, and financial notes
+7. **Track Habits** - Build positive habits and track your progress daily
+8. **View Analytics** - Analyze spending patterns with interactive charts
+9. **Export Reports** - Download Excel reports of your financial data
+10. **Backup Data** - Create backups and restore your data anytime, anywhere
+11. **Monitor Balance** - Keep track of your real-time account balance
 
 ---
 
@@ -308,6 +350,7 @@ Access the Django admin panel at `http://127.0.0.1:8000/admin/` with your superu
 - **Password Hashing** - Secure password storage
 - **Session Management** - Secure user sessions
 - **Excel Export** - openpyxl/xlsxwriter for data export
+- **Database Backup** - pg_dump/pg_restore for PostgreSQL
 
 ---
 
@@ -336,7 +379,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Om Pandey**
 
 - GitHub: [@ompandey07](https://github.com/ompandey07)
-- Project Link: [https://github.com/ompandey07/Exptrac](https://github.com/ompandey07/Exptrac)
+- Project Link: [https://github.com/ompandey07/Enyx](https://github.com/ompandey07/Enyx)
 
 ---
 
