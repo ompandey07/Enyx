@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="static/Banner.png" alt="ExpTrack Banner" width="800"/>
+  <img src="static/Banner.png" alt="Enyx Banner" width="800"/>
   
-  # ExpTrack
+  # Enyx
   
   ### Master your money, achieve your dreams.
   
@@ -12,9 +12,9 @@
 
 ## 🎯 About
 
-**ExpTrack** is a comprehensive expense tracking and goal achievement platform designed to help you take control of your finances. Whether you're saving for a vacation, paying off debt, or building an emergency fund, ExpTrack provides the tools you need to succeed. 
+**Enyx** is a comprehensive expense tracking and goal achievement platform designed to help you take control of your finances. Whether you're saving for a vacation, paying off debt, or building an emergency fund, Enyx provides the tools you need to succeed. 
 
-Built with Django and PostgreSQL, ExpTrack offers a beautiful, intuitive interface that makes financial management simple, secure, and even enjoyable.
+Built with Django and PostgreSQL, Enyx offers a beautiful, intuitive interface that makes financial management simple, secure, and even enjoyable.
 
 ---
 
@@ -148,15 +148,15 @@ pip install -r requirements.txt
 
 ### Step 4: Set Up PostgreSQL Database
 
-Create a new PostgreSQL database for ExpTrack:
+Create a new PostgreSQL database for Enyx:
 
 ```sql
-CREATE DATABASE exptrack_db;
-CREATE USER exptrack_user WITH PASSWORD 'your_password';
-ALTER ROLE exptrack_user SET client_encoding TO 'utf8';
-ALTER ROLE exptrack_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE exptrack_user SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE exptrack_db TO exptrack_user;
+CREATE DATABASE Enyx_db;
+CREATE USER Enyx_user WITH PASSWORD 'your_password';
+ALTER ROLE Enyx_user SET client_encoding TO 'utf8';
+ALTER ROLE Enyx_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE Enyx_user SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE Enyx_db TO Enyx_user;
 ```
 
 ---
@@ -198,7 +198,7 @@ python manage.py collectstatic
 python manage.py runserver
 ```
 
-Visit `http://127.0.0.1:8000/` in your browser to access ExpTrack!
+Visit `http://127.0.0.1:8000/` in your browser to access Enyx!
 
 ---
 
@@ -213,8 +213,8 @@ DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 
 # Database Settings (PostgreSQL)
-DB_NAME=exptrack_db
-DB_USER=exptrack_user
+DB_NAME=Enyx_db
+DB_USER=Enyx_user
 DB_PASSWORD=your_database_password
 DB_HOST=localhost
 DB_PORT=5432
