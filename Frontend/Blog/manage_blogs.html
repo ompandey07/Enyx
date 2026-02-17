@@ -107,8 +107,8 @@
         }
 
         ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+            width: 8px;
+            height: 8px;
         }
 
         ::-webkit-scrollbar-track {
@@ -343,41 +343,6 @@
             color: var(--text-muted);
         }
 
-        .dropdown-divider {
-            height: 1px;
-            background: var(--border-light);
-            margin: 0 16px;
-        }
-
-        .dropdown-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 20px;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            transition: all var(--transition-base);
-        }
-
-        .dropdown-item:hover {
-            background: var(--bg-secondary);
-            color: var(--accent-primary);
-        }
-
-        .dropdown-item i {
-            font-size: 18px;
-        }
-
-        .dropdown-item-danger {
-            color: var(--error);
-        }
-
-        .dropdown-item-danger:hover {
-            background: var(--error-light);
-            color: var(--error);
-        }
-
         /* ============================================
            Main Content
            ============================================ */
@@ -512,6 +477,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
         }
 
         .blog-image-wrapper img {
@@ -723,103 +689,193 @@
         }
 
         /* ============================================
-           Slide Panel (Add/Edit Form)
+           FULL SCREEN EDITOR PANEL
            ============================================ */
-        .slide-panel-overlay {
+        .editor-panel-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.5);
-            backdrop-filter: blur(4px);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
             opacity: 0;
             visibility: hidden;
             z-index: 1100;
             transition: all var(--transition-base);
         }
 
-        .slide-panel-overlay.show {
+        .editor-panel-overlay.show {
             opacity: 1;
             visibility: visible;
         }
 
-        .slide-panel {
+        .editor-panel {
             position: fixed;
             top: 0;
-            right: -650px;
-            width: 650px;
-            max-width: 100%;
-            height: 100vh;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: var(--bg-primary);
-            box-shadow: var(--shadow-2xl);
             z-index: 1101;
-            transition: right var(--transition-slow);
             display: flex;
             flex-direction: column;
+            transform: scale(0.95);
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-slow);
         }
 
-        .slide-panel.show {
-            right: 0;
+        .editor-panel.show {
+            transform: scale(1);
+            opacity: 1;
+            visibility: visible;
         }
 
-        .slide-panel-header {
+        /* Windowed mode */
+        .editor-panel.windowed {
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-2xl);
+        }
+
+        /* Editor Header */
+        .editor-panel-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 24px;
+            padding: 16px 24px;
+            background: var(--bg-primary);
             border-bottom: 1px solid var(--border-light);
+            flex-shrink: 0;
         }
 
-        .slide-panel-title {
+        .editor-panel-header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .editor-panel-title {
             font-family: var(--font-heading);
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
             color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .slide-panel-close {
+        .editor-panel-title i {
+            color: var(--accent-primary);
+        }
+
+        .editor-mode-badge {
+            padding: 4px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .editor-mode-badge.edit {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .editor-panel-header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .editor-header-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             border-radius: var(--radius-md);
             color: var(--text-secondary);
             transition: all var(--transition-base);
         }
 
-        .slide-panel-close:hover {
+        .editor-header-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .editor-header-btn i {
+            font-size: 22px;
+        }
+
+        .editor-header-btn.close-btn:hover {
             background: var(--error-light);
             color: var(--error);
         }
 
-        .slide-panel-close i {
-            font-size: 22px;
+        /* Editor Body */
+        .editor-panel-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
         }
 
-        .slide-panel-body {
+        /* Left Sidebar - Form Fields */
+        .editor-sidebar {
+            width: 380px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .editor-sidebar-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg-primary);
+        }
+
+        .editor-sidebar-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .editor-sidebar-title i {
+            color: var(--accent-primary);
+        }
+
+        .editor-sidebar-body {
             flex: 1;
             padding: 24px;
             overflow-y: auto;
         }
 
-        .slide-panel-form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        .form-group {
+            margin-bottom: 24px;
         }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        .form-group:last-child {
+            margin-bottom: 0;
         }
 
         .form-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-size: 13px;
             font-weight: 600;
             color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            margin-bottom: 10px;
         }
 
         .form-label i {
@@ -838,7 +894,7 @@
             font-size: 14px;
             font-family: var(--font-body);
             color: var(--text-primary);
-            background: var(--bg-secondary);
+            background: var(--bg-primary);
             border: 2px solid var(--border-light);
             border-radius: var(--radius-lg);
             outline: none;
@@ -847,35 +903,17 @@
 
         .form-input:focus {
             border-color: var(--accent-primary);
-            background: var(--bg-primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
 
         .form-input::placeholder {
             color: var(--text-muted);
         }
 
-        /* CKEditor Container */
-        .ck-editor-container {
-            min-height: 300px;
-        }
-
-        .ck.ck-editor__main>.ck-editor__editable {
-            min-height: 300px;
-            background: var(--bg-secondary) !important;
-            border: 2px solid var(--border-light) !important;
-            border-radius: 0 0 var(--radius-lg) var(--radius-lg) !important;
-        }
-
-        .ck.ck-editor__main>.ck-editor__editable:focus {
-            border-color: var(--accent-primary) !important;
-            background: var(--bg-primary) !important;
-        }
-
-        .ck.ck-toolbar {
-            background: var(--bg-tertiary) !important;
-            border: 2px solid var(--border-light) !important;
-            border-bottom: none !important;
-            border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+        .form-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
         }
 
         /* File Upload */
@@ -889,11 +927,12 @@
 
         .file-upload-label {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 14px 16px;
-            background: var(--bg-secondary);
+            padding: 24px 16px;
+            background: var(--bg-primary);
             border: 2px dashed var(--border-light);
             border-radius: var(--radius-lg);
             cursor: pointer;
@@ -902,23 +941,40 @@
 
         .file-upload-label:hover {
             border-color: var(--accent-primary);
-            background: var(--bg-primary);
+            background: rgba(99, 102, 241, 0.02);
         }
 
-        .file-upload-label i {
-            font-size: 20px;
+        .file-upload-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-upload-icon i {
+            font-size: 24px;
             color: var(--accent-primary);
         }
 
         .file-upload-text {
             font-size: 14px;
+            font-weight: 500;
             color: var(--text-secondary);
+        }
+
+        .file-upload-hint {
+            font-size: 12px;
+            color: var(--text-muted);
         }
 
         .file-preview {
             margin-top: 12px;
             padding: 12px;
-            background: var(--bg-secondary);
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
             border-radius: var(--radius-md);
             display: none;
             align-items: center;
@@ -930,20 +986,24 @@
         }
 
         .file-preview-image {
-            width: 60px;
-            height: 60px;
+            width: 56px;
+            height: 56px;
             border-radius: var(--radius-md);
             object-fit: cover;
         }
 
         .file-preview-info {
             flex: 1;
+            min-width: 0;
         }
 
         .file-preview-name {
             font-size: 14px;
             font-weight: 500;
             color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .file-preview-size {
@@ -961,6 +1021,7 @@
             color: var(--error);
             border-radius: var(--radius-md);
             transition: all var(--transition-base);
+            flex-shrink: 0;
         }
 
         .file-preview-remove:hover {
@@ -968,16 +1029,147 @@
             color: white;
         }
 
-        .slide-panel-footer {
-            padding: 24px;
-            border-top: 1px solid var(--border-light);
+        /* Main Editor Area */
+        .editor-main {
+            flex: 1;
             display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-primary);
+        }
+
+        .editor-main-header {
+            padding: 20px 32px;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg-primary);
+            flex-shrink: 0;
+        }
+
+        .editor-main-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .editor-main-title i {
+            color: var(--accent-primary);
+        }
+
+        .editor-main-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .editor-main-body {
+            flex: 1;
+            padding: 24px 32px;
+            overflow-y: auto;
+        }
+
+        /* CKEditor Custom Styling */
+        .ck-editor-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ck.ck-editor {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .ck.ck-editor__main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ck.ck-editor__main>.ck-editor__editable {
+            flex: 1;
+            min-height: 400px;
+            background: var(--bg-secondary) !important;
+            border: 2px solid var(--border-light) !important;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg) !important;
+            font-size: 15px !important;
+            line-height: 1.8 !important;
+            padding: 24px !important;
+        }
+
+        .ck.ck-editor__main>.ck-editor__editable:focus {
+            border-color: var(--accent-primary) !important;
+            background: var(--bg-primary) !important;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
+        }
+
+        .ck.ck-toolbar {
+            background: var(--bg-tertiary) !important;
+            border: 2px solid var(--border-light) !important;
+            border-bottom: none !important;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+            padding: 8px !important;
+        }
+
+        .ck.ck-toolbar .ck-toolbar__items {
+            flex-wrap: wrap;
+        }
+
+        .ck.ck-button {
+            border-radius: var(--radius-sm) !important;
+        }
+
+        .ck.ck-button:hover {
+            background: var(--bg-primary) !important;
+        }
+
+        .ck.ck-button.ck-on {
+            background: var(--accent-primary) !important;
+            color: white !important;
+        }
+
+        /* Editor Footer */
+        .editor-panel-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-light);
+            flex-shrink: 0;
+        }
+
+        .editor-footer-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .editor-footer-info {
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .editor-footer-info i {
+            font-size: 16px;
+        }
+
+        .editor-footer-right {
+            display: flex;
+            align-items: center;
             gap: 12px;
         }
 
         .btn {
-            flex: 1;
-            padding: 14px 24px;
+            padding: 12px 24px;
             font-size: 14px;
             font-weight: 600;
             border-radius: var(--radius-lg);
@@ -1000,11 +1192,13 @@
 
         .btn-secondary:hover {
             background: var(--bg-tertiary);
+            border-color: var(--border-medium);
         }
 
         .btn-primary {
             background: var(--accent-gradient);
             color: white;
+            min-width: 160px;
         }
 
         .btn-primary:hover:not(:disabled) {
@@ -1042,6 +1236,16 @@
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        /* Word count */
+        .word-count {
+            padding: 6px 14px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
         }
 
         /* ============================================
@@ -1352,6 +1556,40 @@
         /* ============================================
            Responsive Styles
            ============================================ */
+        @media (max-width: 1024px) {
+            .editor-panel-body {
+                flex-direction: column;
+            }
+
+            .editor-sidebar {
+                width: 100%;
+                max-height: 300px;
+                border-right: none;
+                border-bottom: 1px solid var(--border-light);
+            }
+
+            .editor-sidebar-body {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 16px;
+                padding: 16px;
+            }
+
+            .editor-sidebar-body .form-group {
+                flex: 1;
+                min-width: 200px;
+                margin-bottom: 0;
+            }
+
+            .editor-main-body {
+                padding: 16px;
+            }
+
+            .ck.ck-editor__main>.ck-editor__editable {
+                min-height: 300px;
+            }
+        }
+
         @media (max-width: 768px) {
             .top-nav {
                 padding: 0 20px;
@@ -1369,11 +1607,6 @@
                 padding: 6px 12px;
             }
 
-            .slide-panel {
-                width: 100%;
-                right: -100%;
-            }
-
             .add-blog-btn span {
                 display: none;
             }
@@ -1381,6 +1614,53 @@
             .add-blog-btn {
                 width: 42px;
                 padding: 0;
+            }
+
+            .editor-panel.windowed {
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                border-radius: 0;
+            }
+
+            .editor-panel-header {
+                padding: 12px 16px;
+            }
+
+            .editor-panel-title {
+                font-size: 18px;
+            }
+
+            .editor-sidebar {
+                max-height: 250px;
+            }
+
+            .editor-sidebar-body {
+                flex-direction: column;
+            }
+
+            .editor-sidebar-body .form-group {
+                min-width: 100%;
+            }
+
+            .editor-panel-footer {
+                flex-direction: column;
+                gap: 12px;
+                padding: 16px;
+            }
+
+            .editor-footer-left,
+            .editor-footer-right {
+                width: 100%;
+            }
+
+            .editor-footer-right {
+                justify-content: stretch;
+            }
+
+            .editor-footer-right .btn {
+                flex: 1;
             }
 
             .data-table th,
@@ -1435,98 +1715,150 @@
             .pagination {
                 flex-wrap: wrap;
             }
+
+            .editor-header-btn {
+                width: 36px;
+                height: 36px;
+            }
+
+            .editor-header-btn i {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
 <body>
     {% csrf_token %}
 
-    <!-- Slide Panel Overlay -->
-    <div class="slide-panel-overlay" id="slidePanelOverlay"></div>
+    <!-- Editor Panel Overlay -->
+    <div class="editor-panel-overlay" id="editorPanelOverlay"></div>
 
-    <!-- Slide Panel (Add/Edit Form) -->
-    <div class="slide-panel" id="slidePanel">
-        <div class="slide-panel-header">
-            <h3 class="slide-panel-title" id="slidePanelTitle">Add Blog</h3>
-            <button class="slide-panel-close" id="slidePanelClose" type="button">
-                <i class="ri-close-line"></i>
-            </button>
-        </div>
-        <div class="slide-panel-body">
-            <form class="slide-panel-form" id="blogForm" enctype="multipart/form-data">
-                <input type="hidden" name="blog_slug" id="blogSlug" value="">
-                
-                <!-- Blog Heading -->
-                <div class="form-group">
-                    <label class="form-label">
-                        <i data-lucide="heading"></i>
-                        Blog Heading <span class="required">*</span>
-                    </label>
-                    <input type="text" class="form-input" name="blog_heading" id="blogHeading" placeholder="Enter blog heading" required>
+    <!-- Full Screen Editor Panel -->
+    <div class="editor-panel windowed" id="editorPanel">
+        <header class="editor-panel-header">
+            <div class="editor-panel-header-left">
+                <h2 class="editor-panel-title">
+                    <i class="ri-article-line"></i>
+                    <span id="editorPanelTitle">Add New Blog</span>
+                </h2>
+                <span class="editor-mode-badge" id="editorModeBadge">New</span>
+            </div>
+            <div class="editor-panel-header-right">
+                <button class="editor-header-btn" id="toggleFullscreen" type="button" title="Toggle Fullscreen">
+                    <i class="ri-fullscreen-line" id="fullscreenIcon"></i>
+                </button>
+                <button class="editor-header-btn close-btn" id="editorPanelClose" type="button" title="Close">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="editor-panel-body">
+            <!-- Left Sidebar - Form Fields -->
+            <aside class="editor-sidebar">
+                <div class="editor-sidebar-header">
+                    <h3 class="editor-sidebar-title">
+                        <i class="ri-settings-3-line"></i>
+                        Blog Settings
+                    </h3>
                 </div>
-
-                <!-- Blog Image -->
-                <div class="form-group">
-                    <label class="form-label">
-                        <i data-lucide="image"></i>
-                        Blog Image
-                    </label>
-                    <div class="file-upload-wrapper">
-                        <input type="file" class="file-upload-input" name="blog_image" id="blogImage" accept="image/*">
-                        <label for="blogImage" class="file-upload-label">
-                            <i class="ri-upload-cloud-line"></i>
-                            <span class="file-upload-text">Click to upload image</span>
-                        </label>
-                        <div class="file-preview" id="filePreview">
-                            <img src="" alt="Preview" class="file-preview-image" id="previewImage">
-                            <div class="file-preview-info">
-                                <div class="file-preview-name" id="previewName"></div>
-                                <div class="file-preview-size" id="previewSize"></div>
-                            </div>
-                            <button type="button" class="file-preview-remove" id="removeImage">
-                                <i class="ri-close-line"></i>
-                            </button>
+                <div class="editor-sidebar-body">
+                    <form id="blogForm" enctype="multipart/form-data">
+                        <input type="hidden" name="blog_slug" id="blogSlug" value="">
+                        
+                        <!-- Blog Heading -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i data-lucide="heading"></i>
+                                Blog Title <span class="required">*</span>
+                            </label>
+                            <input type="text" class="form-input" name="blog_heading" id="blogHeading" placeholder="Enter your blog title..." required>
+                            <p class="form-hint">Keep it concise and descriptive</p>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Blog Description (CKEditor) -->
-                <div class="form-group">
-                    <label class="form-label">
-                        <i data-lucide="file-text"></i>
-                        Blog Description <span class="required">*</span>
-                    </label>
+                        <!-- Blog Source -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i data-lucide="link"></i>
+                                Source URL
+                            </label>
+                            <input type="url" class="form-input" name="blog_source" id="blogSource" placeholder="https://example.com/article">
+                            <p class="form-hint">External link to original source</p>
+                        </div>
+
+                        <!-- Blog Image -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i data-lucide="image"></i>
+                                Cover Image
+                            </label>
+                            <div class="file-upload-wrapper">
+                                <input type="file" class="file-upload-input" name="blog_image" id="blogImage" accept="image/*">
+                                <label for="blogImage" class="file-upload-label">
+                                    <div class="file-upload-icon">
+                                        <i class="ri-upload-cloud-2-line"></i>
+                                    </div>
+                                    <span class="file-upload-text">Click to upload</span>
+                                    <span class="file-upload-hint">PNG, JPG, GIF up to 5MB</span>
+                                </label>
+                                <div class="file-preview" id="filePreview">
+                                    <img src="" alt="Preview" class="file-preview-image" id="previewImage">
+                                    <div class="file-preview-info">
+                                        <div class="file-preview-name" id="previewName"></div>
+                                        <div class="file-preview-size" id="previewSize"></div>
+                                    </div>
+                                    <button type="button" class="file-preview-remove" id="removeImage">
+                                        <i class="ri-close-line"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </aside>
+
+            <!-- Main Editor Area -->
+            <main class="editor-main">
+                <div class="editor-main-header">
+                    <h3 class="editor-main-title">
+                        <i class="ri-edit-2-line"></i>
+                        Blog Content
+                    </h3>
+                    <p class="editor-main-subtitle">Write your blog content using the rich text editor below</p>
+                </div>
+                <div class="editor-main-body">
                     <div class="ck-editor-container">
                         <textarea name="blog_discription" id="blogDescription"></textarea>
                     </div>
                 </div>
+            </main>
+        </div>
 
-                <!-- Blog Source -->
-                <div class="form-group">
-                    <label class="form-label">
-                        <i data-lucide="link"></i>
-                        Source URL
-                    </label>
-                    <input type="url" class="form-input" name="blog_source" id="blogSource" placeholder="https://example.com">
-                </div>
-            </form>
-        </div>
-        <div class="slide-panel-footer">
-            <button type="button" class="btn btn-secondary" id="cancelBtn">
-                <i class="ri-close-line"></i>
-                Cancel
-            </button>
-            <button type="button" class="btn btn-primary" id="saveBtn">
-                <span class="btn-text-default">
-                    <i class="ri-save-line"></i>
-                    Save Blog
+        <footer class="editor-panel-footer">
+            <div class="editor-footer-left">
+                <span class="editor-footer-info">
+                    <i class="ri-information-line"></i>
+                    Press <kbd>Esc</kbd> to close
                 </span>
-                <span class="btn-text-loading">
-                    <div class="spinner"></div>
-                    Saving...
-                </span>
-            </button>
-        </div>
+                <span class="word-count" id="wordCount">0 words</span>
+            </div>
+            <div class="editor-footer-right">
+                <button type="button" class="btn btn-secondary" id="cancelBtn">
+                    <i class="ri-close-line"></i>
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-primary" id="saveBtn">
+                    <span class="btn-text-default">
+                        <i class="ri-save-line"></i>
+                        Publish Blog
+                    </span>
+                    <span class="btn-text-loading">
+                        <div class="spinner"></div>
+                        Saving...
+                    </span>
+                </button>
+            </div>
+        </footer>
     </div>
 
     <!-- Confirmation Modal -->
@@ -1813,10 +2145,27 @@
             })
             .then(editor => {
                 editorInstance = editor;
+                
+                // Word count update
+                editor.model.document.on('change:data', () => {
+                    updateWordCount();
+                });
             })
             .catch(error => {
                 console.error('CKEditor initialization error:', error);
             });
+
+        // ============================================
+        // Word Count Function
+        // ============================================
+        function updateWordCount() {
+            const wordCountEl = document.getElementById('wordCount');
+            if (editorInstance && wordCountEl) {
+                const text = editorInstance.getData().replace(/<[^>]*>/g, ' ').trim();
+                const words = text.split(/\s+/).filter(word => word.length > 0).length;
+                wordCountEl.textContent = `${words} word${words !== 1 ? 's' : ''}`;
+            }
+        }
 
         // ============================================
         // Get CSRF Token
@@ -1846,10 +2195,13 @@
         
         const addBlogBtn = document.getElementById('addBlogBtn');
         const emptyStateBtn = document.getElementById('emptyStateBtn');
-        const slidePanel = document.getElementById('slidePanel');
-        const slidePanelOverlay = document.getElementById('slidePanelOverlay');
-        const slidePanelClose = document.getElementById('slidePanelClose');
-        const slidePanelTitle = document.getElementById('slidePanelTitle');
+        const editorPanel = document.getElementById('editorPanel');
+        const editorPanelOverlay = document.getElementById('editorPanelOverlay');
+        const editorPanelClose = document.getElementById('editorPanelClose');
+        const editorPanelTitle = document.getElementById('editorPanelTitle');
+        const editorModeBadge = document.getElementById('editorModeBadge');
+        const toggleFullscreen = document.getElementById('toggleFullscreen');
+        const fullscreenIcon = document.getElementById('fullscreenIcon');
         const blogForm = document.getElementById('blogForm');
         const saveBtn = document.getElementById('saveBtn');
         const cancelBtn = document.getElementById('cancelBtn');
@@ -1881,6 +2233,7 @@
         let currentBlogSlug = null;
         let pendingAction = null;
         let selectedFile = null;
+        let isFullscreen = false;
 
         // ============================================
         // User Dropdown Functions
@@ -1901,6 +2254,23 @@
                 }
             }
         });
+
+        // ============================================
+        // Fullscreen Toggle
+        // ============================================
+        if (toggleFullscreen) {
+            toggleFullscreen.addEventListener('click', function() {
+                isFullscreen = !isFullscreen;
+                
+                if (isFullscreen) {
+                    editorPanel.classList.remove('windowed');
+                    fullscreenIcon.className = 'ri-fullscreen-exit-line';
+                } else {
+                    editorPanel.classList.add('windowed');
+                    fullscreenIcon.className = 'ri-fullscreen-line';
+                }
+            });
+        }
 
         // ============================================
         // Image Preview Modal (Click to enlarge)
@@ -1973,30 +2343,34 @@
         }
 
         // ============================================
-        // Slide Panel Functions
+        // Editor Panel Functions
         // ============================================
-        function openSlidePanel(editMode = false, blogSlug = null) {
+        function openEditorPanel(editMode = false, blogSlug = null) {
             isEditMode = editMode;
             currentBlogSlug = blogSlug;
             
             if (editMode && blogSlug) {
-                slidePanelTitle.textContent = 'Edit Blog';
+                editorPanelTitle.textContent = 'Edit Blog';
+                editorModeBadge.textContent = 'Editing';
+                editorModeBadge.classList.add('edit');
                 saveBtn.querySelector('.btn-text-default').innerHTML = '<i class="ri-save-line"></i> Update Blog';
                 fetchBlogData(blogSlug);
             } else {
-                slidePanelTitle.textContent = 'Add Blog';
-                saveBtn.querySelector('.btn-text-default').innerHTML = '<i class="ri-save-line"></i> Save Blog';
+                editorPanelTitle.textContent = 'Add New Blog';
+                editorModeBadge.textContent = 'New';
+                editorModeBadge.classList.remove('edit');
+                saveBtn.querySelector('.btn-text-default').innerHTML = '<i class="ri-save-line"></i> Publish Blog';
                 resetForm();
             }
             
-            slidePanel.classList.add('show');
-            slidePanelOverlay.classList.add('show');
+            editorPanel.classList.add('show');
+            editorPanelOverlay.classList.add('show');
             document.body.style.overflow = 'hidden';
         }
 
-        function closeSlidePanel() {
-            slidePanel.classList.remove('show');
-            slidePanelOverlay.classList.remove('show');
+        function closeEditorPanel() {
+            editorPanel.classList.remove('show');
+            editorPanelOverlay.classList.remove('show');
             document.body.style.overflow = '';
             resetForm();
             isEditMode = false;
@@ -2019,30 +2393,31 @@
             previewImage.src = '';
             previewName.textContent = '';
             previewSize.textContent = '';
+            updateWordCount();
         }
 
         if (addBlogBtn) {
             addBlogBtn.addEventListener('click', function() {
-                openSlidePanel(false, null);
+                openEditorPanel(false, null);
             });
         }
         
         if (emptyStateBtn) {
             emptyStateBtn.addEventListener('click', function() {
-                openSlidePanel(false, null);
+                openEditorPanel(false, null);
             });
         }
         
-        if (slidePanelClose) {
-            slidePanelClose.addEventListener('click', closeSlidePanel);
+        if (editorPanelClose) {
+            editorPanelClose.addEventListener('click', closeEditorPanel);
         }
         
-        if (slidePanelOverlay) {
-            slidePanelOverlay.addEventListener('click', closeSlidePanel);
+        if (editorPanelOverlay) {
+            editorPanelOverlay.addEventListener('click', closeEditorPanel);
         }
         
         if (cancelBtn) {
-            cancelBtn.addEventListener('click', closeSlidePanel);
+            cancelBtn.addEventListener('click', closeEditorPanel);
         }
 
         // ============================================
@@ -2066,6 +2441,7 @@
                     
                     if (editorInstance) {
                         editorInstance.setData(data.blog.blog_discription);
+                        updateWordCount();
                     }
                     
                     if (data.blog.blog_image) {
@@ -2076,12 +2452,12 @@
                     }
                 } else {
                     showToast(data.message || 'Failed to fetch blog data', 'error');
-                    closeSlidePanel();
+                    closeEditorPanel();
                 }
             } catch (error) {
                 console.error('Fetch error:', error);
                 showToast('Failed to fetch blog data', 'error');
-                closeSlidePanel();
+                closeEditorPanel();
             }
         }
 
@@ -2094,24 +2470,24 @@
                 const blogDescription = editorInstance ? editorInstance.getData().trim() : '';
                 
                 if (!blogHeading) {
-                    showToast('Blog heading is required', 'error');
+                    showToast('Blog title is required', 'error');
                     document.getElementById('blogHeading').focus();
                     return;
                 }
                 
                 if (blogHeading.length < 5) {
-                    showToast('Blog heading must be at least 5 characters', 'error');
+                    showToast('Blog title must be at least 5 characters', 'error');
                     document.getElementById('blogHeading').focus();
                     return;
                 }
                 
                 if (!blogDescription) {
-                    showToast('Blog description is required', 'error');
+                    showToast('Blog content is required', 'error');
                     return;
                 }
                 
                 if (blogDescription.length < 20) {
-                    showToast('Blog description must be at least 20 characters', 'error');
+                    showToast('Blog content must be at least 20 characters', 'error');
                     return;
                 }
 
@@ -2160,7 +2536,7 @@
                 
                 if (data.success) {
                     showToast(data.message, 'success');
-                    closeSlidePanel();
+                    closeEditorPanel();
                     setTimeout(function() {
                         location.reload();
                     }, 1000);
@@ -2184,7 +2560,7 @@
             if (editBtn) {
                 const blogSlug = editBtn.getAttribute('data-slug');
                 if (blogSlug) {
-                    openSlidePanel(true, blogSlug);
+                    openEditorPanel(true, blogSlug);
                 }
                 return;
             }
@@ -2352,16 +2728,33 @@
                 if (imageModal && imageModal.classList.contains('show')) {
                     imageModal.classList.remove('show');
                     imageModalImg.src = '';
+                    return;
                 }
-                
-                if (slidePanel && slidePanel.classList.contains('show')) {
-                    closeSlidePanel();
-                }
-                
+
                 if (confirmModal && confirmModal.classList.contains('show')) {
                     pendingAction = null;
                     closeModal();
+                    return;
                 }
+                
+                if (editorPanel && editorPanel.classList.contains('show')) {
+                    closeEditorPanel();
+                    return;
+                }
+            }
+            
+            // Ctrl/Cmd + S to save
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                if (editorPanel && editorPanel.classList.contains('show')) {
+                    e.preventDefault();
+                    saveBtn.click();
+                }
+            }
+            
+            // F11 to toggle fullscreen
+            if (e.key === 'F11' && editorPanel && editorPanel.classList.contains('show')) {
+                e.preventDefault();
+                toggleFullscreen.click();
             }
         });
     </script>
