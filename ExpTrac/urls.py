@@ -18,6 +18,7 @@ urlpatterns = [
 
     path('main/', include('main.routes')),
     path('accounts/', include('accounts.routes')),
+    path('api/', include('blogs.routes')),
 ]
 
 # ============================

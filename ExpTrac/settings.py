@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     
     # THIRD PARTY APPS
     'jazzmin',
+    'corsheaders', 
 
     # DJANGO DEFAULT APPS
     'django.contrib.admin',
@@ -37,8 +38,11 @@ INSTALLED_APPS = [
 
     # CUSTOM APPS
     'accounts',
-    'main'
+    'main',
+    'blogs',
 
+    # THIRD PARTY APPS
+    'rest_framework',
 ]
 
 
@@ -47,6 +51,7 @@ INSTALLED_APPS = [
 # ============================
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -55,6 +60,19 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+# ============================
+# CORS CONFIGURATION
+# ============================
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost",
+    "https://www.omkumarpandey.com.np",
+    "http://127.0.0.1:5500",
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 
 # ============================
@@ -104,8 +122,6 @@ DATABASES = {
         'PORT': '5432',
     }
 }
-
-
 
 
 # ============================
